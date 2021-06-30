@@ -3,6 +3,7 @@
 import { AdapterService } from '@feathersjs/adapter-commons';
 import { MethodNotAllowed } from '@feathersjs/errors';
 import { Id } from '@feathersjs/feathers';
+
 import { IlmoApplication } from '../../defs';
 import getEventDetails, { EventGetResponse } from './getEventDetails';
 import getEventsList, { EventListResponse } from './getEventsList';
@@ -16,7 +17,7 @@ export class EventsService extends AdapterService<EventsServiceResponses> {
   }
 
   _get(id: Id) {
-    return getEventDetails(Number(id));
+    return getEventDetails(Number(id), false);
   }
 
   _create(): never {

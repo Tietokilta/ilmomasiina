@@ -1,14 +1,13 @@
-import { Sequelize } from 'sequelize';
-
-import event, { Event } from './event';
-import quota, { Quota } from './quota';
-import signup, { Signup } from './signup';
-import question, { Question } from './question';
-import answer, { Answer } from './answer';
-import user, { User } from './user';
+import { Dialect, Sequelize } from 'sequelize';
 
 import config from '../config';
 import { IlmoApplication } from '../defs';
+import answer, { Answer } from './answer';
+import event, { Event } from './event';
+import question, { Question } from './question';
+import quota, { Quota } from './quota';
+import signup, { Signup } from './signup';
+import user, { User } from './user';
 
 export interface IlmoModels {
   user: typeof User;
@@ -18,22 +17,22 @@ export interface IlmoModels {
   answer: typeof Answer;
 }
 
-export default function (this: IlmoApplication) {
+export default function setupDatabase(this: IlmoApplication) {
   const app = this;
 
   let sequelize: Sequelize;
-  if (process.env.CLEARDB_DATABASE_URL) {
-    sequelize = new Sequelize(process.env.CLEARDB_DATABASE_URL, {
+  if (config.clearDbUrl) {
+    sequelize = new Sequelize(config.clearDbUrl, {
       logging: false,
     });
   } else {
     sequelize = new Sequelize(
-      config.mysqlDatabase!,
-      config.mysqlUser!,
-      config.mysqlPassword,
+      config.dbDatabase!,
+      config.dbUser!,
+      config.dbPassword,
       {
-        host: config.mysqlHost,
-        dialect: 'mysql',
+        host: config.dockerCompose ? 'db' : config.dbHost!,
+        dialect: config.dbDialect as Dialect,
         logging: false,
       },
     );
@@ -47,7 +46,7 @@ export default function (this: IlmoApplication) {
       })
       .catch((err) => {
         const cfg = (sequelize.connectionManager as any).config;
-        console.log(`Sequelize: Error connecting ${cfg.host} as ${cfg.user}: ${err}`);
+        console.error(`Sequelize: Error connecting ${cfg.host} as ${cfg.username}: ${err}`);
       });
   }
 

@@ -1,9 +1,10 @@
 import _ from 'lodash';
 import moment from 'moment';
-import EmailService from '.';
+
 import config from '../config';
 import { Signup } from '../models/signup';
 import { generateToken } from '../services/signup/editTokens';
+import EmailService from '.';
 
 export default async (signup: Signup) => {
   // TODO: convert to include
@@ -36,7 +37,7 @@ export default async (signup: Signup) => {
     edited: answers.some((answer) => answer.createdAt.getTime() !== answer.updatedAt.getTime()),
     date: moment(event.date).tz('Europe/Helsinki').format('DD.MM.YYYY HH:mm'),
     event,
-    cancelLink: `${config.baseUrl}${config.prefixUrl}/signup/${signup.id}/${editToken}`,
+    cancelLink: `${config.mailUrlBase}${config.pathPrefix}/signup/${signup.id}/${editToken}`,
   };
 
   EmailService.sendConfirmationMail(signup.email!, params);
