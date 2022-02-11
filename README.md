@@ -165,3 +165,27 @@ npm run compile
 pm2 restart prod-server
 ```
 -->
+
+## Deployment
+
+### Heroku
+
+You can deploy Ilmomasiina to Heroku with the following steps: (note that you need a PostgreSQL database to connect to)
+
+1. Clone this repo
+2. Log in to Container Registry: `heroku container:login`
+3. Create a Heroku app inside this directory: `heroku create`
+4. Set env variables for your app: `heroku config:edit` You have to atleast set the following variables. Take a look at `.env.example` for more options.
+```
+  BRANDING_MAIL_FOOTER_LINK=
+  BRANDING_MAIL_FOOTER_TEXT=
+  CLEARDB_DATABASE_URL=
+  EMAIL_BASE_URL=
+  FEATHERS_AUTH_SECRET=
+  MAIL_FROM=
+  NEW_EDIT_TOKEN_SECRET=
+  ```
+5. Build the image and push to Container Registry: `heroku container:push web`
+6. Release the image to your app: `heroku container:release web`
+7. Open the app in your browser: `heroku open`
+
