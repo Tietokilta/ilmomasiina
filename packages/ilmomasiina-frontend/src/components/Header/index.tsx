@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 import { paths } from '@tietokilta/ilmomasiina-components/src/config/paths';
 import branding from '../../branding';
-import { redirectToLogin } from '../../modules/auth/actions';
+import { logout } from '../../modules/auth/actions';
 import { useTypedDispatch, useTypedSelector } from '../../store/reducers';
 
 import './Header.scss';
@@ -22,7 +22,7 @@ const Header = () => {
         </Link>
         {loggedIn && (
           <Button
-            onClick={() => dispatch(redirectToLogin())}
+            onClick={() => dispatch(logout())}
           >
             Logout
           </Button>
