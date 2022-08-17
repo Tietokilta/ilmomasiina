@@ -1,4 +1,4 @@
-import { UserSignupForEditSchema } from '@tietokilta/ilmomasiina-models/src/schema';
+import { EDIT_TOKEN_HEADER_NAME, UserSignupForEditSchema } from '@tietokilta/ilmomasiina-models/src/schema';
 import apiFetch from '../../api';
 import { MatchParams } from '../../routes/EditSignup';
 import { useAbortablePromise } from '../../utils/abortable';
@@ -12,7 +12,7 @@ export function useEditSignupState({ id, editToken }: MatchParams) {
     const response = await apiFetch(`signups/${id}`, {
       signal,
       headers: {
-        'X-Edit-Token': editToken,
+        [EDIT_TOKEN_HEADER_NAME]: editToken,
       },
     }) as UserSignupForEditSchema;
     return {
