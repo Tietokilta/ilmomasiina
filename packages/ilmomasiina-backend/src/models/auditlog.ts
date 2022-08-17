@@ -2,6 +2,7 @@ import {
   DataTypes, Model, Optional, Sequelize,
 } from 'sequelize';
 
+import { AuditEvent } from '@tietokilta/ilmomasiina-models/src/enum';
 import AuditLogAttributes from '@tietokilta/ilmomasiina-models/src/models/auditlog';
 import { RANDOM_ID_LENGTH } from './randomId';
 
@@ -11,7 +12,7 @@ export class AuditLog extends Model<AuditLogAttributes, AuditLogCreationAttribut
   public id!: number;
   public user!: string | null;
   public ipAddress!: string;
-  public action!: string;
+  public action!: AuditEvent;
   public eventId!: string | null;
   public eventName!: string | null;
   public signupId!: string | null;

@@ -1,4 +1,4 @@
-import { Event } from '@tietokilta/ilmomasiina-models/src/services/events';
+import { UserEventList } from '@tietokilta/ilmomasiina-models/src/schema';
 import apiFetch from '../../api';
 import { useAbortablePromise } from '../../utils/abortable';
 import { createStateContext } from '../../utils/stateContext';
@@ -9,7 +9,7 @@ export type EventListProps = {
 };
 
 type State = {
-  events?: Event.List;
+  events?: UserEventList;
   pending: boolean;
   error: boolean;
 };
@@ -20,7 +20,7 @@ export { useStateContext as useEventListContext, Provider as EventListProvider }
 export function useEventListState({ category }: EventListProps) {
   const fetchEvents = useAbortablePromise(async (signal) => {
     const query = category === undefined ? '' : `?${new URLSearchParams({ category })}`;
-    return await apiFetch(`events${query}`, { signal }) as Event.List;
+    return await apiFetch(`events${query}`, { signal }) as UserEventList;
   }, [category]);
 
   return useShallowMemo<State>({

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { Event } from '@tietokilta/ilmomasiina-models/src/services/events';
+import { UserEventSchema } from '@tietokilta/ilmomasiina-models/src/schema';
 import apiFetch from '../../api';
 import { useAbortablePromise } from '../../utils/abortable';
 import { getSignupsByQuota, QuotaSignups } from '../../utils/signupUtils';
@@ -12,7 +12,7 @@ export interface SingleEventProps {
 }
 
 type State = {
-  event?: Event.Details;
+  event?: UserEventSchema;
   signupsByQuota?: QuotaSignups[];
   pending: boolean;
   error: boolean;
@@ -23,7 +23,7 @@ export { Provider as SingleEventProvider, useStateContext as useSingleEventConte
 
 export function useSingleEventState({ slug }: SingleEventProps) {
   const fetchEvent = useAbortablePromise(async (signal) => (
-    await apiFetch(`events/${slug}`, { signal }) as Event.Details
+    await apiFetch(`events/${slug}`, { signal }) as UserEventSchema
   ), [slug]);
 
   const event = fetchEvent.result;

@@ -1,4 +1,4 @@
-import { Signup } from '@tietokilta/ilmomasiina-models/src/services/signups';
+import { UserSignupForEditSchema } from '@tietokilta/ilmomasiina-models/src/schema';
 import { createReducerContext } from '../../utils/stateContext';
 
 type ReducerState = {
@@ -12,7 +12,7 @@ const initialState: ReducerState = {
   deleted: false,
 };
 
-export type ExternalState = Partial<Signup.Details> & {
+export type ExternalState = Partial<UserSignupForEditSchema> & {
   pending: boolean;
   error: boolean;
   editToken: string;

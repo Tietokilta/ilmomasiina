@@ -3,7 +3,6 @@ import { toast } from 'react-toastify';
 
 import apiFetch from '@tietokilta/ilmomasiina-components/src/api';
 import { fullPaths } from '@tietokilta/ilmomasiina-components/src/config/paths';
-import { Auth } from '@tietokilta/ilmomasiina-models/src/services/auth';
 import { DispatchAction } from '../../store/types';
 import {
   LOGGING_IN,
@@ -16,9 +15,8 @@ export const loggingIn = () => <const>{
   type: LOGGING_IN,
 };
 
-export const loginSucceeded = (payload: Auth.Response) => <const>{
+export const loginSucceeded = () => <const>{
   type: LOGIN_SUCCEEDED,
-  payload,
 };
 
 export const loginFailed = () => <const>{
@@ -39,14 +37,14 @@ export const login = (email: string, password: string) => async (dispatch: Dispa
   dispatch(loggingIn());
 
   try {
-    const response = await apiFetch('authentication', {
+    await apiFetch('authentication', {
       method: 'POST',
       body: {
         email,
         password,
       },
-    }) as Auth.Response;
-    dispatch(loginSucceeded(response));
+    });
+    dispatch(loginSucceeded());
     dispatch(push(fullPaths().adminEventsList));
     return true;
   } catch (e) {

@@ -1,8 +1,8 @@
-import { Signup } from '@tietokilta/ilmomasiina-models/src/services/signups';
+import { SignupUpdateSchema } from '@tietokilta/ilmomasiina-models/src/schema';
 import apiFetch from '../../api';
 import { createThunk } from './reducer';
 
-export const useUpdateSignup = createThunk(({ signup, editToken }) => async (answers: Signup.Update.Body) => {
+export const useUpdateSignup = createThunk(({ signup, editToken }) => async (answers: SignupUpdateSchema) => {
   await apiFetch(`signups/${signup!.id}`, {
     method: 'PATCH',
     body: {

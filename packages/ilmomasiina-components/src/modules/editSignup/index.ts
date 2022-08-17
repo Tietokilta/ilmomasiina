@@ -1,4 +1,4 @@
-import { Signup } from '@tietokilta/ilmomasiina-models/src/services/signups';
+import { UserSignupForEditSchema } from '@tietokilta/ilmomasiina-models/src/schema';
 import apiFetch from '../../api';
 import { MatchParams } from '../../routes/EditSignup';
 import { useAbortablePromise } from '../../utils/abortable';
@@ -9,7 +9,7 @@ export { Provider, useStateAndDispatch } from './reducer';
 
 export function useEditSignupState({ id, editToken }: MatchParams) {
   const fetchSignup = useAbortablePromise(async (signal) => {
-    const response = await apiFetch(`signups/${id}?editToken=${editToken}`, { signal }) as Signup.Details;
+    const response = await apiFetch(`signups/${id}?editToken=${editToken}`, { signal }) as UserSignupForEditSchema;
     return {
       ...response,
       signup: {

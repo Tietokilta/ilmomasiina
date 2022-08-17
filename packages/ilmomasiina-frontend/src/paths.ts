@@ -1,21 +1,23 @@
-import { FullPaths } from '@tietokilta/ilmomasiina-components/src/config/paths';
-import { AdminEvent } from '@tietokilta/ilmomasiina-models/src/services/admin/events';
-import { Event } from '@tietokilta/ilmomasiina-models/src/services/events';
-import { Signup } from '@tietokilta/ilmomasiina-models/src/services/signups';
+import {
+  AdminEventPathParams,
+  SignupEditToken,
+  SignupPathParams,
+  UserEventPathParams,
+} from '@tietokilta/ilmomasiina-models/src/schema';
 
 export const urlPrefix = PREFIX_URL;
 
-const appPaths: FullPaths = {
+const appPaths = {
   hasAdmin: true,
   api: API_URL || `${urlPrefix}/api`,
 
   eventsList: `${urlPrefix}/`,
-  eventDetails: (slug: Event.Slug) => `${urlPrefix}/events/${slug}`,
-  editSignup: (id: Signup.Id, editToken: string) => `${urlPrefix}/signup/${id}/${editToken}`,
+  eventDetails: (slug: UserEventPathParams['slug']) => `${urlPrefix}/events/${slug}`,
+  editSignup: (id: SignupPathParams['id'], editToken: SignupEditToken) => `${urlPrefix}/signup/${id}/${editToken}`,
 
   adminLogin: `${urlPrefix}/login`,
   adminEventsList: `${urlPrefix}/admin`,
-  adminEditEvent: (id: AdminEvent.Id) => `${urlPrefix}/admin/edit/${id}`,
+  adminEditEvent: (id: AdminEventPathParams['id']) => `${urlPrefix}/admin/edit/${id}`,
   adminUsersList: `${urlPrefix}/admin/users`,
   adminAuditLog: `${urlPrefix}/admin/auditlog`,
 };
