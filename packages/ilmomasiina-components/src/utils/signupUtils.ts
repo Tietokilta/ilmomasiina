@@ -14,7 +14,7 @@ export const WAITLIST = '\x00waitlist';
 export const OPENQUOTA = '\x00open';
 
 type AnyEventDetails = AdminEventSchema | UserEventSchema;
-type AnySignupDetails = AnyEventDetails['quotas'][number]['signups'][number];
+export type AnySignupDetails = AnyEventDetails['quotas'][number]['signups'][number];
 
 export type SignupWithQuota = AnySignupDetails & {
   quotaId: QuotaID;
@@ -40,7 +40,7 @@ export type QuotaSignups = {
   id: QuotaID | typeof OPENQUOTA | typeof WAITLIST;
   title: string;
   size: number | null;
-  signups: AnySignupDetails[];
+  signups: (AnySignupDetails & { quotaId: QuotaID, quotaName: string, confirmed: boolean })[];
 };
 
 export function getSignupsByQuota(event: AnyEventDetails): QuotaSignups[] {

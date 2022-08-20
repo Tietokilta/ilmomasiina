@@ -3,8 +3,7 @@ import React, { useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 
-import { Quota } from '@tietokilta/ilmomasiina-models/src/services/events';
-import { Signup } from '@tietokilta/ilmomasiina-models/src/services/signups';
+import { CreatedSignupSchema, QuotaID } from '@tietokilta/ilmomasiina-models/src/schema';
 import apiFetch from '../../../api';
 import { paths } from '../../../config/paths';
 import { useNavigate } from '../../../config/router';
@@ -29,13 +28,13 @@ const SignupButton = ({
   const [submitting, setSubmitting] = useState(false);
   const isOnly = quotas.length === 1;
 
-  async function beginSignup(quotaId: Quota.Id) {
+  async function beginSignup(quotaId: QuotaID) {
     setSubmitting(true);
     try {
       const response = await apiFetch('signups', {
         method: 'POST',
         body: { quotaId },
-      }) as Signup.Create.Response;
+      }) as CreatedSignupSchema;
       setSubmitting(false);
       navigate(paths().editSignup(response.id, response.editToken));
     } catch (e) {

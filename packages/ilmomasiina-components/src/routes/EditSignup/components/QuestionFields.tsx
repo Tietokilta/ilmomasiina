@@ -7,18 +7,17 @@ import reject from 'lodash/reject';
 import without from 'lodash/without';
 import { Form } from 'react-bootstrap';
 
-import { Event } from '@tietokilta/ilmomasiina-models/src/services/events';
-import { Signup } from '@tietokilta/ilmomasiina-models/src/services/signups';
+import { Question, SignupUpdateSchema } from '@tietokilta/ilmomasiina-models/src/schema';
 import FieldRow from '../../../components/FieldRow';
 
 type Props = {
   name: string;
-  questions: Event.Details.Question[];
+  questions: Question[];
 };
 
 const QuestionFields = ({ name, questions }: Props) => {
   // TODO: add formik-based validation
-  const [{ value }, , { setValue }] = useField<Signup.Update.Body.Answer[]>(name);
+  const [{ value }, , { setValue }] = useField<SignupUpdateSchema['answers']>(name);
   return (
     <>
       {questions.map((question) => {
