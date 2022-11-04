@@ -1,6 +1,6 @@
 {
   "name": "@tietokilta/ilmomasiina-components",
-  "version": "2.0.0-alpha1",
+  "version": "2.0.0-alpha2.1",
   "scripts": {
     "build": "tsc --build",
     "clean": "rimraf dist",
@@ -12,7 +12,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@tietokilta/ilmomasiina-models": "workspace:2.0.0-alpha1",
+    "@tietokilta/ilmomasiina-models": "workspace:2.0.0-alpha2.1",
     "@types/lodash": "^4.14.182",
     "@types/react": "^17.0.47",
     "formik": "^2.2.9",

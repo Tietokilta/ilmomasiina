@@ -2,6 +2,7 @@ import express, { json, rest, urlencoded } from '@feathersjs/express';
 import feathers from '@feathersjs/feathers';
 import compress from 'compression';
 import historyApiFallback from 'connect-history-api-fallback';
+import cors from 'cors';
 import { NextFunction, Request, Response } from 'express';
 import enforce from 'express-sslify';
 import cron from 'node-cron';
@@ -45,10 +46,12 @@ export default async function initApp() {
   app
     .use(compress())
     .use(json())
+    .use(cors())
     .use(urlencoded({ extended: true }))
     .use(remoteIp)
     .configure(rest(formatResponse))
-    .configure(services);
+    .configure(services)
+    .options('*', cors());
 
   if (config.nodeEnv !== 'production') {
     // Development: log error messages
