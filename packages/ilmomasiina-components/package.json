@@ -1,6 +1,6 @@
 {
   "name": "@tietokilta/ilmomasiina-components",
-  "version": "2.0.0-alpha2.4",
+  "version": "2.0.0-alpha2.5",
   "scripts": {
     "build": "tsc --build",
     "clean": "rimraf dist",
@@ -12,15 +12,15 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@tietokilta/ilmomasiina-models": "workspace:2.0.0-alpha2.4",
+    "@tietokilta/ilmomasiina-models": "workspace:2.0.0-alpha2.5",
     "@types/lodash": "^4.14.182",
-    "@types/react": "^17.0.47",
+    "@types/react": "^17 || ^18",
     "bootstrap": "^4.6.1",
     "formik": "^2.2.9",
     "lodash": "^4.17.21",
     "moment": "^2.29.3",
     "moment-timezone": "^0.5.34",
-    "react": "^17.0.2",
+    "react": "^17 || ^18",
     "react-bootstrap": "^1.6.5",
     "react-countdown-now": "^2.1.2",
     "react-dom": "^17.0.2",
