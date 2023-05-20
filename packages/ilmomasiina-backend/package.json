@@ -18,7 +18,7 @@
   },
   "betterScripts": {
     "start:dev": {
-      "command": "ts-node-dev -r tsconfig-paths/register --respawn --project tsconfig.json src/bin/server.ts",
+      "command": "ts-node-dev -r tsconfig-paths/register --respawn --project tsconfig.json src/bin/server.ts --watch emails",
       "env": {
         "NODE_ENV": "development",
         "DEBUG": "app:*",
