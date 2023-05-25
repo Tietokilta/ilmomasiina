@@ -48,8 +48,6 @@ const mailTransporter: Transporter = (() => {
       });
       input.on('end', () => {
         console.log(data);
-        // temporary writefile
-        // writeFile('emails/mail.html', mail.data.html as string, (err) => console.log(err));
         callback(null, { envelope, messageId } as any);
       });
     },
