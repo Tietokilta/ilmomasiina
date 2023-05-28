@@ -14,10 +14,14 @@ export interface IlmoConfig {
 
 let configuredTimezone = 'Europe/Helsinki';
 
-export function configure(config: IlmoConfig) {
-  if (config.api !== undefined) configureApi(config.api);
-  if (config.router !== undefined) configureRouter(config.router);
-  if (config.timezone !== undefined) configuredTimezone = config.timezone;
+export function configure({
+  api = '/api',
+  router,
+  timezone = 'Europe/Helsinki',
+}: IlmoConfig) {
+  configureApi(api);
+  configureRouter?.(router);
+  configuredTimezone = timezone;
 }
 
 export function timezone() {
