@@ -18,17 +18,17 @@ type FormData = {
 function validate(values: FormData) {
   const errors: Partial<FormData> = {};
   if (!values.oldPassword) {
-    errors.oldPassword = 'Pakollinen kenttä';
+    errors.oldPassword = 'Required field';
   }
   if (!values.newPassword) {
-    errors.newPassword = 'Pakollinen kenttä';
+    errors.newPassword = 'Required field';
   } else if (values.newPassword.length < 10) {
-    errors.newPassword = 'Salasanassa täytyy olla vähintään 10 merkkiä';
+    errors.newPassword = 'Password must contain at least 10 characters';
   }
   if (!values.newPasswordVerify) {
-    errors.newPasswordVerify = 'Pakollinen kenttä';
+    errors.newPasswordVerify = 'Required field';
   } else if (values.newPassword && values.newPassword !== values.newPasswordVerify) {
-    errors.newPasswordVerify = 'Salasanat eivät täsmää';
+    errors.newPasswordVerify = 'The passwords do not match';
   }
   return errors;
 }
@@ -41,9 +41,9 @@ const ChangePasswordForm = () => {
     const success = await dispatch(changePassword(data));
     if (success) {
       resetForm();
-      toast.success('Salasana vaihdettiin onnistuneesti.', { autoClose: 5000 });
+      toast.success('The password was successfully changed.', { autoClose: 5000 });
     } else {
-      toast.error('Salasanan vaihto epäonnistui.', { autoClose: 5000 });
+      toast.error('Failed to change your password.', { autoClose: 5000 });
     }
     setSubmitting(false);
   };
@@ -71,7 +71,7 @@ const ChangePasswordForm = () => {
             name="oldPassword"
             id="oldPassword"
             type="password"
-            placeholder="Vanha salasana"
+            placeholder="Old password"
             aria-label="Vanha salasana"
           />
           {errors.oldPassword && touched.oldPassword ? (
@@ -82,7 +82,7 @@ const ChangePasswordForm = () => {
             name="newPassword"
             id="newPassword"
             type="password"
-            placeholder="Uusi salasana"
+            placeholder="New password"
             aria-label="Uusi salasana"
           />
           {errors.newPassword && touched.newPassword ? (
@@ -93,14 +93,14 @@ const ChangePasswordForm = () => {
             name="newPasswordverify"
             id="newPasswordverify"
             type="password"
-            placeholder="Uusi salasana"
+            placeholder="New password"
             aria-label="Uusi salasana"
           />
           {errors.newPasswordVerify && touched.newPasswordVerify ? (
             <Alert variant="danger">{errors.newPasswordVerify}</Alert>
           ) : null}
           <Button type="submit" variant="secondary" disabled={isSubmitting}>
-            {isSubmitting ? <Spinner animation="border" /> : 'Vaihda salasana'}
+            {isSubmitting ? <Spinner animation="border" /> : 'Change Password'}
           </Button>
         </Form>
       )}

@@ -25,19 +25,19 @@ const EditorToolbar = ({ onSubmitClick }: Props) => {
     <>
       <h1>
         {isNew
-          ? 'Luo uusi tapahtuma'
-          : 'Muokkaa tapahtumaa'}
+          ? 'Create a new event'
+          : 'Edit the event'}
       </h1>
       <div className="event-editor--buttons-wrapper">
         <div className="flex-fill">
-          <Link to={appPaths.adminEventsList}>&#8592; Takaisin</Link>
+          <Link to={appPaths.adminEventsList}>&#8592; Back</Link>
         </div>
         {isSubmitting && <Spinner animation="border" />}
         <div className="event-editor--public-status">
           <div className={`event-editor--bubble ${isDraft ? 'draft' : 'public'} event-editor--animated`} />
           <span>
-            {isDraft ? 'Luonnos' : (
-              <Link to={appPaths.eventDetails(event!.slug)} target="_blank">Julkaistu</Link>
+            {isDraft ? 'Draft' : (
+              <Link to={appPaths.eventDetails(event!.slug)} target="_blank">Published</Link>
             )}
           </span>
         </div>
@@ -50,7 +50,7 @@ const EditorToolbar = ({ onSubmitClick }: Props) => {
               formNoValidate
               onClick={() => onSubmitClick(!isDraft)}
             >
-              {isDraft ? 'Julkaise' : 'Muuta luonnokseksi'}
+              {isDraft ? 'Publish' : 'Change in the draft'}
             </Button>
           )}
           <Button
@@ -60,7 +60,7 @@ const EditorToolbar = ({ onSubmitClick }: Props) => {
             formNoValidate
             onClick={() => onSubmitClick(isDraft)}
           >
-            {isNew ? 'Tallenna luonnoksena' : 'Tallenna muutokset'}
+            {isNew ? 'Save as a draft' : 'save the changes'}
           </Button>
         </ButtonGroup>
       </div>

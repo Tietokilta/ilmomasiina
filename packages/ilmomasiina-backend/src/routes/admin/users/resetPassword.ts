@@ -39,8 +39,8 @@ export default async function resetPassword(
 
       await EmailService.sendResetPasswordMail(existing.email, {
         fields: [
-          { label: 'Sähköposti', answer: existing.email },
-          { label: 'Uusi salasana', answer: newPassword },
+          { label: 'E-mail', answer: existing.email },
+          { label: 'New password', answer: newPassword },
         ],
       });
     }

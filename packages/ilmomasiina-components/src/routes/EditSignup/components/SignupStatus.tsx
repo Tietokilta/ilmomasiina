@@ -12,7 +12,7 @@ const SignupStatus = () => {
   if (status === 'in-quota') {
     return (
       <p>
-        {`Olet kiintiössä ${quota.title} sijalla ${position}${quota.size ? ` / ${quota.size}` : ''}.`}
+        {`You are in the quota ${quota.title} in place ${position}${quota.size ? ` / ${quota.size}` : ''}.`}
       </p>
     );
   }
@@ -20,14 +20,14 @@ const SignupStatus = () => {
   if (status === 'in-open') {
     return (
       <p>
-        {`Olet avoimessa kiintiössä sijalla ${position} / ${openQuotaSize}.`}
+        {`You are ranked in an open quota ${position} / ${openQuotaSize}.`}
       </p>
     );
   }
 
   return (
     <p>
-      {`Olet jonossa sijalla ${position}.`}
+      {`You are in the queue in place ${position}.`}
     </p>
   );
 };

@@ -25,9 +25,9 @@ const Login = () => {
 
   return (
     <div className="login-container">
-      <h1>Kirjaudu</h1>
+      <h1>Log in</h1>
       {loginError && (
-        <p className="text-invalid">Kirjautuminen epäonnistui</p>
+        <p className="text-invalid">Login failed</p>
       )}
       <Formik
         initialValues={{
@@ -39,21 +39,21 @@ const Login = () => {
         {({ handleSubmit, isSubmitting, errors }) => (
           <Form onSubmit={handleSubmit} className="ilmo--form">
             <Form.Group controlId="email">
-              <Form.Label data-required>Sähköposti</Form.Label>
+              <Form.Label data-required>E-mail</Form.Label>
               <Field
                 name="email"
                 as={Form.Control}
                 type="email"
                 required
-                placeholder="admin@athene.fi"
+                placeholder="admin@dg.fi"
                 isInvalid={errors.email}
               />
               <Form.Control.Feedback type="invalid">
-                {errors.email && 'Tämä kenttä vaaditaan'}
+                {errors.email && 'This field is required'}
               </Form.Control.Feedback>
             </Form.Group>
             <Form.Group controlId="password">
-              <Form.Label data-required>Salasana</Form.Label>
+              <Form.Label data-required>Password</Form.Label>
               <Field
                 name="password"
                 as={Form.Control}
@@ -63,11 +63,11 @@ const Login = () => {
                 isInvalid={errors.password}
               />
               <Form.Control.Feedback type="invalid">
-                {errors.password && 'Tämä kenttä vaaditaan'}
+                {errors.password && 'This field is required'}
               </Form.Control.Feedback>
             </Form.Group>
             <Button type="submit" variant="secondary" disabled={isSubmitting}>
-              Kirjaudu
+              Sign in
             </Button>
           </Form>
         )}

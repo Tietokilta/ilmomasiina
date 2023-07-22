@@ -40,29 +40,29 @@ export interface SignupStateText {
 }
 
 export function signupStateText(state: SignupStateInfo): SignupStateText {
-  const timeFormat = 'D.M.Y [klo] HH:mm';
+  const timeFormat = 'D.M.Y [at] HH:mm';
 
   switch (state.state) {
     case SignupState.disabled:
       return {
-        shortLabel: 'Tapahtumaan ei voi ilmoittautua.',
+        shortLabel: 'You cannot sign-up for the event.',
         class: 'ilmo--signup-disabled',
       };
     case SignupState.not_opened:
       return {
-        shortLabel: `Alkaa ${moment(state.opens).format(timeFormat)}.`,
-        fullLabel: `Ilmoittautuminen alkaa ${moment(state.opens).format(timeFormat)}.`,
+        shortLabel: `Start ${moment(state.opens).format(timeFormat)}.`,
+        fullLabel: `Registration opens ${moment(state.opens).format(timeFormat)}.`,
         class: 'ilmo--signup-not-opened',
       };
     case SignupState.open:
       return {
-        shortLabel: `Auki ${moment(state.closes).format(timeFormat)} asti.`,
-        fullLabel: `Ilmoittautuminen auki ${moment(state.closes).format(timeFormat)} asti.`,
+        shortLabel: `Registration closes ${moment(state.closes).format(timeFormat)}.`,
+        fullLabel: `Registration is open until ${moment(state.closes).format(timeFormat)}.`,
         class: 'ilmo--signup-opened',
       };
     case SignupState.closed:
       return {
-        shortLabel: 'Ilmoittautuminen on päättynyt.',
+        shortLabel: 'Registration has closed.',
         class: 'ilmo--signup-closed',
       };
     default:

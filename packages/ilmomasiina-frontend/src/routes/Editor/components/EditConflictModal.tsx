@@ -71,25 +71,25 @@ const EditConflictModal = () => {
       backdrop="static"
     >
       <Modal.Header>
-        <Modal.Title>Päällekkäinen muokkaus</Modal.Title>
+        <Modal.Title>Overlapping editing</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <p>
-          Toinen käyttäjä tai välilehti on muokannut tätä tapahtumaa
+          This event has been edited by another user or tab
           {' '}
           <strong>
             {modal && moment(modal.updatedAt)
               .tz(TIMEZONE)
               .format('DD.MM.YYYY HH:mm:ss')}
           </strong>
-          {deletedQuotas.length || deletedQuestions.length ? ' ja poistanut seuraavat kiintiöt tai kysymykset:' : '.'}
+          {deletedQuotas.length || deletedQuestions.length ? ' and removed the following quotas or questions:' : '.'}
         </p>
         <ul>
           {questions
             .filter((question) => question.id && deletedQuestions.includes(question.id))
             .map((question) => (
               <li key={question.key}>
-                <strong>Kysymys: </strong>
+                <strong>Question: </strong>
                 {question.question}
               </li>
             ))}
@@ -97,20 +97,20 @@ const EditConflictModal = () => {
             .filter((quota) => quota.id && deletedQuotas.includes(quota.id))
             .map((quota) => (
               <li key={quota.key}>
-                <strong>Kiintiö: </strong>
+                <strong>Quota: </strong>
                 {quota.title}
               </li>
             ))}
         </ul>
         <p>
-          Voit tallentaa tapahtuman ja ylikirjoittaa toisen käyttäjän muutokset, tai hylätä tekemäsi
-          muutokset ja jatkaa toisen käyttäjän muokkaamasta tapahtumasta.
+          You can save the event and overwrite the changes of another user, or reject the changes 
+          you make and continue from the event edited by another user.        
         </p>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="muted" onClick={() => dispatch(editConflictDismissed())}>Peruuta</Button>
-        <Button variant="secondary" onClick={revert}>Hylkää muutokset</Button>
-        <Button variant="warning" onClick={overwrite}>Ylikirjoita</Button>
+        <Button variant="secondary" onClick={revert}>Reject changes</Button>
+        <Button variant="warning" onClick={overwrite}>Overtime</Button>
       </Modal.Footer>
     </Modal>
   );

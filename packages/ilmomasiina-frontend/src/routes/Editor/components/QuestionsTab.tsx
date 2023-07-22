@@ -13,30 +13,30 @@ const QuestionsTab = () => {
     <div>
       <FieldRow
         name="nameQuestion"
-        label="Nimi"
+        label="Name"
         as={Form.Check}
         type="checkbox"
         checkAlign
-        checkLabel="Kerää nimet"
+        checkLabel="Collect the names"
         help={
           nameQuestion
-            ? 'Nimi on pakollinen kysymys. Osallistuja saa päättää, näkyykö nimi julkisesti.'
-            : 'Jos nimi kysytään, osallistuja saa päättää, näkyykö nimi julkisesti.'
+            ? 'The name is a mandatory question. The participant may decide whether the name is publicly visible.'
+            : 'If the name is asked, the participant may decide whether the name is publicly visible.'
         }
       />
       <FieldRow
         name="emailQuestion"
-        label="Sähköposti"
+        label="Email"
         as={Form.Check}
         type="checkbox"
         checkAlign
-        checkLabel="Kerää sähköpostiosoitteet"
+        checkLabel="Collect email addresses"
         help={
           emailQuestion
-            ? 'Sähköpostiosoite on pakollinen kysymys. Osallistujille lähetetään vahvistussähköposti ja '
-              + 'sähköposti-ilmoitus jonosijalta pääsemisestä.'
-            : 'Jos sähköpostiosoitetta ei kysytä, osallistujat eivät saa vahvistussähköpostia tai '
-              + 'sähköposti-ilmoitusta jonosijalta pääsemisestä.'
+            ? 'Email address is a required question. Participants will be sent a confirmation' + 
+            ' e-mail and an e-mail notification about getting out of the queue.'
+            : 'If the email address is not asked, participants will not receive confirmation' + 
+            ' email or email notification about getting out of the queue.'
         }
       />
       <Questions />

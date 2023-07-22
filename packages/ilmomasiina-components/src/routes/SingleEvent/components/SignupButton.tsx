@@ -32,7 +32,7 @@ const SignupButton = ({
   const onClick = useCallback(async (quotaId: QuotaID) => {
     if (!isOpen) return;
     setSubmitting(true);
-    const progressToast = toast.loading('Ilmoittautuminen käynnissä');
+    const progressToast = toast.loading('Registration in progress');
     try {
       const response = await beginSignup(quotaId);
       setSubmitting(false);
@@ -41,7 +41,7 @@ const SignupButton = ({
     } catch (e) {
       setSubmitting(false);
       toast.update(progressToast, {
-        render: 'Ilmoittautuminen epäonnistui.',
+        render: 'Registration failed.',
         type: toast.TYPE.ERROR,
         autoClose: 5000,
         closeButton: true,
@@ -53,7 +53,7 @@ const SignupButton = ({
 
   return (
     <div className="ilmo--side-widget">
-      <h3>Ilmoittautuminen</h3>
+      <h3>Registration</h3>
       <p>
         {signupStateText(eventState).shortLabel}
         {total < COUNTDOWN_DURATION && !isOpen && !isClosed && (
@@ -71,7 +71,7 @@ const SignupButton = ({
           className="ilmo--signup-button"
           onClick={() => onClick(quota.id)}
         >
-          {isOnly ? 'Ilmoittaudu nyt' : `Ilmoittaudu: ${quota.title}`}
+          {isOnly ? 'Sign up now' : `Sign up: ${quota.title}`}
         </Button>
       ))}
     </div>

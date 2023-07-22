@@ -19,21 +19,21 @@ const MoveToQueueWarning = ({ onProceed }: Props) => {
       onHide={() => dispatch(moveToQueueCanceled())}
     >
       <Modal.Header>
-        <Modal.Title>Siirretäänkö ilmoittautumisia jonoon?</Modal.Title>
+        <Modal.Title>Do you move sign-ups to the queue?</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <p>
-          {'Tekemäsi muutokset kiintiöihin siirtävät vähintään '}
+          {'The changes you make to the quotas will move at least '}
           {modal?.count || '?'}
-          {' jo kiintiöön päässyttä ilmoittautumista jonoon. Käyttäjille ei ilmoiteta tästä automaattisesti.'}
+          {' sign-ups that have already reached the quota to the queue. Users are not notified of this automatically.'}
         </p>
         <p>
-          Haluatko varmasti jatkaa?
+          You will surely want to continue?
         </p>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="muted" onClick={() => dispatch(moveToQueueCanceled())}>Peruuta</Button>
-        <Button variant="danger" onClick={onProceed}>Jatka</Button>
+        <Button variant="muted" onClick={() => dispatch(moveToQueueCanceled())}>Cancel</Button>
+        <Button variant="danger" onClick={onProceed}>Jack</Button>
       </Modal.Footer>
     </Modal>
   );

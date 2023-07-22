@@ -26,14 +26,14 @@ const EditForm = () => {
   const [submitError, setSubmitError] = useState(false);
 
   async function onSubmit(answers: SignupUpdateBody, { setSubmitting }: FormikHelpers<SignupUpdateBody>) {
-    const action = isNew ? 'Ilmoittautuminen' : 'Muokkaus';
-    const progressToast = toast.loading(`${action} käynnissä`);
+    const action = isNew ? 'Registration' : 'Adaptation';
+    const progressToast = toast.loading(`${action} in progress`);
 
     try {
       await updateSignup(answers);
 
       toast.update(progressToast, {
-        render: `${action} onnistui!`,
+        render: `${action} succeeded!`,
         type: toast.TYPE.SUCCESS,
         autoClose: 5000,
         closeButton: true,
@@ -47,7 +47,7 @@ const EditForm = () => {
       }
     } catch (error) {
       toast.update(progressToast, {
-        render: `${action} ei onnistunut. Tarkista, että kaikki pakolliset kentät on täytetty ja yritä uudestaan.`,
+        render: `${action} did not work. Check that all mandatory fields are filled and try again.`,
         type: toast.TYPE.ERROR,
         autoClose: 5000,
         closeButton: true,
@@ -66,15 +66,15 @@ const EditForm = () => {
     >
       {({ handleSubmit, isSubmitting }) => (
         <NarrowContainer>
-          <h2>{isNew ? 'Ilmoittaudu' : 'Muokkaa ilmoittautumista'}</h2>
+          <h2>{isNew ? 'Sign up' : 'Edit sign-up'}</h2>
           <SignupStatus />
           {submitError && (
-            <p className="ilmo--form-error">Ilmoittautumisessasi on virheitä.</p>
+            <p className="ilmo--form-error">There are errors in your sign-up.</p>
           )}
           {registrationClosed && (
             <p className="ilmo--form-error">
-              Ilmoittautumistasi ei voi enää muokata tai perua, koska tapahtuman
-              ilmoittautuminen on sulkeutunut.
+              Your registration can no longer be edited or canceled because the event 
+              registration has closed.
             </p>
           )}
           <Form onSubmit={handleSubmit} className="ilmo--form">
@@ -82,15 +82,15 @@ const EditForm = () => {
               <>
                 <FieldRow
                   name="firstName"
-                  label="Etunimi / First name"
-                  placeholder="Etunimi"
+                  label="First name"
+                  placeholder="First name"
                   required
                   readOnly={!isNew || registrationClosed}
                 />
                 <FieldRow
                   name="lastName"
-                  label="Sukunimi / Last name"
-                  placeholder="Sukunimi"
+                  label="Last name"
+                  placeholder="Last name"
                   required
                   readOnly={!isNew || registrationClosed}
                 />
@@ -102,8 +102,6 @@ const EditForm = () => {
                   checkAlign
                   checkLabel={(
                     <>
-                      Näytä nimi julkisessa osallistujalistassa
-                      <br />
                       Show name in public participant list
                     </>
                   )}
@@ -113,8 +111,8 @@ const EditForm = () => {
             {event!.emailQuestion && (
               <FieldRow
                 name="email"
-                label="Sähköposti / Email"
-                placeholder="Sähköpostisi"
+                label="E-mail"
+                placeholder="E-mail"
                 required
                 readOnly={!isNew || registrationClosed}
               />
@@ -124,8 +122,8 @@ const EditForm = () => {
 
             {!registrationClosed && (
               <p>
-                Voit muokata ilmoittautumistasi tai poistaa sen myöhemmin tallentamalla tämän sivun URL-osoitteen.
-                {event!.emailQuestion && ' Linkki lähetetään myös sähköpostiisi vahvistusviestissä.'}
+                You can edit your registration or delete it later by saving the URL of this page.
+                {event!.emailQuestion && ' The link will also be sent to your email in confirmation message.'}
               </p>
             )}
 
@@ -133,11 +131,11 @@ const EditForm = () => {
               <nav className="ilmo--submit-buttons">
                 {!isNew && (
                   <Button as={Link} variant="link" to={paths.eventDetails(event!.slug)}>
-                    Peruuta
+                    Cancel
                   </Button>
                 )}
                 <Button type="submit" variant="primary" formNoValidate disabled={isSubmitting}>
-                  {isNew ? 'Lähetä' : 'Päivitä'}
+                  {isNew ? 'Send' : 'Update'}
                 </Button>
               </nav>
             )}

@@ -19,11 +19,11 @@ type Props = {
 };
 
 const TABS: [EditorTab, string][] = [
-  [EditorTab.BASIC_DETAILS, 'Perustiedot'],
-  [EditorTab.QUOTAS, 'Ilmoittautumisasetukset'],
-  [EditorTab.QUESTIONS, 'Kysymykset'],
-  [EditorTab.EMAILS, 'Vahvistusviestit'],
-  [EditorTab.SIGNUPS, 'Ilmoittautuneet'],
+  [EditorTab.BASIC_DETAILS, 'Basic Details'],
+  [EditorTab.QUOTAS, 'Registration settings'],
+  [EditorTab.QUESTIONS, 'Questions'],
+  [EditorTab.EMAILS, 'Confirmation messages'],
+  [EditorTab.SIGNUPS, 'Sign-ups'],
 ];
 
 const EditorTabHeader = ({ activeTab, setActiveTab }: Props) => {

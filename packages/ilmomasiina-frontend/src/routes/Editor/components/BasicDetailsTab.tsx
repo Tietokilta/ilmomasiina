@@ -59,14 +59,14 @@ const BasicDetailsTab = () => {
 
   let slugFeedback = null;
   if (slugAvailability === 'checking') {
-    slugFeedback = <Form.Text>Tarkistetaan saatavuutta&hellip;</Form.Text>;
+    slugFeedback = <Form.Text>Checking availability&hellip;</Form.Text>;
   } else if (slugAvailability !== null) {
     if (slugAvailability.id === null || slugAvailability.id === event?.id) {
-      slugFeedback = <Form.Text className="text-success">URL-osoite vapaa!</Form.Text>;
+      slugFeedback = <Form.Text className="text-success">URL Free!</Form.Text>;
     } else {
       slugFeedback = (
         <Form.Text className="text-danger">
-          {'URL-osoite on jo käytössä tapahtumalla '}
+          {'URL is already in use with an event '}
           {slugAvailability.title}
         </Form.Text>
       );
@@ -77,84 +77,84 @@ const BasicDetailsTab = () => {
     <div>
       <FieldRow
         name="title"
-        label="Tapahtuman nimi"
+        label="Name of the event"
         required
-        alternateError="* Otsikko vaaditaan."
+        alternateError="* Title is required."
       />
       <FieldRow
         name="slug"
-        label="Tapahtuman URL"
+        label="The event url"
         required
-        alternateError="* URL-pääte vaaditaan."
+        alternateError="* URL terminal is required."
         extraFeedback={slugFeedback}
         as={SlugField}
       />
       <FieldRow
         name="listed"
-        label="Julkisuus"
+        label="Publicity"
         as={Form.Check}
         type="checkbox"
         checkAlign
-        checkLabel="Näytä tapahtumalistassa"
+        checkLabel="Show on the event list"
         help={
-          'Piilotettuihin tapahtumiin pääsee vain URL-osoitteella. Luonnoksena tallennettuja tapahtumia ei voi '
-          + 'katsella käyttäjänä riippumatta tästä asetuksesta.'
+          'Hidden events can only be accessed by URL. Events saved as a draft cannot be viewed as' + 
+          ' a user regardless of this setting.'
         }
       />
       <FieldRow
         name="eventType"
-        label="Tapahtuman tyyppi"
+        label="Event Type"
         as={SelectBox}
         options={[
-          [EditorEventType.ONLY_EVENT, 'Tapahtuma ilman ilmoittautumista'],
-          [EditorEventType.EVENT_WITH_SIGNUP, 'Tapahtuma ja ilmoittautuminen'],
-          [EditorEventType.ONLY_SIGNUP, 'Ilmoittautuminen ilman tapahtumaa'],
+          [EditorEventType.ONLY_EVENT, 'An event without Sign-ups'],
+          [EditorEventType.EVENT_WITH_SIGNUP, 'Event and Sign-ups'],
+          [EditorEventType.ONLY_SIGNUP, 'Sign-ups without an event'],
         ]}
       />
       {eventType !== EditorEventType.ONLY_SIGNUP && (
         <FieldRow
           name="date"
-          label="Alkuaika"
+          label="Start time"
           as={DateTimePicker}
           selectsStart
           endDate={endDate}
           required
-          alternateError="* Alkuaika vaaditaan."
+          alternateError="* The start time is required."
         />
       )}
       {eventType !== EditorEventType.ONLY_SIGNUP && (
         <FieldRow
           name="endDate"
-          label="Loppuaika"
+          label="End Date"
           as={DateTimePicker}
           selectsEnd
           startDate={date}
-          help="Tapahtuma näkyy kalenteriviennissä vain, jos sille on asetettu loppuaika."
+          help="The event will only be displayed in calendar exports if it has been set for the rest of the time."
         />
       )}
       <FieldRow
         name="category"
-        label="Kategoria"
+        label="Category"
         as={Autocomplete}
         options={allCategories || []}
         busy={allCategories === null}
       />
       <FieldRow
         name="webpageUrl"
-        label="Kotisivujen osoite"
+        label="Address of the website"
       />
       <FieldRow
         name="facebookUrl"
-        label="Facebook-tapahtuma"
+        label="Facebook event"
       />
       <FieldRow
         name="location"
-        label="Paikka"
+        label="Location"
       />
       <FieldRow
         name="description"
-        label="Kuvaus"
-        help="Kuvauksessa voi käyttää Markdownia."
+        label="Description"
+        help="Markdown can be used in the description."
         as={Textarea}
         rows={8}
       />

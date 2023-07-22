@@ -7,7 +7,7 @@ const EmailsTab = () => (
   <FieldRow
     name="verificationEmail"
     as={Textarea}
-    label="Vahvistusviesti sähköpostiin"
+    label="Verification Email"
     rows={10}
   />
 );

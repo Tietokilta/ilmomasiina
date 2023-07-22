@@ -24,8 +24,8 @@ const AdminEventsList = () => {
   if (eventsLoadError) {
     return (
       <>
-        <h1>Hups, jotain meni pieleen</h1>
-        <p>Tapahtumien lataus epäonnistui</p>
+        <h1>Oops, something went wrong</h1>
+        <p>Failed to load events</p>
       </>
     );
   }
@@ -33,7 +33,7 @@ const AdminEventsList = () => {
   if (!events) {
     return (
       <>
-        <h1>Hallinta</h1>
+        <h1>Controls</h1>
         <Spinner animation="border" />
       </>
     );
@@ -42,25 +42,25 @@ const AdminEventsList = () => {
   return (
     <>
       <nav className="ilmo--title-nav">
-        <h1>Hallinta</h1>
+        <h1>Controls</h1>
         <Button as={Link} variant="secondary" to={appPaths.adminUsersList}>
-          Käyttäjät
+          Users
         </Button>
         <Button as={Link} variant="secondary" to={appPaths.adminAuditLog}>
-          Toimintoloki
+          Activity log
         </Button>
         <Button as={Link} variant="primary" to={appPaths.adminEditEvent('new')}>
-          + Uusi tapahtuma
+          + New event
         </Button>
       </nav>
       <table className="table">
         <thead>
           <tr>
-            <th>Nimi</th>
-            <th>Ajankohta</th>
-            <th>Tila</th>
-            <th>Ilmoittautuneita</th>
-            <th>Toiminnot</th>
+            <th>Name</th>
+            <th>Time</th>
+            <th>Status</th>
+            <th>Sign-ups</th>
+            <th>Activities</th>
           </tr>
         </thead>
         <tbody>

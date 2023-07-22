@@ -73,13 +73,13 @@ const Editor = () => {
       if (isNew) {
         saved = await dispatch(publishNewEvent(modifiedEvent));
         history.push(appPaths.adminEditEvent(saved.id));
-        toast.success('Tapahtuma luotiin onnistuneesti!', {
+        toast.success('The event was successfully created!', {
           autoClose: 2000,
         });
       } else {
         saved = await dispatch(publishEventUpdate(event!.id, modifiedEvent, moveToQueue));
         if (saved) {
-          toast.success('Muutoksesi tallennettiin onnistuneesti!', {
+          toast.success('Your changes were successfully recorded!', {
             autoClose: 2000,
           });
         }
@@ -93,7 +93,7 @@ const Editor = () => {
       }
     } catch (error) {
       toast.error(
-        'Jotain meni pieleen - tapahtuman päivittäminen epäonnistui.',
+        'Something went wrong - updating the event failed.',
         { autoClose: 2000 },
       );
     }
@@ -104,8 +104,8 @@ const Editor = () => {
     return (
       <div className="ilmo--loading-container">
         <h1>Hups, jotain meni pieleen</h1>
-        <p>{`Tapahtumaa id:llä "${urlEventId}" ei löytynyt`}</p>
-        <Link to={appPaths.adminEventsList}>Palaa tapahtumalistaukseen</Link>
+        <p>{`Event with ID "${urlEventId}" was not found`}</p>
+        <Link to={appPaths.adminEventsList}>Return to the event list</Link>
       </div>
     );
   }
@@ -113,8 +113,8 @@ const Editor = () => {
   if (!urlIsNew && !event) {
     return (
       <>
-        <h1>Muokkaa tapahtumaa</h1>
-        <Link to={appPaths.adminEventsList}>&#8592; Takaisin</Link>
+        <h1>Edit an event</h1>
+        <Link to={appPaths.adminEventsList}>&#8592; Back</Link>
         <div className="ilmo--loading-container">
           <Spinner animation="border" />
         </div>

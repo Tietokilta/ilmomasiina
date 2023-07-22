@@ -15,41 +15,41 @@ const QuotasTab = () => {
       <FieldRow
         name="registrationStartDate"
         as={DateTimePicker}
-        label="Ilmo alkaa"
+        label="Registration begins"
         required
       />
       <FieldRow
         name="registrationEndDate"
         as={DateTimePicker}
-        label="Ilmo päättyy"
+        label="Registration ends"
         required
       />
       <FieldRow
         name="signupsPublic"
-        label="Julkisuus"
+        label="Publicity"
         as={Form.Check}
         type="checkbox"
         checkAlign
-        checkLabel="Ilmoittautumiset ovat julkisia"
+        checkLabel="Registrations are public"
       />
       <hr />
       <Quotas />
       <FieldRow
         name="useOpenQuota"
-        label="Avoin kiintiö"
+        label="Open quota"
         as={Form.Check}
         type="checkbox"
         checkAlign
-        checkLabel="Käytä lisäksi yhteistä kiintiötä"
+        checkLabel="In addition, use a common quota"
         help={
-          'Avoimeen kiintiöön sijoitetaan automaattisesti ilmoittautumisjärjestyksessä ensimmäiset ilmoittautujat, '
-          + 'jotka eivät mahdu valitsemaansa kiintiöön.'
+          'The open quota will automatically place the' + 
+          ' first registrants in the order of registration that cannot fit into the quota of their choice.'
         }
       />
       {useOpenQuota && (
         <FieldRow
           name="openQuotaSize"
-          label="Avoimen kiintiön koko"
+          label="The size of the open quota"
           type="number"
           min="0"
           required

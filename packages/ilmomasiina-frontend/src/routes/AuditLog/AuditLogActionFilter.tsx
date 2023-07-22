@@ -7,16 +7,16 @@ import { setAuditLogQueryField } from '../../modules/auditLog/actions';
 import { useTypedDispatch } from '../../store/reducers';
 
 const ACTIONS = [
-  [AuditEvent.CREATE_EVENT, 'Tapahtuma: Luo'],
-  [AuditEvent.EDIT_EVENT, 'Tapahtuma: Muokkaa'],
-  [AuditEvent.PUBLISH_EVENT, 'Tapahtuma: Julkaise'],
-  [AuditEvent.UNPUBLISH_EVENT, 'Tapahtuma: Luonnokseksi'],
-  [AuditEvent.DELETE_EVENT, 'Tapahtuma: Poista'],
-  [AuditEvent.EDIT_SIGNUP, 'Ilmoittautuminen: Muokkaa'],
-  [AuditEvent.DELETE_SIGNUP, 'Ilmoittautuminen: Poista'],
-  [AuditEvent.PROMOTE_SIGNUP, 'Ilmoittautuminen: Nousi jonosta'],
-  [AuditEvent.CREATE_USER, 'Käyttäjä: Luo'],
-  [AuditEvent.DELETE_USER, 'Käyttäjä: Poista'],
+  [AuditEvent.CREATE_EVENT, 'Event: Create'],
+  [AuditEvent.EDIT_EVENT, 'Event: Edit'],
+  [AuditEvent.PUBLISH_EVENT, 'Event: Publish'],
+  [AuditEvent.UNPUBLISH_EVENT, 'Event: Un-publish'],
+  [AuditEvent.DELETE_EVENT, 'Event: Delete'],
+  [AuditEvent.EDIT_SIGNUP, 'Sign-up: Edit'],
+  [AuditEvent.DELETE_SIGNUP, 'Sign-up: Delete'],
+  [AuditEvent.PROMOTE_SIGNUP, 'Sign-up: Promote'],
+  [AuditEvent.CREATE_USER, 'User: Create'],
+  [AuditEvent.DELETE_USER, 'User: Delete'],
 ];
 
 const AuditLogActionFilter = () => {
@@ -33,7 +33,7 @@ const AuditLogActionFilter = () => {
       as="select"
       onChange={onChange}
     >
-      <option value="">Toiminto&hellip;</option>
+      <option value="">Function&hellip;</option>
       {ACTIONS.map(([key, label]) => (
         <option value={key} key={key}>{label}</option>
       ))}

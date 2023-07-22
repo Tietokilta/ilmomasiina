@@ -8,13 +8,13 @@ const QuotaStatus = () => {
   const { event, signupsByQuota } = useSingleEventContext();
   return (
     <div className="ilmo--side-widget">
-      <h3>Ilmoittautuneet</h3>
+      <h3>Sign-ups</h3>
       {signupsByQuota!.map((quota) => {
         if (quota.id === OPENQUOTA) {
           return (
             <QuotaProgress
               key={quota.id}
-              title="Avoin"
+              title="Open"
               value={quota.signupCount}
               max={event!.openQuotaSize}
             />
@@ -22,7 +22,7 @@ const QuotaStatus = () => {
         }
         if (quota.id === WAITLIST) {
           if (quota.signupCount > 0) {
-            return <p key={quota.id}>{`Jonossa: ${quota.signupCount}`}</p>;
+            return <p key={quota.id}>{`In queue: ${quota.signupCount}`}</p>;
           }
           return null;
         }

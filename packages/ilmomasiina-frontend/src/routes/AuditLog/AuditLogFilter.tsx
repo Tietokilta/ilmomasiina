@@ -21,7 +21,7 @@ const AuditLogFilter = ({ name, ...props }: Props) => {
   }, UPDATE_DELAY);
 
   const mergedProps = {
-    placeHolder: 'Suodata\u2026',
+    placeHolder: 'Filter\u2026',
     ...props,
   };
 

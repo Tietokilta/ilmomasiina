@@ -61,12 +61,12 @@ const Quotas = () => {
         <Col xs="12" sm="10">
           <FieldRow
             name={`quota-${quota.key}-title`}
-            label="Kiintiön nimi"
+            label="Quota name"
             help={
               (quotas.length === 1
-                ? 'Jos kiintiöitä on vain yksi, voit antaa sen nimeksi esim. tapahtuman nimen. '
+                ? 'If there is only one quota, you can name it, for example, the name of the event. '
                 : '')
-                + (index === 0 ? 'Voit järjestellä kiintiöitä raahaamalla niitä vasemmalta.' : '')
+                + (index === 0 ? 'You can arrange quotas by dragging them from the left.' : '')
             }
             required
           >
@@ -79,8 +79,8 @@ const Quotas = () => {
           </FieldRow>
           <FieldRow
             name={`quota-${quota.key}-max-attendees`}
-            label="Kiintiön koko"
-            help="Jos kiintiön kokoa ei ole rajoitettu, jätä kenttä tyhjäksi."
+            label="Quota size"
+            help="If the quota size is not limited, leave the field blank."
           >
             <Form.Control
               type="number"
@@ -94,7 +94,7 @@ const Quotas = () => {
         {index > 0 && (
           <Col xs="12" sm="2" className="no-focus">
             <Button type="button" variant="danger" onClick={removeQuota}>
-              Poista kiintiö
+              Remove the quota
             </Button>
           </Col>
         )}
@@ -112,7 +112,7 @@ const Quotas = () => {
       />
       <div className="text-center mb-3">
         <Button type="button" variant="primary" onClick={addQuota}>
-          Lisää kiintiö
+          Add quota
         </Button>
       </div>
     </>

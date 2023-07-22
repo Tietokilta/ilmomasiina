@@ -8,10 +8,10 @@ const PageNotFound = () => (
   <div className="ilmo--status-container">
     <h1>404</h1>
     <p>
-      Sivua ei löydy.
+      Page not found.
     </p>
     <p>
-      <Link to={appPaths.eventsList}>Palaa tapahtumalistaukseen</Link>
+      <Link to={appPaths.eventsList}>Return to the event list</Link>
     </p>
   </div>
 );

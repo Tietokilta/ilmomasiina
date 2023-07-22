@@ -12,18 +12,18 @@ type Props = {
 };
 
 const ACTION_STRINGS: Record<AuditEvent, string> = {
-  [AuditEvent.CREATE_EVENT]: 'loi tapahtuman ',
-  [AuditEvent.EDIT_EVENT]: 'muokkasi tapahtumaa ',
-  [AuditEvent.PUBLISH_EVENT]: 'julkaisi tapahtuman ',
-  [AuditEvent.UNPUBLISH_EVENT]: 'palautti luonnokseksi tapahtuman ',
-  [AuditEvent.DELETE_EVENT]: 'poisti tapahtuman ',
-  [AuditEvent.EDIT_SIGNUP]: 'muokkasi ilmoa ',
-  [AuditEvent.DELETE_SIGNUP]: 'poisti ilmon ',
-  [AuditEvent.PROMOTE_SIGNUP]: 'ilmo nousi jonosta: ',
-  [AuditEvent.CREATE_USER]: 'loi käyttäjän ',
-  [AuditEvent.DELETE_USER]: 'poisti käyttäjän ',
-  [AuditEvent.RESET_PASSWORD]: 'nollasi salasanan käyttäjälle ',
-  [AuditEvent.CHANGE_PASSWORD]: 'vaihtoi salasanansa',
+  [AuditEvent.CREATE_EVENT]: 'created an event ',
+  [AuditEvent.EDIT_EVENT]: 'edited the event ',
+  [AuditEvent.PUBLISH_EVENT]: 'published the event ',
+  [AuditEvent.UNPUBLISH_EVENT]: 'unpublished the event ',
+  [AuditEvent.DELETE_EVENT]: 'deleted the event ',
+  [AuditEvent.EDIT_SIGNUP]: 'edited the sign-up ',
+  [AuditEvent.DELETE_SIGNUP]: 'deleted the sign-up ',
+  [AuditEvent.PROMOTE_SIGNUP]: 'promoted the sign-up: ',
+  [AuditEvent.CREATE_USER]: 'created the user ',
+  [AuditEvent.DELETE_USER]: 'removed the user ',
+  [AuditEvent.RESET_PASSWORD]: 'reset the password to the user ',
+  [AuditEvent.CHANGE_PASSWORD]: 'changed their password',
 };
 
 function describeAction(item: AuditLogItemSchema) {
@@ -48,7 +48,7 @@ function describeAction(item: AuditLogItemSchema) {
     case AuditEvent.PROMOTE_SIGNUP:
       return (
         <>
-          {`${ACTION_STRINGS[item.action]}${item.signupId} (${item.signupName}) tapahtumassa `}
+          {`${ACTION_STRINGS[item.action]}${item.signupId} (${item.signupName}) at the event `}
           {item.eventId && <Link to={appPaths.adminEditEvent(item.eventId)}>{item.eventName}</Link>}
         </>
       );
@@ -57,7 +57,7 @@ function describeAction(item: AuditLogItemSchema) {
     case AuditEvent.RESET_PASSWORD:
       return `${ACTION_STRINGS[item.action]}${extra.email}`;
     default:
-      return ACTION_STRINGS[item.action] ?? `tuntematon toiminto ${item.action}`;
+      return ACTION_STRINGS[item.action] ?? `unknown ${item.action}`;
   }
 }
 

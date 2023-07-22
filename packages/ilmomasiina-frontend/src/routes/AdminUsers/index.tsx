@@ -28,8 +28,8 @@ const AdminUsersList = () => {
   if (usersLoadError) {
     return (
       <>
-        <h1>Hups, jotain meni pieleen</h1>
-        <p>Käyttäjien lataus epäonnistui</p>
+        <h1>Oops, something went wrong</h1>
+        <p>Users' download failed</p>
       </>
     );
   }
@@ -42,8 +42,8 @@ const AdminUsersList = () => {
         <table className="table">
           <thead>
             <tr>
-              <th>Sähköposti</th>
-              <th>Toiminnot</th>
+              <th>E-mail</th>
+              <th>Activities</th>
             </tr>
           </thead>
           <tbody>
@@ -56,9 +56,9 @@ const AdminUsersList = () => {
           </tbody>
         </table>
 
-        <h1>Luo uusi käyttäjä</h1>
+        <h1>Create a new user</h1>
         <UserForm />
-        <h1>Vaihda salasanasi</h1>
+        <h1>Change your password</h1>
         <ChangePasswordForm />
       </>
     );
@@ -66,8 +66,8 @@ const AdminUsersList = () => {
 
   return (
     <>
-      <Link to={appPaths.adminEventsList}>&#8592; Takaisin</Link>
-      <h1>Käyttäjien hallinta</h1>
+      <Link to={appPaths.adminEventsList}>&#8592; Back</Link>
+      <h1>User control</h1>
       {content}
     </>
   );

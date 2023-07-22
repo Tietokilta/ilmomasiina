@@ -29,13 +29,13 @@ const AuditLogPagination = () => {
       >
         &laquo;
       </Button>
-      {'Rivit\u00A0'}
+      {'Ranks\u00A0'}
       <Form.Control
         type="number"
         value={value + 1}
         onChange={onChange}
       />
-      {`\u2013${value + LOGS_PER_PAGE}, yhteensä ${auditLog?.count || '?'}`}
+      {`\u2013${value + LOGS_PER_PAGE}, in total ${auditLog?.count || '?'}`}
       <Button
         className="ml-3"
         type="button"

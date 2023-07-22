@@ -19,12 +19,12 @@ const DeleteSignup = () => {
   const { isSubmitting, setSubmitting } = useFormikContext();
 
   const doDelete = useCallback(async () => {
-    const progressToast = toast.loading('Ilmoittautumista poistetaan');
+    const progressToast = toast.loading('Registration will be removed');
     try {
       setSubmitting(true);
       await deleteSignup();
       toast.update(progressToast, {
-        render: 'Ilmoittautumisesi poistettiin onnistuneesti.',
+        render: 'Your registration was successfully removed.',
         type: toast.TYPE.SUCCESS,
         closeButton: true,
         closeOnClick: true,
@@ -34,7 +34,7 @@ const DeleteSignup = () => {
     } catch (error) {
       setSubmitting(false);
       toast.update(progressToast, {
-        render: 'Poisto epäonnistui.',
+        render: 'The removal failed.',
         type: toast.TYPE.ERROR,
         autoClose: 5000,
         closeButton: true,
@@ -46,9 +46,9 @@ const DeleteSignup = () => {
 
   return (
     <div className="ilmo--delete-container">
-      <h2>Poista ilmoittautuminen</h2>
+      <h2>Remove your registration</h2>
       <p>
-        Oletko varma, että haluat poistaa ilmoittautumisesi tapahtumaan
+        Are you sure you want to delete your registration for the event
         {' '}
         <strong>
           {event!.title}
@@ -56,11 +56,11 @@ const DeleteSignup = () => {
         ?
       </p>
       <p>
-        Jos poistat ilmoittautumisesi, menetät paikkasi jonossa. Jos
-        muutat mielesi, voit aina ilmoittautua tapahtumaan uudelleen
-        myöhemmin, mutta siirryt silloin jonon hännille.
+        If you delete your registration, you will lose your place in the queue. If 
+        you change your mind, you can always sign up for the event again 
+        later, but then you will be added to the end of the queue.
         {' '}
-        <strong>Tätä toimintoa ei voi perua.</strong>
+        <strong>This activity cannot be reversed.</strong>
       </p>
       <ConfirmButton
         type="button"
@@ -68,9 +68,9 @@ const DeleteSignup = () => {
         onClick={doDelete}
         variant="danger"
         confirmDelay={DELETE_CONFIRM_MS}
-        confirmLabel="Paina uudelleen varmistukseksi&hellip;"
+        confirmLabel="Press again to confirm&hellip;"
       >
-        Poista ilmoittautuminen
+        Remove your registration
       </ConfirmButton>
     </div>
   );

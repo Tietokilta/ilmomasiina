@@ -30,33 +30,33 @@ const AuditLog = () => {
 
   return (
     <>
-      <Link to={appPaths.adminEventsList}>&#8592; Takaisin</Link>
-      <h1>Toimintoloki</h1>
+      <Link to={appPaths.adminEventsList}>&#8592; Back</Link>
+      <h1>Activity log</h1>
       <AuditLogPagination />
       <table className="table audit-log--table">
         <thead>
           <tr>
             <th>
-              Aika
+            Time
             </th>
             <th>
-              Käyttäjä
+              User
               <nav className="audit-log--filter">
                 <AuditLogFilter name="user" />
               </nav>
             </th>
             <th>
-              IP-osoite
+              IP-address
               <nav className="audit-log--filter">
                 <AuditLogFilter name="ip" />
               </nav>
             </th>
             <th>
-              Toiminto
+              Activity
               <nav className="audit-log--filter">
                 <AuditLogActionFilter />
-                <AuditLogFilter name="event" placeHolder="Tapahtuma&hellip;" />
-                <AuditLogFilter name="signup" placeHolder="Ilmoittautuminen&hellip;" />
+                <AuditLogFilter name="event" placeHolder="Event&hellip;" />
+                <AuditLogFilter name="signup" placeHolder="Sign-up&hellip;" />
               </nav>
             </th>
           </tr>
@@ -65,7 +65,7 @@ const AuditLog = () => {
           {auditLogLoadError && (
             <tr>
               <td colSpan={4}>
-                Lokien lataus epäonnistui
+                Failed to download logs
               </td>
             </tr>
           )}

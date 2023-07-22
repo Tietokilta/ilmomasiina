@@ -63,7 +63,7 @@ export default class EmailService {
         },
       };
       const html = await email.render(path.join(TEMPLATE_DIR, 'confirmation/html'), brandedParams);
-      const subject = `${params.edited ? 'Muokkaus' : 'Ilmoittautumis'}vahvistus: ${params.event.title}`;
+      const subject = `${params.edited ? 'Adaptation' : 'registration'} confirmation: ${params.event.title}`;
       await EmailService.send(to, subject, html);
     } catch (error) {
       console.error(error);
@@ -82,7 +82,7 @@ export default class EmailService {
         },
       };
       const html = await email.render(path.join(TEMPLATE_DIR, 'newUser/html'), brandedParams);
-      const subject = 'Käyttäjätunnukset Ilmomasiinaan';
+      const subject = 'Usernames to the revelation';
       await EmailService.send(to, subject, html);
     } catch (error) {
       console.error(error);
@@ -101,7 +101,7 @@ export default class EmailService {
         },
       };
       const html = await email.render(path.join(TEMPLATE_DIR, 'resetPassword/html'), brandedParams);
-      const subject = 'Salasanasi Ilmomasiinaan on nollattu';
+      const subject = 'Your password for Ilmomasiina has been reset';
       await EmailService.send(to, subject, html);
     } catch (error) {
       console.error(error);
@@ -119,7 +119,7 @@ export default class EmailService {
         },
       };
       const html = await email.render(path.join(TEMPLATE_DIR, 'queueMail/html'), brandedParams);
-      const subject = `Pääsit varasijalta tapahtumaan ${params.event.title}`;
+      const subject = `You made it to the event as a reserve ${params.event.title}`;
       await EmailService.send(to, subject, html);
     } catch (error) {
       console.error(error);

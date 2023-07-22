@@ -63,13 +63,13 @@ export const redirectToLogin = () => (dispatch: DispatchAction) => {
 export const logout = () => async (dispatch: DispatchAction) => {
   dispatch(resetState());
   dispatch(redirectToLogin());
-  toast.success('Uloskirjautuminen onnistui.', {
+  toast.success('The log-out was successful.', {
     autoClose: 10000,
   });
 };
 
 export const loginExpired = () => (dispatch: DispatchAction) => {
-  toast.error('Sisäänkirjautumisesi on vanhentunut. Kirjaudu sisään uudelleen.', {
+  toast.error('Your login is outdated. Sign in again.', {
     autoClose: 10000,
   });
   dispatch(redirectToLogin());

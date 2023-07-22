@@ -22,60 +22,60 @@ const EventDescription = () => {
         <h1>{event.title}</h1>
         {loggedIn && paths.hasAdmin && (
           <Button as={Link} variant="primary" to={paths.adminEditEvent(event.id)}>
-            Muokkaa
+            Edit
           </Button>
         )}
       </nav>
       <div className="ilmo--event-heading">
         {event.category && (
           <p>
-            <strong>Kategoria:</strong>
+            <strong>Category:</strong>
             {' '}
             {event.category}
           </p>
         )}
         {event.date && (
           <p>
-            <strong>{event.endDate ? 'Alkaa:' : 'Ajankohta:'}</strong>
+            <strong>{event.endDate ? 'Start:' : 'Timing:'}</strong>
             {' '}
-            {moment(event.date).tz(timezone()).format('D.M.Y [klo] HH:mm')}
+            {moment(event.date).tz(timezone()).format('D.M.Y [at] HH:mm')}
           </p>
         )}
         {event.endDate && (
           <p>
-            <strong>Loppuu:</strong>
+            <strong>End:</strong>
             {' '}
-            {moment(event.endDate).tz(timezone()).format('D.M.Y [klo] HH:mm')}
+            {moment(event.endDate).tz(timezone()).format('D.M.Y [at] HH:mm')}
           </p>
         )}
         {event.location && (
           <p>
-            <strong>Sijainti:</strong>
+            <strong>Location:</strong>
             {' '}
             {event.location}
           </p>
         )}
         {event.price && (
           <p>
-            <strong>Hinta:</strong>
+            <strong>Price:</strong>
             {' '}
             {event.price}
           </p>
         )}
         {event.webpageUrl && (
           <p>
-            <strong>Kotisivut:</strong>
+            <strong>Homepage:</strong>
             {' '}
-            <a href={event.webpageUrl} title="Kotisivut">
+            <a href={event.webpageUrl} title="Homepage">
               {event.webpageUrl}
             </a>
           </p>
         )}
         {event.facebookUrl && (
           <p>
-            <strong>Facebook-tapahtuma:</strong>
+            <strong>Facebook event:</strong>
             {' '}
-            <a href={event.facebookUrl} title="Facebook-tapahtuma">
+            <a href={event.facebookUrl} title="Facebook event">
               {event.facebookUrl}
             </a>
           </p>

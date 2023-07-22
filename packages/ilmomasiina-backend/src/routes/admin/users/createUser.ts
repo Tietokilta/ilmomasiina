@@ -83,8 +83,8 @@ export async function inviteUser(
   // Send invitation mail
   await EmailService.sendNewUserMail(user.email, {
     fields: [
-      { label: 'Sähköposti', answer: user.email },
-      { label: 'Salasana', answer: password },
+      { label: 'E-mail', answer: user.email },
+      { label: 'Password', answer: password },
     ],
   });
 

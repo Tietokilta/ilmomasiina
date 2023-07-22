@@ -19,16 +19,16 @@ const SignupList = ({ quota }: Props) => {
     <div className="ilmo--quota-signups">
       <h3>{quota.title}</h3>
       {!signups?.length ? (
-        <p>Ei ilmoittautumisia.</p>
+        <p>You are in the queue in place.</p>
       ) : (
         <div className="table-responsive">
           <Table size="sm">
             <thead className="thead-light">
               <tr>
-                <th key="position">Sija</th>
+                <th key="position">Place</th>
                 {nameQuestion && (
                   <th key="attendee" style={{ minWidth: 90 }}>
-                    Nimi
+                    Name
                   </th>
                 )}
                 {filter(questions, 'public').map((question) => (
@@ -38,11 +38,11 @@ const SignupList = ({ quota }: Props) => {
                 ))}
                 {showQuotas && (
                   <th key="quota">
-                    Kiintiö
+                    Quota
                   </th>
                 )}
                 <th key="datetime" style={{ minWidth: 130 }}>
-                  Ilmoittautumisaika
+                  Registration time
                 </th>
               </tr>
             </thead>

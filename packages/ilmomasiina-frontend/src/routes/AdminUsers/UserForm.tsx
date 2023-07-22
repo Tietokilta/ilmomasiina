@@ -46,11 +46,11 @@ const UserForm = () => {
             name="email"
             id="email"
             type="email"
-            placeholder="Sähköposti"
+            placeholder="Email"
             aria-label="Sähköposti"
           />
           <Button type="submit" variant="secondary" disabled={isSubmitting}>
-            {isSubmitting ? <Spinner animation="border" /> : 'Luo uusi käyttäjä'}
+            {isSubmitting ? <Spinner animation="border" /> : 'Create a new user'}
           </Button>
         </Form>
       )}

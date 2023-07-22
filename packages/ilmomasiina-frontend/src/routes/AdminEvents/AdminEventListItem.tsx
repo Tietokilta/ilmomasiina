@@ -25,12 +25,12 @@ const AdminEventListItem = ({ event }: Props) => {
   async function onDelete(e: MouseEvent) {
     e.preventDefault();
     const confirmed = window.confirm(
-      'Haluatko varmasti poistaa tämän tapahtuman? Tätä toimintoa ei voi perua.',
+      'Want to delete this event? This function cannot be canceled.',
     );
     if (confirmed) {
       const success = await dispatch(deleteEvent(id));
       if (!success) {
-        toast.error('Poisto epäonnistui :(', { autoClose: 2000 });
+        toast.error('The removal failed :(', { autoClose: 2000 });
       }
       dispatch(getAdminEvents());
     }
@@ -38,13 +38,13 @@ const AdminEventListItem = ({ event }: Props) => {
 
   let status;
   if (draft) {
-    status = 'Luonnos';
+    status = 'Draft';
   } else if (isEventInPast(event)) {
-    status = date === null ? 'Sulkeutunut' : 'Mennyt';
+    status = date === null ? 'Closed' : 'Gone';
   } else if (!listed) {
-    status = 'Piilotettu';
+    status = 'Hidden';
   } else {
-    status = <Link to={appPaths.eventDetails(slug)}>Julkaistu</Link>;
+    status = <Link to={appPaths.eventDetails(slug)}>Published</Link>;
   }
 
   return (
@@ -57,12 +57,12 @@ const AdminEventListItem = ({ event }: Props) => {
       <td>{sumBy(quotas, 'signupCount')}</td>
       <td>
         <Link to={appPaths.adminEditEvent(id)}>
-          Muokkaa tapahtumaa
+          Edit the event
         </Link>
         &ensp;/&ensp;
         {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
         <a href="#" onClick={onDelete} role="button">
-          Poista tapahtuma
+          Remove the event
         </a>
       </td>
     </tr>

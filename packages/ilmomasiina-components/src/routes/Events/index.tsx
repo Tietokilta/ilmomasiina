@@ -18,8 +18,8 @@ const EventListView = () => {
   if (error) {
     return (
       <>
-        <h1>Hups, jotain meni pieleen</h1>
-        <p>Tapahtumien lataus epäonnistui</p>
+        <h1>Oops, something went wrong</h1>
+        <p>Failed to load events</p>
       </>
     );
   }
@@ -27,7 +27,7 @@ const EventListView = () => {
   if (pending) {
     return (
       <>
-        <h1>Tapahtumat</h1>
+        <h1>Events</h1>
         <Spinner animation="border" />
       </>
     );
@@ -56,7 +56,7 @@ const EventListView = () => {
       return (
         <TableRow
           className="ilmo--quota-row"
-          title={title === OPENQUOTA ? 'Avoin' : title}
+          title={title === OPENQUOTA ? 'Open' : title}
           signupCount={signupCount}
           quotaSize={quotaSize}
           // No real alternatives for key :(
@@ -70,14 +70,14 @@ const EventListView = () => {
 
   return (
     <>
-      <h1>Tapahtumat</h1>
+      <h1>Events</h1>
       <Table className="ilmo--event-list">
         <thead>
           <tr>
-            <th>Nimi</th>
-            <th>Ajankohta</th>
-            <th>Ilmoittautuminen</th>
-            <th>Ilmoittautuneita</th>
+            <th>Name</th>
+            <th>Time</th>
+            <th>Registration</th>
+            <th>Sign-ups</th>
           </tr>
         </thead>
         <tbody>{tableRows}</tbody>

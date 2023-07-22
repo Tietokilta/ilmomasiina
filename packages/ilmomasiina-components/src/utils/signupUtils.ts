@@ -77,7 +77,7 @@ export function getSignupsByQuota(event: AnyEventSchema): QuotaSignups[] {
   // Open quota is shown if the event has one, or if signups have been assigned there nevertheless.
   const openQuota = openSignups.length > 0 || event.openQuotaSize > 0 ? [{
     id: OPENQUOTA as typeof OPENQUOTA,
-    title: 'Avoin kiintiö',
+    title: 'Open quota',
     size: event.openQuotaSize,
     signups: openSignups,
     signupCount: Math.max(openQuotaCount, openSignups.length),
@@ -87,7 +87,7 @@ export function getSignupsByQuota(event: AnyEventSchema): QuotaSignups[] {
   // Queue is shown if signups have been assigned there.
   const queue = queueSignups.length > 0 ? [{
     id: WAITLIST as typeof WAITLIST,
-    title: 'Jonossa',
+    title: 'In queue',
     size: null,
     signups: queueSignups,
     signupCount: Math.max(queueCount, queueSignups.length),
@@ -133,9 +133,9 @@ export function getSignupsForAdminList(event: AdminEventResponse): FormattedSign
   return sorted.map((signup) => {
     let quotaType = '';
     if (signup.status === 'in-open') {
-      quotaType = ' (Avoin)';
+      quotaType = ' (Open)';
     } else if (signup.status === 'in-queue') {
-      quotaType = ' (Jonossa)';
+      quotaType = ' (In queue)';
     }
     return {
       ...signup,
@@ -153,11 +153,11 @@ export function convertSignupsToCSV(event: AdminEventResponse, signups: Formatte
   return [
     // Headers
     [
-      ...(event.nameQuestion ? ['Etunimi', 'Sukunimi'] : []),
-      ...(event.emailQuestion ? ['Sähköpostiosoite'] : []),
-      'Kiintiö',
+      ...(event.nameQuestion ? ['First name', 'Last name'] : []),
+      ...(event.emailQuestion ? ['Email address'] : []),
+      'Quota',
       ...event.questions.map(({ question }) => question),
-      'Ilmoittautumisaika',
+      'Registration time',
     ],
     // Data rows
     ...signups.map((signup) => [

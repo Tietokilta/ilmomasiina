@@ -19,7 +19,7 @@ const SignupsTab = () => {
 
   if (!event || !signups?.length) {
     return (
-      <p>Tapahtumaan ei vielä ole yhtään ilmoittautumista. Kun tapahtumaan tulee ilmoittautumisia, näet ne tästä.</p>
+      <p>There are no sign-ups for the event yet. When there are sign-ups for the event, you will see them here.</p>
     );
   }
 
@@ -30,7 +30,7 @@ const SignupsTab = () => {
         separator={'\t'}
         filename={`${event.title} osallistujalista.csv`}
       >
-        Lataa osallistujalista
+        Download the participant list
       </CSVLink>
       <br />
       <br />
@@ -38,14 +38,14 @@ const SignupsTab = () => {
         <thead>
           <tr className="active">
             <th key="position">#</th>
-            {event.nameQuestion && <th key="firstName">Etunimi</th>}
-            {event.nameQuestion && <th key="lastName">Sukunimi</th>}
-            {event.emailQuestion && <th key="email">Sähköposti</th>}
-            <th key="quota">Kiintiö</th>
+            {event.nameQuestion && <th key="firstName">First name</th>}
+            {event.nameQuestion && <th key="lastName">Last name</th>}
+            {event.emailQuestion && <th key="email">Email</th>}
+            <th key="quota">Quota</th>
             {event.questions.map((q) => (
               <th key={q.id}>{q.question}</th>
             ))}
-            <th key="timestamp">Ilmoittautumisaika</th>
+            <th key="timestamp">Registration time</th>
             <th key="delete" aria-label="Poista" />
           </tr>
         </thead>
@@ -67,7 +67,7 @@ const SignupsTab = () => {
                   variant="danger"
                   onClick={async () => {
                     const confirmation = window.confirm(
-                      'Oletko varma? Poistamista ei voi perua.',
+                      'Are you sure? The removal cannot be canceled.',
                     );
                     if (confirmation) {
                       await dispatch(deleteSignup(signup.id!));
@@ -75,7 +75,7 @@ const SignupsTab = () => {
                     }
                   }}
                 >
-                  Poista
+                  Delete
                 </Button>
               </td>
             </tr>
