@@ -34,7 +34,7 @@ const DeleteSignup = () => {
     } catch (error) {
       setSubmitting(false);
       toast.update(progressToast, {
-        render: 'The removal failed.',
+        render: 'The cancellation failed.',
         type: toast.TYPE.ERROR,
         autoClose: 5000,
         closeButton: true,
@@ -56,8 +56,8 @@ const DeleteSignup = () => {
         ?
       </p>
       <p>
-        If you cancel your registration, you will lose your place in the queue. If 
-        you change your mind, you can always sign up for the event again 
+        If you cancel your registration, you will lose your place in the queue. If
+        you change your mind, you can always sign up for the event again
         later, but then you will be added to the end of the queue.
         {' '}
         <strong>This action cannot be undone.</strong>

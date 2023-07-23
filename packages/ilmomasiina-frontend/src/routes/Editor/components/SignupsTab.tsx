@@ -67,7 +67,7 @@ const SignupsTab = () => {
                   variant="danger"
                   onClick={async () => {
                     const confirmation = window.confirm(
-                      'Are you sure? The removal cannot be undone.',
+                      'Are you sure? This cannot be undone.',
                     );
                     if (confirmation) {
                       await dispatch(deleteSignup(signup.id!));

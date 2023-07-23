@@ -82,7 +82,7 @@ export default class EmailService {
         },
       };
       const html = await email.render(path.join(TEMPLATE_DIR, 'newUser/html'), brandedParams);
-      const subject = 'User IDs for Ilmomasina';
+      const subject = 'User account for Ilmomasiina';
       await EmailService.send(to, subject, html);
     } catch (error) {
       console.error(error);

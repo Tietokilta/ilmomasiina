@@ -33,7 +33,7 @@ const MoveToQueueWarning = ({ onProceed }: Props) => {
       </Modal.Body>
       <Modal.Footer>
         <Button variant="muted" onClick={() => dispatch(moveToQueueCanceled())}>Cancel</Button>
-        <Button variant="danger" onClick={onProceed}>Jack</Button>
+        <Button variant="danger" onClick={onProceed}>Continue</Button>
       </Modal.Footer>
     </Modal>
   );

@@ -62,11 +62,11 @@ const BasicDetailsTab = () => {
     slugFeedback = <Form.Text>Checking availability&hellip;</Form.Text>;
   } else if (slugAvailability !== null) {
     if (slugAvailability.id === null || slugAvailability.id === event?.id) {
-      slugFeedback = <Form.Text className="text-success">URL Free!</Form.Text>;
+      slugFeedback = <Form.Text className="text-success">URL is free!</Form.Text>;
     } else {
       slugFeedback = (
         <Form.Text className="text-danger">
-          {'URL is already in use with an event '}
+          {'URL is already in use by an event '}
           {slugAvailability.title}
         </Form.Text>
       );
@@ -83,7 +83,7 @@ const BasicDetailsTab = () => {
       />
       <FieldRow
         name="slug"
-        label="The event url"
+        label="Event url"
         required
         alternateError="* URL extension is required."
         extraFeedback={slugFeedback}
@@ -97,7 +97,7 @@ const BasicDetailsTab = () => {
         checkAlign
         checkLabel="Show on the event list"
         help={
-          'Hidden events can only be accessed by URL. Events saved ' + 
+          'Hidden events can only be accessed by URL. Events saved ' +
           'as a draft cannot be viewed as a user regardless of this setting.'
         }
       />
@@ -106,20 +106,20 @@ const BasicDetailsTab = () => {
         label="Event Type"
         as={SelectBox}
         options={[
-          [EditorEventType.ONLY_EVENT, 'An event without Sign-ups'],
-          [EditorEventType.EVENT_WITH_SIGNUP, 'Event and Sign-ups'],
-          [EditorEventType.ONLY_SIGNUP, 'Sign-ups without an event'],
+          [EditorEventType.ONLY_EVENT, 'An event without registration'],
+          [EditorEventType.EVENT_WITH_SIGNUP, 'Event and registration'],
+          [EditorEventType.ONLY_SIGNUP, 'Registration without an event'],
         ]}
       />
       {eventType !== EditorEventType.ONLY_SIGNUP && (
         <FieldRow
           name="date"
-          label="Start time"
+          label="Start date"
           as={DateTimePicker}
           selectsStart
           endDate={endDate}
           required
-          alternateError="* The start time is required."
+          alternateError="* The start date is required."
         />
       )}
       {eventType !== EditorEventType.ONLY_SIGNUP && (

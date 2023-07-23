@@ -113,7 +113,7 @@ const Editor = () => {
   if (!urlIsNew && !event) {
     return (
       <>
-        <h1>Edit an event</h1>
+        <h1>Edit event</h1>
         <Link to={appPaths.adminEventsList}>&#8592; Back</Link>
         <div className="ilmo--loading-container">
           <Spinner animation="border" />

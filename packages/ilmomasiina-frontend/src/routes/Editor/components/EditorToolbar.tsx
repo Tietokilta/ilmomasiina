@@ -60,7 +60,7 @@ const EditorToolbar = ({ onSubmitClick }: Props) => {
             formNoValidate
             onClick={() => onSubmitClick(isDraft)}
           >
-            {isNew ? 'Save as a draft' : 'save the changes'}
+            {isNew ? 'Save as a draft' : 'Save changes'}
           </Button>
         </ButtonGroup>
       </div>

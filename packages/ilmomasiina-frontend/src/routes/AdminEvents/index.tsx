@@ -42,7 +42,7 @@ const AdminEventsList = () => {
   return (
     <>
       <nav className="ilmo--title-nav">
-        <h1>Controls</h1>
+        <h1>Admin</h1>
         <Button as={Link} variant="secondary" to={appPaths.adminUsersList}>
           Users
         </Button>
@@ -57,10 +57,10 @@ const AdminEventsList = () => {
         <thead>
           <tr>
             <th>Name</th>
-            <th>Time</th>
+            <th>Date</th>
             <th>Status</th>
             <th>Sign-ups</th>
-            <th>Activities</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>

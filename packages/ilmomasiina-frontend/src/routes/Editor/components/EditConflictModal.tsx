@@ -103,13 +103,13 @@ const EditConflictModal = () => {
             ))}
         </ul>
         <p>
-          You can save the event and overwrite the changes of another user, or reject the changes 
-          you make and continue from the event edited by another user.        
+          You can save the event and overwrite the changes of the other user, or discard your changes
+          and continue from the event edited by the other user.
         </p>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="muted" onClick={() => dispatch(editConflictDismissed())}>Peruuta</Button>
-        <Button variant="secondary" onClick={revert}>Reject changes</Button>
+        <Button variant="secondary" onClick={revert}>Discard changes</Button>
         <Button variant="warning" onClick={overwrite}>Overwrite</Button>
       </Modal.Footer>
     </Modal>

@@ -2,10 +2,10 @@ extends ../layout.pug
 
 block mainContent
 	div.content-block
-		p.bodyText Salasanasi Ilmomasiinaan on nollattu.
+		p.bodyText Your password to Ilmomasiina has been reset.
 		ul
 			each val in fields
 				li
 					strong #{val.label}:
 					| #{val.answer}
-	p.bodyText Voit kirjautua sisään osoitteessa #[a(href=siteUrl) #{siteUrl}].
+	p.bodyText You can log in at #[a(href=siteUrl) #{siteUrl}].
