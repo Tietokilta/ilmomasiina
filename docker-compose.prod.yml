@@ -20,13 +20,13 @@ services:
       context: .
       dockerfile: "Dockerfile"
       args:
-        #- PATH_PREFIX=
+        - PATH_PREFIX=/events
         #- API_URL=
-        - BRANDING_HEADER_TITLE_TEXT=Tietokillan ilmomasiina
-        - BRANDING_FOOTER_GDPR_TEXT=Tietosuoja
-        - BRANDING_FOOTER_GDPR_LINK=https://tietokilta.fi/kilta/hallinto/viralliset-asiat/rekisteriselosteet/
-        - BRANDING_FOOTER_HOME_TEXT=Tietokilta.fi
-        - BRANDING_FOOTER_HOME_LINK=https://tietokilta.fi
+        - BRANDING_HEADER_TITLE_TEXT=Data Guild event system
+        - BRANDING_FOOTER_GDPR_TEXT=GDPR
+        - BRANDING_FOOTER_GDPR_LINK=/gdpr
+        - BRANDING_FOOTER_HOME_TEXT=dataguild.fi
+        - BRANDING_FOOTER_HOME_LINK=https://dataguild.fi
     restart: always
     depends_on:
       - database

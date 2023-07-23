@@ -12,7 +12,7 @@ const Footer = () => (
   <footer>
     <Container>
       <Link to={appPaths.adminEventsList}>
-        Hallinta
+        Admin
       </Link>
       {branding.footerGdprText && (
         <a href={branding.footerGdprLink} target="_blank" rel="noreferrer">
