@@ -69,7 +69,7 @@ export const logout = () => async (dispatch: DispatchAction) => {
 };
 
 export const loginExpired = () => (dispatch: DispatchAction) => {
-  toast.error('Your login is outdated. Sign in again.', {
+  toast.error('Your login has expired. Log in again.', {
     autoClose: 10000,
   });
   dispatch(redirectToLogin());

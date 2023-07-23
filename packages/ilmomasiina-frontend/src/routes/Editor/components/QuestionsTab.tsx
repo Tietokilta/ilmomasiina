@@ -33,10 +33,10 @@ const QuestionsTab = () => {
         checkLabel="Collect email addresses"
         help={
           emailQuestion
-            ? 'Email address is a required question. Participants will be sent a confirmation' + 
-            ' e-mail and an e-mail notification about getting out of the queue.'
-            : 'If the email address is not asked, participants will not receive confirmation' + 
-            ' email or email notification about getting out of the queue.'
+            ? 'Email address is a required question. Participants will be sent a confirmation' +
+            ' e-mail and an e-mail notification about getting a place from the queue.'
+            : 'If the email address is not asked, participants will not receive confirmation' +
+            ' email or email notification about getting a place from the queue.'
         }
       />
       <Questions />

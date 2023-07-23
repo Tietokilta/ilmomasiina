@@ -36,7 +36,7 @@ const EventDescription = () => {
         )}
         {event.date && (
           <p>
-            <strong>{event.endDate ? 'Start:' : 'Timing:'}</strong>
+            <strong>{event.endDate ? 'Start:' : 'Date:'}</strong>
             {' '}
             {moment(event.date).tz(timezone()).format('D.M.Y [at] HH:mm')}
           </p>

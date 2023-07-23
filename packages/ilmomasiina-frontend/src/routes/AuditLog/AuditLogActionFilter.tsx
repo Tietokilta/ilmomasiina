@@ -33,7 +33,7 @@ const AuditLogActionFilter = () => {
       as="select"
       onChange={onChange}
     >
-      <option value="">Function&hellip;</option>
+      <option value="">Action&hellip;</option>
       {ACTIONS.map(([key, label]) => (
         <option value={key} key={key}>{label}</option>
       ))}

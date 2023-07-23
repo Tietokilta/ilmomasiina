@@ -22,7 +22,7 @@ const ACTION_STRINGS: Record<AuditEvent, string> = {
   [AuditEvent.PROMOTE_SIGNUP]: 'promoted the sign-up: ',
   [AuditEvent.CREATE_USER]: 'created the user ',
   [AuditEvent.DELETE_USER]: 'removed the user ',
-  [AuditEvent.RESET_PASSWORD]: 'reset the password to the user ',
+  [AuditEvent.RESET_PASSWORD]: 'reset the password of the user ',
   [AuditEvent.CHANGE_PASSWORD]: 'changed their password',
 };
 

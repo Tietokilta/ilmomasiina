@@ -25,7 +25,7 @@ const AdminEventListItem = ({ event }: Props) => {
   async function onDelete(e: MouseEvent) {
     e.preventDefault();
     const confirmed = window.confirm(
-      'Want to delete this event? This function cannot be canceled.',
+      'Want to delete this event? This action cannot be undone.',
     );
     if (confirmed) {
       const success = await dispatch(deleteEvent(id));
@@ -57,12 +57,12 @@ const AdminEventListItem = ({ event }: Props) => {
       <td>{sumBy(quotas, 'signupCount')}</td>
       <td>
         <Link to={appPaths.adminEditEvent(id)}>
-          Edit the event
+          Edit event
         </Link>
         &ensp;/&ensp;
         {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
         <a href="#" onClick={onDelete} role="button">
-          Remove the event
+          Remove event
         </a>
       </td>
     </tr>

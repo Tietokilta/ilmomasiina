@@ -19,13 +19,13 @@ const SignupList = ({ quota }: Props) => {
     <div className="ilmo--quota-signups">
       <h3>{quota.title}</h3>
       {!signups?.length ? (
-        <p>You are in the queue in place.</p>
+        <p>No registrations.</p>
       ) : (
         <div className="table-responsive">
           <Table size="sm">
             <thead className="thead-light">
               <tr>
-                <th key="position">Place</th>
+                <th key="position">Position</th>
                 {nameQuestion && (
                   <th key="attendee" style={{ minWidth: 90 }}>
                     Name

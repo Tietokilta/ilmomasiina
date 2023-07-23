@@ -43,7 +43,7 @@ const AdminUsersList = () => {
           <thead>
             <tr>
               <th>E-mail</th>
-              <th>Activities</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>

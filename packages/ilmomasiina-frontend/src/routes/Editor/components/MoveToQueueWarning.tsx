@@ -28,12 +28,12 @@ const MoveToQueueWarning = ({ onProceed }: Props) => {
           {' sign-ups that have already reached the quota to the queue. Users are not notified of this automatically.'}
         </p>
         <p>
-          You will surely want to continue?
+          Are you sure you want to continue?
         </p>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="muted" onClick={() => dispatch(moveToQueueCanceled())}>Cancel</Button>
-        <Button variant="danger" onClick={onProceed}>Jack</Button>
+        <Button variant="danger" onClick={onProceed}>Continue</Button>
       </Modal.Footer>
     </Modal>
   );

@@ -2,10 +2,10 @@ extends ../layout.pug
 
 block mainContent
 	div.content-block
-		p.bodyText Sinulle on luotu admin-tunnukset Ilmomasiinaan.
+		p.bodyText An administrator account was created for you in Ilmomasiina (Data Guild event system).
 		ul
 			each val in fields
 				li
 					strong #{val.label}:
 					| #{val.answer}
-	p.bodyText Voit kirjautua sisään osoitteessa #[a(href=siteUrl) #{siteUrl}].
+	p.bodyText You can log in at #[a(href=siteUrl) #{siteUrl}].

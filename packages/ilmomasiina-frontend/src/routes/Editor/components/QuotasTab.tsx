@@ -42,8 +42,8 @@ const QuotasTab = () => {
         checkAlign
         checkLabel="In addition, use a common quota"
         help={
-          'The open quota will automatically place the' + 
-          ' first registrants in the order of registration that cannot fit into the quota of their choice.'
+          'The first applicants who do not fit into the quota of their choice' +
+          ' will automatically be placed in the open quota in the order in which they enrol.'
         }
       />
       {useOpenQuota && (

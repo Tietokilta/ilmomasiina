@@ -12,7 +12,7 @@ const SignupStatus = () => {
   if (status === 'in-quota') {
     return (
       <p>
-        {`You are in the quota ${quota.title} in place ${position}${quota.size ? ` / ${quota.size}` : ''}.`}
+        {`You are in the quota ${quota.title}, ranked ${position}${quota.size ? ` / ${quota.size}` : ''}.`}
       </p>
     );
   }
@@ -20,14 +20,14 @@ const SignupStatus = () => {
   if (status === 'in-open') {
     return (
       <p>
-        {`You are ranked in an open quota ${position} / ${openQuotaSize}.`}
+        {`You are ranked ${position} / ${openQuotaSize} the open quota.`}
       </p>
     );
   }
 
   return (
     <p>
-      {`You are in the queue in place ${position}.`}
+      {`Your position in the queue: ${position}.`}
     </p>
   );
 };

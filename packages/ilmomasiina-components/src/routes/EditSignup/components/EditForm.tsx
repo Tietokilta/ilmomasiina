@@ -26,7 +26,7 @@ const EditForm = () => {
   const [submitError, setSubmitError] = useState(false);
 
   async function onSubmit(answers: SignupUpdateBody, { setSubmitting }: FormikHelpers<SignupUpdateBody>) {
-    const action = isNew ? 'Registration' : 'Adaptation';
+    const action = isNew ? 'Registration' : 'Editing';
     const progressToast = toast.loading(`${action} in progress`);
 
     try {
@@ -123,7 +123,7 @@ const EditForm = () => {
             {!registrationClosed && (
               <p>
                 You can edit your registration or delete it later by saving the URL of this page.
-                {event!.emailQuestion && ' The link will also be sent to your email in confirmation message.'}
+                {event!.emailQuestion && ' a link will also be sent to your email in confirmation message.'}
               </p>
             )}
 

@@ -7,7 +7,7 @@ const EmailsTab = () => (
   <FieldRow
     name="verificationEmail"
     as={Textarea}
-    label="Verification Email"
+    label="Verification email"
     rows={10}
   />
 );
