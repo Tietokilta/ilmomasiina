@@ -85,7 +85,7 @@ const BasicDetailsTab = () => {
         name="slug"
         label="The event url"
         required
-        alternateError="* URL terminal is required."
+        alternateError="* URL extension is required."
         extraFeedback={slugFeedback}
         as={SlugField}
       />
@@ -97,8 +97,8 @@ const BasicDetailsTab = () => {
         checkAlign
         checkLabel="Show on the event list"
         help={
-          'Hidden events can only be accessed by URL. Events saved as a draft cannot be viewed as' + 
-          ' a user regardless of this setting.'
+          'Hidden events can only be accessed by URL. Events saved ' + 
+          'as a draft cannot be viewed as a user regardless of this setting.'
         }
       />
       <FieldRow
@@ -129,7 +129,7 @@ const BasicDetailsTab = () => {
           as={DateTimePicker}
           selectsEnd
           startDate={date}
-          help="The event will only be displayed in calendar exports if it has been set for the rest of the time."
+          help="An event will only appear in the calendar export if an end time has been set for it."
         />
       )}
       <FieldRow

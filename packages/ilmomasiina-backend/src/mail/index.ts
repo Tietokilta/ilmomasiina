@@ -63,7 +63,7 @@ export default class EmailService {
         },
       };
       const html = await email.render(path.join(TEMPLATE_DIR, 'confirmation/html'), brandedParams);
-      const subject = `${params.edited ? 'Adaptation' : 'registration'} confirmation: ${params.event.title}`;
+      const subject = `${params.edited ? 'Editing' : 'Registration'} confirmation: ${params.event.title}`;
       await EmailService.send(to, subject, html);
     } catch (error) {
       console.error(error);
@@ -82,7 +82,7 @@ export default class EmailService {
         },
       };
       const html = await email.render(path.join(TEMPLATE_DIR, 'newUser/html'), brandedParams);
-      const subject = 'Usernames to the revelation';
+      const subject = 'User IDs for Ilmomasina';
       await EmailService.send(to, subject, html);
     } catch (error) {
       console.error(error);
@@ -119,7 +119,7 @@ export default class EmailService {
         },
       };
       const html = await email.render(path.join(TEMPLATE_DIR, 'queueMail/html'), brandedParams);
-      const subject = `You made it to the event as a reserve ${params.event.title}`;
+      const subject = `You got into the event ${params.event.title} from the queue`;
       await EmailService.send(to, subject, html);
     } catch (error) {
       console.error(error);

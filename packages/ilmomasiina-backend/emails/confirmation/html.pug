@@ -4,14 +4,14 @@ block mainContent
 	div.content-block
 		p.bodyText #{event.verificationEmail}
 	div.content-block
-		p.bodyText Event information:
+		p.bodyText Event details:
 		ul
 			li #[strong Event:] #{event.title}
 			li #[strong Location:] #{event.location}
 			if date
 				li #[strong Time:] #{date}
 	div.content-block
-		p.bodyText Information for your registration:
+		p.bodyText Your registration details:
 		ul
 			each val in answers
 				li #[strong #{val.label}:] #{val.answer}

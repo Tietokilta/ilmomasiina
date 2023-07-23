@@ -110,7 +110,7 @@ const EditConflictModal = () => {
       <Modal.Footer>
         <Button variant="muted" onClick={() => dispatch(editConflictDismissed())}>Peruuta</Button>
         <Button variant="secondary" onClick={revert}>Reject changes</Button>
-        <Button variant="warning" onClick={overwrite}>Overtime</Button>
+        <Button variant="warning" onClick={overwrite}>Overwrite</Button>
       </Modal.Footer>
     </Modal>
   );

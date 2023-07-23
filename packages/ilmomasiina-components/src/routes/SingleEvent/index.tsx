@@ -55,7 +55,7 @@ const SingleEventView = () => {
       </Row>
       {event!.signupsPublic && (
         <>
-          <h2>Entry</h2>
+          <h2>Sign up</h2>
           {signupsByQuota!.map((quota) => (
             <SignupList
               key={quota.id}

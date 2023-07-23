@@ -25,7 +25,7 @@ const AdminEventListItem = ({ event }: Props) => {
   async function onDelete(e: MouseEvent) {
     e.preventDefault();
     const confirmed = window.confirm(
-      'Want to delete this event? This function cannot be canceled.',
+      'Want to delete this event? This action cannot be undone.',
     );
     if (confirmed) {
       const success = await dispatch(deleteEvent(id));

@@ -50,7 +50,7 @@ const EditorToolbar = ({ onSubmitClick }: Props) => {
               formNoValidate
               onClick={() => onSubmitClick(!isDraft)}
             >
-              {isDraft ? 'Publish' : 'Change in the draft'}
+              {isDraft ? 'Publish' : 'Change to a draft'}
             </Button>
           )}
           <Button

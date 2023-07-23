@@ -20,7 +20,7 @@ const SignupStatus = () => {
   if (status === 'in-open') {
     return (
       <p>
-        {`You are ranked in an open quota ${position} / ${openQuotaSize}.`}
+        {`You are ranked in ${position} / ${openQuotaSize} the open quota.`}
       </p>
     );
   }

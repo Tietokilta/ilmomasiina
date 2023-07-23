@@ -50,7 +50,7 @@ export function signupStateText(state: SignupStateInfo): SignupStateText {
       };
     case SignupState.not_opened:
       return {
-        shortLabel: `Start ${moment(state.opens).format(timeFormat)}.`,
+        shortLabel: `Starts at ${moment(state.opens).format(timeFormat)}.`,
         fullLabel: `Registration opens ${moment(state.opens).format(timeFormat)}.`,
         class: 'ilmo--signup-not-opened',
       };

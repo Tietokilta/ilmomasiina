@@ -18,7 +18,7 @@ export default function requireAuth<P extends {}>(WrappedComponent: ComponentTyp
 
     useEffect(() => {
       if (expired) {
-        toast.error('Your login is outdated. Sign in again.', {
+        toast.error('Your login has expired. Log in again.', {
           autoClose: 10000,
         });
       }
