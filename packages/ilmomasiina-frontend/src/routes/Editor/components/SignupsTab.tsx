@@ -19,7 +19,7 @@ const SignupsTab = () => {
 
   if (!event || !signups?.length) {
     return (
-      <p>There are no sign-ups for the event yet. When there are sign-ups for the event, you will see them here.</p>
+      <p>There are no sign-ups for the event yet. When someone signs up, you will see it here.</p>
     );
   }
 

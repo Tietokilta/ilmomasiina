@@ -141,7 +141,7 @@ const BasicDetailsTab = () => {
       />
       <FieldRow
         name="webpageUrl"
-        label="Address of the website"
+        label="Website"
       />
       <FieldRow
         name="facebookUrl"

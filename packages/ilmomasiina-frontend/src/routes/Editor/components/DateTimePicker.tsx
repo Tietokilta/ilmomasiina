@@ -34,8 +34,8 @@ export default function DateTimePicker({
       showPopperArrow={false}
       dateFormat="dd.MM.yyyy HH:mm"
       timeFormat="HH:mm"
-      locale="fi"
-      timeCaption="Aika"
+      locale="en"
+      timeCaption="Time"
       onBlur={onBlur}
       onChange={(newValue) => setValue(newValue)}
     />

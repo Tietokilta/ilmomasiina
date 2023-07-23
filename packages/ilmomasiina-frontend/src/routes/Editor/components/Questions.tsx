@@ -13,11 +13,11 @@ import { EditorQuestion } from '../../../modules/editor/types';
 import Sortable from './Sortable';
 
 const QUESTION_TYPES: { value: EditorQuestion['type'], label: string }[] = [
-  { value: QuestionType.TEXT, label: 'Teksti (lyhyt)' },
-  { value: QuestionType.TEXT_AREA, label: 'Teksti (pitkä)' },
-  { value: QuestionType.NUMBER, label: 'Numero' },
-  { value: QuestionType.SELECT, label: 'Monivalinta (voi valita yhden)' },
-  { value: QuestionType.CHECKBOX, label: 'Monivalinta (voi valita monta)' },
+  { value: QuestionType.TEXT, label: 'Text (short)' },
+  { value: QuestionType.TEXT_AREA, label: 'Text (long)' },
+  { value: QuestionType.NUMBER, label: 'Number' },
+  { value: QuestionType.SELECT, label: 'Multiple choice (can select only one)' },
+  { value: QuestionType.CHECKBOX, label: 'Multiple choice (can select many)' },
 ];
 
 const Questions = () => {
@@ -104,7 +104,7 @@ const Questions = () => {
         <Col xs="12" sm="9" xl="10">
           <FieldRow
             name={`question-${question.key}-question`}
-            label="Kysymys"
+            label="Question"
             required
           >
             <Form.Control
@@ -116,7 +116,7 @@ const Questions = () => {
           </FieldRow>
           <FieldRow
             name={`question-${question.key}-type`}
-            label="Tyyppi"
+            label="Type"
             required
           >
             <Form.Control
@@ -137,7 +137,7 @@ const Questions = () => {
               {question.options.map((option, optIndex) => (
                 <FieldRow
                   name={`question-${question.key}-options-${optIndex}`}
-                  label="Vastausvaihtoehto"
+                  label="Response option"
                   required
                   // eslint-disable-next-line react/no-array-index-key
                   key={optIndex}
@@ -152,10 +152,10 @@ const Questions = () => {
                     <InputGroup.Append>
                       <Button
                         variant="outline-danger"
-                        aria-label="Poista vastausvaihtoehto"
+                        aria-label="Remove response option"
                         onClick={() => removeOption(optIndex)}
                       >
-                        Poista
+                        Remove
                       </Button>
                     </InputGroup.Append>
                   </InputGroup>
@@ -165,7 +165,7 @@ const Questions = () => {
                 <Col sm="3" />
                 <Col sm="9">
                   <Button variant="secondary" type="button" onClick={addOption}>
-                    Lisää vastausvaihtoehto
+                    Add response option
                   </Button>
                 </Col>
               </Row>
@@ -175,20 +175,20 @@ const Questions = () => {
         <Col xs="12" sm="3" xl="2" className="event-editor--question-buttons">
           <Form.Check
             id={`question-${question.key}-required`}
-            label="Pakollinen"
+            label="Required"
             checked={question.required}
             onChange={(e) => updateField('required', e.target.checked)}
             className="mb-3"
           />
           <Form.Check
             id={`question-${question.key}-public`}
-            label="Julkinen"
+            label="Public"
             checked={question.public}
             onChange={(e) => updateField('public', e.target.checked)}
             className="mb-3"
           />
           <Button variant="danger" type="button" onClick={removeQuestion}>
-            Poista kysymys
+            Remove question
           </Button>
         </Col>
       </Row>
@@ -205,7 +205,7 @@ const Questions = () => {
       />
       <div className="text-center mb-3">
         <Button type="button" variant="primary" onClick={addQuestion}>
-          Lisää kysymys
+          Add question
         </Button>
       </div>
     </>
