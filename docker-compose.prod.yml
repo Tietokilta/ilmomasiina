@@ -22,9 +22,9 @@ services:
       args:
         - PATH_PREFIX=/events
         #- API_URL=
-        - BRANDING_HEADER_TITLE_TEXT=Data Guild event system
-        - BRANDING_FOOTER_GDPR_TEXT=GDPR
-        - BRANDING_FOOTER_GDPR_LINK=/gdpr
+        - BRANDING_HEADER_TITLE_TEXT=Data Guild events
+        - BRANDING_FOOTER_GDPR_TEXT=Data Protection
+        - BRANDING_FOOTER_GDPR_LINK=/index.php/official-documents/
         - BRANDING_FOOTER_HOME_TEXT=dataguild.fi
         - BRANDING_FOOTER_HOME_LINK=https://dataguild.fi
     restart: always
