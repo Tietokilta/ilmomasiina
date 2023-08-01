@@ -38,7 +38,7 @@ const QuestionFields = ({ name, questions, disabled }: Props) => {
           updateAnswer(newAnswers.join(';'));
         }
 
-        const help = question.public ? 'Tämän kentän vastaukset ovat julkisia.' : null;
+        const help = question.public ? 'Answers in this field are public.' : null;
 
         let input: ReactNode;
         let isCheckboxes = false;

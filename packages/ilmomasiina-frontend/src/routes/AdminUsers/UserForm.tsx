@@ -22,9 +22,9 @@ const UserForm = () => {
     if (success) {
       dispatch(getUsers());
       resetForm();
-      toast.success('Käyttäjän luominen onnistui,', { autoClose: 2000 });
+      toast.success('The user was created successfully.', { autoClose: 2000 });
     } else {
-      toast.error('Käyttäjän luominen epäonnistui.', { autoClose: 2000 });
+      toast.error('The user creation failed.', { autoClose: 2000 });
     }
     setSubmitting(false);
   };
