@@ -13,11 +13,10 @@ const EditSignupView = () => {
   if (error) {
     return (
       <NarrowContainer className="ilmo--status-container">
-        <h1>Hups, jotain meni pieleen</h1>
+        <h1>Oops, something went wrong</h1>
         <p>
-          Ilmoittautumistasi ei löytynyt. Se saattaa olla jo poistettu, tai
-          sitten jotain muuta kummallista tapahtui. Jos ilmoittautumisesi ei
-          ole vielä poistunut, yritä kohta uudestaan.
+          Your registration was not found. It may have already been deleted, or something else strange happened.
+          If your registration has not yet been deleted, please try again soon.
         </p>
       </NarrowContainer>
     );

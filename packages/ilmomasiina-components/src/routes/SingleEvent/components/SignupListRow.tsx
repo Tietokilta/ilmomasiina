@@ -29,9 +29,9 @@ const SignupListRow = ({ showQuota, signup, index }: Props) => {
 
   let fullName;
   if (!confirmed) {
-    fullName = 'Vahvistamatta';
+    fullName = 'Unconfirmed';
   } else if (!namePublic) {
-    fullName = 'Piilotettu';
+    fullName = 'Hidden';
   } else {
     fullName = `${firstName || ''} ${lastName || ''}`;
   }
