@@ -36,6 +36,7 @@ export async function eventDetailsForUser(
       {
         model: Question,
         attributes: [...eventGetQuestionAttrs],
+        order: ['order', 'ASC'],
       },
     ],
   });
@@ -47,7 +48,7 @@ export async function eventDetailsForUser(
 
   // Only return answers to public questions
   const publicQuestions = event.questions!
-    .filter((question) => question.public)
+  .filter((question) => question.public)
     .map((question) => question.id);
 
   // Query all quotas for the event
@@ -93,18 +94,18 @@ export async function eventDetailsForUser(
     quotas: quotas!.map((quota) => ({
       ...quota.get({ plain: true }),
       signups: event.signupsPublic // Hide all signups from non-admins if answers are not public
-      // When signups are public:
+        // When signups are public:
         ? quota.signups!.map((signup) => ({
-          ...stringifyDates(signup.get({ plain: true })),
-          // Hide name if necessary
-          firstName: event.nameQuestion && signup.namePublic ? signup.firstName : null,
-          lastName: event.nameQuestion && signup.namePublic ? signup.lastName : null,
-          answers: signup.answers!,
-          status: signup.status,
-          confirmed: signup.confirmedAt !== null,
-        }))
-      // When signups are not public:
-        : [],
+            ...stringifyDates(signup.get({ plain: true })),
+            // Hide name if necessary
+            firstName: event.nameQuestion && signup.namePublic ? signup.firstName : null,
+            lastName: event.nameQuestion && signup.namePublic ? signup.lastName : null,
+            answers: signup.answers!,
+            status: signup.status,
+            confirmed: signup.confirmedAt !== null,
+          }))
+        // When signups are not public:
+          : [],
       signupCount: quota.signups!.length,
     })),
 
