@@ -91,21 +91,21 @@ export async function eventDetailsForUser(
   return {
     ...stringifyDates(event.get({ plain: true })),
     questions: event.questions!.map((question) => question.get({ plain: true })),
-    quotas: quotas!.map((quota) => ({
+    quotas: quotas.map((quota) => ({
       ...quota.get({ plain: true }),
       signups: event.signupsPublic // Hide all signups from non-admins if answers are not public
         // When signups are public:
         ? quota.signups!.map((signup) => ({
-            ...stringifyDates(signup.get({ plain: true })),
-            // Hide name if necessary
-            firstName: event.nameQuestion && signup.namePublic ? signup.firstName : null,
-            lastName: event.nameQuestion && signup.namePublic ? signup.lastName : null,
-            answers: signup.answers!,
-            status: signup.status,
-            confirmed: signup.confirmedAt !== null,
-          }))
+          ...stringifyDates(signup.get({ plain: true })),
+          // Hide name if necessary
+          firstName: event.nameQuestion && signup.namePublic ? signup.firstName : null,
+          lastName: event.nameQuestion && signup.namePublic ? signup.lastName : null,
+          answers: signup.answers!,
+          status: signup.status,
+          confirmed: signup.confirmedAt !== null,
+        }))
         // When signups are not public:
-          : [],
+        : [],
       signupCount: quota.signups!.length,
     })),
 
