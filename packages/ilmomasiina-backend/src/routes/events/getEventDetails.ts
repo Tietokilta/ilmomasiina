@@ -99,7 +99,7 @@ export async function eventDetailsForUser(
     ...stringifyDates(event.get({ plain: true })),
     questions,
 
-    quotas: quotas!.map((quota) => ({
+    quotas: quotas.map((quota) => ({
       ...quota.get({ plain: true }),
       signups: event.signupsPublic // Hide all signups from non-admins if answers are not public
         // When signups are public:
