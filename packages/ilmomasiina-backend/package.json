@@ -1,6 +1,6 @@
 {
   "name": "@tietokilta/ilmomasiina-backend",
-  "version": "2.0.0-alpha14",
+  "version": "2.0.0-alpha15",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -40,7 +40,7 @@
     "@fastify/static": "^6.5.0",
     "@fastify/type-provider-typebox": "^2.3.0",
     "@sinclair/typebox": "^0.24.22",
-    "@tietokilta/ilmomasiina-models": "workspace:2.0.0-alpha14",
+    "@tietokilta/ilmomasiina-models": "workspace:2.0.0-alpha15",
     "ajv": "^8.12.0",
     "ajv-formats": "^2.1.1",
     "base32-encode": "^1.2.0",
