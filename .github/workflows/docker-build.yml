@@ -106,3 +106,4 @@ jobs:
       contents: read
     if: github.ref_type == 'tag' && github.repository == 'Tietokilta/ilmomasiina'
     uses: ./.github/workflows/npm-build.yml
+    secrets: inherit
