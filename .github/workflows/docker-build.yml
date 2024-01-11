@@ -101,5 +101,8 @@ jobs:
   npm:
     name: Publish JS packages
     needs: lint
+    permissions:
+      packages: write
+      contents: read
     if: github.ref_type == 'tag' && github.repository == 'Tietokilta/ilmomasiina'
     uses: ./.github/workflows/npm-build.yml
