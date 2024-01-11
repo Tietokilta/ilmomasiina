@@ -37,7 +37,9 @@ have free Actions time. The repository contains a workflow called
 variables to build and push an image for your organization.
 
 Simply [enable GitHub Actions](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#managing-github-actions-permissions-for-your-repository)
-for your fork and modify the `env` block in the workflow file as instructed.
+for your fork and modify the `env` block in `docker-build.yml` as instructed.
+You'll also need to change the repository name in `jobs.docker.if` to ensure the workflow runs -
+it's automatically disabled on forks to avoid unnecessary errors.
 
 With the current workflow setup, the following trigger an image build:
 - `prod` branch pushes tags `prod` and `latest`

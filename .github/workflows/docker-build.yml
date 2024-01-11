@@ -1,9 +1,6 @@
-name: Publish Docker image
+name: Build & deploy
 
 env:
-  # Change this to your repo name to build automatically on your fork.
-  expected_repo: 'Tietokilta/ilmomasiina'
-
   # Change this to upload the built image to your own organization.
   docker_tag: 'ghcr.io/tietokilta/ilmomasiina'
 
@@ -24,13 +21,19 @@ on:
       - 'v*'
 
 jobs:
+  lint:
+    name: Lint & type-check
+    uses: ./.github/workflows/lint.yml
+
   docker:
     name: Push Docker image to GitHub Packages
+    needs: lint
     runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: read
-    if: github.repository == env.expected_repo
+    # Change this to your repo name to build automatically on your fork.
+    if: github.repository == 'Tietokilta/ilmomasiina'
     steps:
       -
         name: Check out the repo
@@ -75,7 +78,7 @@ jobs:
             BRANDING_FOOTER_HOME_LINK=${{ env.branding_footer_home_link }}
             BRANDING_LOGIN_PLACEHOLDER_EMAIL=${{ env.branding_login_placeholder_email }}
 
-  # This is disabled on forks since you'll most likely need to modify it anyway for your usage
+  # This is disabled on forks, you'll most likely need to modify it anyway for your usage
   deploy:
     name: Push update to App Service
     needs: docker
@@ -93,3 +96,10 @@ jobs:
       with:
         app-name: tik-ilmo-${{ github.ref_name }}-app
         images: '${{ env.docker_tag }}:${{ github.ref_name }}'
+
+  # This is disabled on forks since you probably don't need to upload your own packages
+  npm:
+    name: Publish JS packages
+    needs: lint
+    if: github.ref_type == 'tag' && github.repository == 'Tietokilta/ilmomasiina'
+    uses: ./.github/workflows/npm-build.yml

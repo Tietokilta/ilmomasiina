@@ -1,14 +1,11 @@
 name: Publish JS packages
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_call:
 
 jobs:
   npm:
     name: Publish JS packages
-    if: github.ref_type == 'tag' && github.repository == 'Tietokilta/ilmomasiina'
     runs-on: ubuntu-latest
     permissions:
       packages: write
