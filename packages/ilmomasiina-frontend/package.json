@@ -1,6 +1,6 @@
 {
   "name": "@tietokilta/ilmomasiina-frontend",
-  "version": "2.0.0-alpha13",
+  "version": "2.0.0-alpha14",
   "scripts": {
     "build": "vite build",
     "clean": "rimraf build dist",
@@ -15,8 +15,8 @@
   "license": "MIT",
   "dependencies": {
     "@sentry/browser": "^6.19.7",
-    "@tietokilta/ilmomasiina-components": "workspace:2.0.0-alpha13",
-    "@tietokilta/ilmomasiina-models": "workspace:2.0.0-alpha13",
+    "@tietokilta/ilmomasiina-components": "workspace:2.0.0-alpha14",
+    "@tietokilta/ilmomasiina-models": "workspace:2.0.0-alpha14",
     "@types/history": "^4.7.11",
     "@types/lodash-es": "^4.17.9",
     "@types/node": "^16.11.41",

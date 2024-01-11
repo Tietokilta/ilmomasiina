@@ -45,7 +45,7 @@ importers:
       '@fastify/static': ^6.5.0
       '@fastify/type-provider-typebox': ^2.3.0
       '@sinclair/typebox': ^0.24.22
-      '@tietokilta/ilmomasiina-models': workspace:2.0.0-alpha13
+      '@tietokilta/ilmomasiina-models': workspace:2.0.0-alpha14
       '@types/bcrypt': ^5.0.0
       '@types/compression': ^1.7.2
       '@types/debug': ^4.1.7
@@ -136,7 +136,7 @@ importers:
 
   packages/ilmomasiina-components:
     specifiers:
-      '@tietokilta/ilmomasiina-models': workspace:2.0.0-alpha13
+      '@tietokilta/ilmomasiina-models': workspace:2.0.0-alpha14
       '@types/lodash-es': ^4.17.9
       '@types/react': ^17.0.47
       bootstrap: ^4.6.1
@@ -182,8 +182,8 @@ importers:
   packages/ilmomasiina-frontend:
     specifiers:
       '@sentry/browser': ^6.19.7
-      '@tietokilta/ilmomasiina-components': workspace:2.0.0-alpha13
-      '@tietokilta/ilmomasiina-models': workspace:2.0.0-alpha13
+      '@tietokilta/ilmomasiina-components': workspace:2.0.0-alpha14
+      '@tietokilta/ilmomasiina-models': workspace:2.0.0-alpha14
       '@types/history': ^4.7.11
       '@types/lodash-es': ^4.17.9
       '@types/node': ^16.11.41
