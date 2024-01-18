@@ -48,7 +48,7 @@ export async function eventDetailsForUser(
 
   // Only return answers to public questions
   const publicQuestions = event.questions!
-  .filter((question) => question.public)
+    .filter((question) => question.public)
     .map((question) => question.id);
 
   // Query all quotas for the event
