@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { NotFound } from 'http-errors';
-import { Op, Order } from 'sequelize';
+import { Op } from 'sequelize';
 
 import type {
   AdminEventPathParams, AdminEventResponse, EventID, EventSlug, UserEventPathParams, UserEventResponse,
@@ -20,11 +20,6 @@ import { Quota } from '../../models/quota';
 import { Signup } from '../../models/signup';
 import { stringifyDates } from '../utils';
 
-const answerOrdering: Order = [
-  ['order', 'ASC'],
-  [Signup, 'createdAt', 'ASC'],
-];
-
 export async function eventDetailsForUser(
   eventSlug: EventSlug,
 ): Promise<UserEventResponse> {
@@ -36,14 +31,14 @@ export async function eventDetailsForUser(
       {
         model: Question,
         attributes: [...eventGetQuestionAttrs],
-        order: ['order', 'ASC'],
       },
     ],
+    order: [[Question, 'order', 'ASC']],
   });
 
   if (!event) {
     // Event not found with id, probably deleted
-    throw new NotFound('No event found with id');
+    throw new NotFound('No event found with slug');
   }
 
   // Only return answers to public questions
@@ -72,7 +67,11 @@ export async function eventDetailsForUser(
         ],
       },
     ],
-    order: answerOrdering,
+    // First sort by Quota order, then by signup creation date
+    order: [
+      ['order', 'ASC'],
+      [Signup, 'createdAt', 'ASC'],
+    ],
   });
 
   // Dynamic extra fields
@@ -125,50 +124,52 @@ export async function eventDetailsForAdmin(
     where: { id: eventID },
     attributes: [...adminEventGetEventAttrs],
     include: [
-      // First include all questions (also non-public for the form)
+      // Include all questions (also non-public for the form)
       {
         model: Question,
         attributes: [...eventGetQuestionAttrs],
       },
-      // Include quotas..
-      {
-        model: Quota,
-        attributes: [...eventGetQuotaAttrs],
-        // ... and signups of quotas
-        include: [
-          {
-            model: Signup.scope('active'),
-            attributes: [...eventGetSignupAttrs, 'confirmedAt', 'id', 'email'],
-            required: false,
-            // ... and answers of signups
-            include: [
-              {
-                model: Answer,
-                attributes: [...eventGetAnswerAttrs],
-                required: false,
-              },
-            ],
-          },
-        ],
-      },
     ],
-    order: [
-      [Question, 'order', 'ASC'],
-      [Quota, 'order', 'ASC'],
-      [Quota, Signup, 'createdAt', 'ASC'],
-    ],
+    order: [[Question, 'order', 'ASC']],
   });
+
   if (event === null) {
     // Event not found with id, probably deleted
     throw new NotFound('No event found with id');
   }
+
+  const quotas = await Quota.findAll({
+    where: { eventId: event.id },
+    attributes: [...eventGetQuotaAttrs],
+    // Include all signups for the quotas
+    include: [
+      {
+        model: Signup.scope('active'),
+        attributes: [...eventGetSignupAttrs, 'confirmedAt', 'id', 'email'],
+        required: false,
+        // ... and answers of signups
+        include: [
+          {
+            model: Answer,
+            attributes: [...eventGetAnswerAttrs],
+            required: false,
+          },
+        ],
+      },
+    ],
+    // First sort by Quota order, then by signup creation date
+    order: [
+      ['order', 'ASC'],
+      [Signup, 'createdAt', 'ASC'],
+    ],
+  });
 
   // Admins get a simple result with many columns
   return stringifyDates({
     ...event.get({ plain: true }),
     questions: event.questions!.map((question) => question.get({ plain: true })),
     updatedAt: event.updatedAt,
-    quotas: event.quotas!.map((quota) => ({
+    quotas: quotas.map((quota) => ({
       ...quota.get({ plain: true }),
       signups: quota.signups!.map((signup) => ({
         ...signup.get({ plain: true }),
