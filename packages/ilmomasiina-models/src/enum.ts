@@ -42,4 +42,5 @@ export enum ErrorCode {
   CANNOT_DELETE_SELF = 'CannotDeleteSelf',
   INITIAL_SETUP_NEEDED = 'InitialSetupNeeded',
   INITIAL_SETUP_ALREADY_DONE = 'InitialSetupAlreadyDone',
+  NO_SUCH_EVENT = 'NoSuchEvent',
 }

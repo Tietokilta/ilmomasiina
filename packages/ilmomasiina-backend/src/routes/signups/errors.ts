@@ -13,6 +13,11 @@ export class NoSuchQuota extends CustomError {
     super(404, ErrorCode.NO_SUCH_QUOTA, message);
   }
 }
+export class NoSuchEvent extends CustomError {
+  constructor(message: string) {
+    super(404, ErrorCode.NO_SUCH_EVENT, message);
+  }
+}
 
 export class NoSuchSignup extends CustomError {
   constructor(message: string) {

@@ -6,7 +6,7 @@ import { Quota } from '../../models/quota';
 import { Signup } from '../../models/signup';
 import { refreshSignupPositions } from './computeSignupPosition';
 import { generateToken } from './editTokens';
-import { NoSuchQuota, SignupsClosed } from './errors';
+import { NoSuchEvent, NoSuchQuota, SignupsClosed } from './errors';
 
 export const signupsAllowed = (event: Event) => {
   if (event.registrationStartDate === null || event.registrationEndDate === null) {
@@ -36,14 +36,17 @@ export default async function createSignup(
   if (!quota) {
     throw new NoSuchQuota('Quota doesn\'t exist.');
   }
+  if (!quota.event) {
+    throw new NoSuchEvent('Event doesn\'t exist.');
+  }
 
-  if (!signupsAllowed(quota.event!)) {
+  if (!signupsAllowed(quota.event)) {
     throw new SignupsClosed('Signups closed for this event.');
   }
 
   // Create the signup.
   const newSignup = await Signup.create({ quotaId: request.body.quotaId });
-  await refreshSignupPositions(quota.event!);
+  await refreshSignupPositions(quota.event);
 
   const editToken = generateToken(newSignup.id);
 
