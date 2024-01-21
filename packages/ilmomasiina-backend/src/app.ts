@@ -7,6 +7,7 @@ import ajvFormats from 'ajv-formats';
 import fastify, { FastifyInstance } from 'fastify';
 import cron from 'node-cron';
 import path from 'path';
+import zlib from 'zlib';
 
 import AdminAuthSession from './authentication/adminAuthSession';
 import config from './config';
@@ -106,7 +107,15 @@ export default async function initApp(): Promise<FastifyInstance> {
     });
   }
   // Add on-the-fly compression
-  server.register(fastifyCompress, { inflateIfDeflated: true });
+  server.register(fastifyCompress, {
+    inflateIfDeflated: true,
+    brotliOptions: {
+      params: {
+        [zlib.constants.BROTLI_PARAM_MODE]: zlib.constants.BROTLI_MODE_TEXT, // useful for APIs
+        [zlib.constants.BROTLI_PARAM_QUALITY]: 5, // https://blog.cloudflare.com/results-experimenting-brotli
+      },
+    },
+  });
 
   server.register(setupRoutes, {
     prefix: '/api',
