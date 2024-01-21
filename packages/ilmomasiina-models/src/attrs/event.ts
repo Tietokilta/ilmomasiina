@@ -17,7 +17,7 @@ export const eventGetEventAttrs = [
   'signupsPublic',
   'nameQuestion',
   'emailQuestion',
-] as const;
+];
 
 /** Attributes included in GET /api/admin/events/ID for Event instances. */
 export const adminEventGetEventAttrs = [
@@ -26,7 +26,7 @@ export const adminEventGetEventAttrs = [
   'listed',
   'verificationEmail',
   'updatedAt',
-] as const;
+];
 
 /** Attributes included in results for Question instances. */
 export const eventGetQuestionAttrs = [
@@ -36,14 +36,14 @@ export const eventGetQuestionAttrs = [
   'options',
   'required',
   'public',
-] as const;
+];
 
 /** Attributes included in results for Quota instances. */
 export const eventGetQuotaAttrs = [
   'id',
   'title',
   'size',
-] as const;
+];
 
 /** Attributes included in GET /api/events/ID for Signup instances. */
 export const eventGetSignupAttrs = [
@@ -53,13 +53,14 @@ export const eventGetSignupAttrs = [
   'status',
   'position',
   'createdAt',
-] as const;
+  'confirmedAt',
+];
 
 /** Attributes included in results for Answer instances. */
 export const eventGetAnswerAttrs = [
   'questionId',
   'answer',
-] as const;
+];
 
 /** Attributes included in GET /api/events for Event instances. */
 export const eventListEventAttrs = [
@@ -78,11 +79,11 @@ export const eventListEventAttrs = [
   'facebookUrl',
   'category',
   'signupsPublic',
-] as const;
+];
 
 /** Attributes included in GET /api/admin/events for Event instances. */
 export const adminEventListEventAttrs = [
   ...eventListEventAttrs,
   'draft',
   'listed',
-] as const;
+];
