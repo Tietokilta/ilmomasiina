@@ -1,6 +1,6 @@
 # Build stage:
-FROM node:14-alpine as builder
-
+FROM node:16-alpine as builder
+RUN apk add --no-cache brotli
 # Build-time env variables
 ARG SENTRY_DSN
 ARG PATH_PREFIX
@@ -25,6 +25,10 @@ ENV NODE_ENV=production
 
 # Build all packages
 RUN npm run build
+
+# precompress static files for frontend
+RUN find packages/ilmomasiina-frontend/build -type f\
+  -regex ".*\.\(js\|json\|html\|map\|css\|svg\|ico\|txt\)" -exec gzip -k "{}" \; -exec brotli "{}" \;
 
 # Main stage:
 FROM node:16-alpine
