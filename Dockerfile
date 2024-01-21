@@ -12,6 +12,7 @@ ARG BRANDING_FOOTER_HOME_TEXT
 ARG BRANDING_FOOTER_HOME_LINK
 ARG BRANDING_LOGIN_PLACEHOLDER_EMAIL
 
+
 # Copy source files
 COPY .eslint* package.json pnpm-*.yaml /opt/ilmomasiina/
 COPY packages /opt/ilmomasiina/packages
@@ -35,6 +36,8 @@ FROM node:16-alpine
 
 # Default to production
 ENV NODE_ENV=production
+ARG VERSION = "dev"
+ENV VERSION=$VERSION
 
 # Listen at 0.0.0.0 when inside Docker
 ENV HOST=0.0.0.0

@@ -122,6 +122,8 @@ const config = {
   anonymizeAfterDays: envInteger('ANONYMIZE_AFTER_DAYS', 180),
   /** How long items stay in the database after deletion, in order to allow restoring accidentally deleted items. */
   deletionGracePeriod: envInteger('DELETION_GRACE_PERIOD_DAYS', 14),
+  /** version that is added as a header to requests */
+  version: envString('VERSION', '0.0.0'),
 } as const;
 
 if (!process.env.PORT && config.nodeEnv === 'production') {

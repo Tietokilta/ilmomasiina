@@ -62,7 +62,10 @@ export default async function initApp(): Promise<FastifyInstance> {
       origin: corsOrigins,
     });
   }
-
+  server.addHook('onRequest', (_, reply, done) => {
+    reply.header('x-ilmo-version', config.version);
+    done();
+  });
   // Enforce HTTPS connections in production
   if (config.nodeEnv === 'production') {
     if (config.enforceHttps) {
@@ -94,7 +97,7 @@ export default async function initApp(): Promise<FastifyInstance> {
       setHeaders: (res, filePath) => {
         // set immutable cache for javascript files with hash in the name
         if (javascriptHashRegex.test(filePath)) {
-          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+          res.header('Cache-Control', 'public, max-age=31536000, immutable');
         }
       },
     });
