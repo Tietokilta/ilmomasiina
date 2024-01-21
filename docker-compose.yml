@@ -20,7 +20,8 @@ services:
       - POSTGRES_DB=$DB_DATABASE
     volumes:
       - ./data:/var/lib/postgresql/data
-
+    ports:
+      - "5432:5432"
   ilmomasiina-dev:
     build:
       context: .
@@ -42,11 +43,14 @@ services:
         source: ./packages/ilmomasiina-frontend/public
         target: /opt/ilmomasiina/packages/ilmomasiina-frontend/public
       - type: bind
-        source: ./packages/ilmomasiina-frontend/scripts
-        target: /opt/ilmomasiina/packages/ilmomasiina-frontend/scripts
-      - type: bind
         source: ./packages/ilmomasiina-frontend/src
         target: /opt/ilmomasiina/packages/ilmomasiina-frontend/src
+      - type: bind
+        source: ./packages/ilmomasiina-frontend/vite.config.ts
+        target: /opt/ilmomasiina/packages/ilmomasiina-frontend/vite.config.ts
+      - type: bind
+        source: ./packages/ilmomasiina-frontend/index.html
+        target: /opt/ilmomasiina/packages/ilmomasiina-frontend/index.html
       - type: bind
         source: ./packages/ilmomasiina-components/src
         target: /opt/ilmomasiina/packages/ilmomasiina-components/src
