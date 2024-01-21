@@ -24,6 +24,7 @@ const SignupRow = ({ position, signup }: SignupProps) => {
   const { t } = useTranslation();
 
   const onDelete = useEvent(async () => {
+    // eslint-disable-next-line no-alert
     const confirmation = window.confirm(t('editor.signups.action.delete.confirm'));
     if (confirmation) {
       await dispatch(deleteSignup(signup.id!));

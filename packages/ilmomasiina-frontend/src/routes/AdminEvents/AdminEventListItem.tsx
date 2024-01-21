@@ -29,6 +29,7 @@ const AdminEventListItem = ({ event }: Props) => {
 
   async function onDelete(e: MouseEvent) {
     e.preventDefault();
+    // eslint-disable-next-line no-alert
     const confirmed = window.confirm(t('adminEvents.action.delete.confirm'));
     if (confirmed) {
       try {
