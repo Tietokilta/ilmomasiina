@@ -21,7 +21,7 @@ export function adminLogin(session: AdminAuthSession) {
     // Verify password
     if (!user || !AdminPasswordAuth.verifyHash(request.body.password, user.password)) {
       // Mitigate user enumeration by timing: waste some time if we didn't actually verify a password
-      if (!user) AdminPasswordAuth.createHash('hunter2');
+      if (!user) await new Promise((r) => { setTimeout(r, 1000); });
       throw new Unauthorized('Invalid email or password');
     }
 
