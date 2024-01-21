@@ -11,7 +11,7 @@ export type EventListProps = {
 };
 
 type State = {
-  events?: UserEventListResponse;
+  events: UserEventListResponse;
   pending: boolean;
   error?: ApiError;
 };
@@ -26,7 +26,7 @@ export function useEventListState({ category }: EventListProps = {}) {
   }, [category]);
 
   return useShallowMemo<State>({
-    events: fetchEvents.result,
+    events: fetchEvents.result ?? [],
     pending: fetchEvents.pending,
     error: fetchEvents.error as ApiError | undefined,
   });

@@ -16,8 +16,8 @@ export interface EventTableOptions {
 }
 
 export type EventRow = {
-  isEvent: true;
   id: EventID,
+  type: 'event';
   slug: EventSlug,
   title: string,
   date: Moment | null,
@@ -28,8 +28,8 @@ export type EventRow = {
   totalQuotaSize: number | null;
 };
 export type QuotaRow = {
-  isEvent: false;
-  id: QuotaID | typeof OPENQUOTA | typeof WAITLIST;
+  type: 'quota' | 'openquota' | 'waitlist';
+  id: QuotaID;
   title?: string;
   signupCount: number;
   quotaSize: number | null;
@@ -45,7 +45,7 @@ export function eventToRows(event: UserEventListItem, { compact }: EventTableOpt
 
   // Event row
   const rows: TableRow[] = [{
-    isEvent: true,
+    type: 'event',
     id,
     signupState: state,
     slug,
@@ -63,7 +63,7 @@ export function eventToRows(event: UserEventListItem, { compact }: EventTableOpt
   // Multiple quotas go on their own rows
   if (quotas.length > 1) {
     quotas.forEach((quota) => rows.push({
-      isEvent: false,
+      type: 'quota',
       id: quota.id,
       title: quota.title,
       signupCount: quota.size ? Math.min(quota.signupCount, quota.size) : quota.signupCount,
@@ -76,8 +76,8 @@ export function eventToRows(event: UserEventListItem, { compact }: EventTableOpt
   // Open quota
   if (openQuotaSize > 0) {
     rows.push({
-      isEvent: false,
-      id: OPENQUOTA,
+      type: 'openquota',
+      id: event.id + OPENQUOTA,
       signupCount: Math.min(overflow, openQuotaSize),
       quotaSize: openQuotaSize,
     });
@@ -86,8 +86,8 @@ export function eventToRows(event: UserEventListItem, { compact }: EventTableOpt
   // Queue/waitlist
   if (overflow > openQuotaSize) {
     rows.push({
-      isEvent: false,
-      id: WAITLIST,
+      type: 'waitlist',
+      id: event.id + WAITLIST,
       signupCount: overflow - openQuotaSize,
       quotaSize: null,
     });
