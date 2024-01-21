@@ -12,46 +12,41 @@ export default async function getAuditLogItems(
   request: FastifyRequest<{ Querystring: AuditLoqQuery }>,
   response: FastifyReply,
 ): Promise<AuditLogResponse> {
-  let where: WhereOptions<AuditLog> & unknown[] = [];
+  const where: WhereOptions<AuditLog> & unknown[] = [];
   if (request.query.user) {
-    where = [
-      ...where,
+    where.push(
       { user: { [Op.like]: `%${request.query.user}%` } },
-    ];
+    );
   }
   if (request.query.ip) {
-    where = [
-      ...where,
+    where.push(
       { ipAddress: { [Op.like]: `%${request.query.ip}%` } },
-    ];
+    );
   }
   if (request.query.action) {
-    where = [
-      ...where,
+    where.push(
       { action: { [Op.in]: request.query.action } },
-    ];
+    );
   }
   if (request.query.event) {
-    where = [
-      ...where,
+    where.push(
       {
         [Op.or]: [
           { eventId: request.query.event },
           { eventName: { [Op.like]: `%${request.query.event}%` } },
         ],
       },
-    ];
+    );
   }
   if (request.query.signup) {
-    where = [
-      ...where,
+    where.push(
       {
         [Op.or]: [
           { signupId: request.query.signup },
           { signupName: { [Op.like]: `%${request.query.signup}%` } },
         ],
       },
-    ];
+    );
   }
 
   const logs = await AuditLog.findAndCountAll({
