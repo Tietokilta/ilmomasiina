@@ -19,7 +19,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "incremental": true,
-    "rootDirs": ["src", "test"],
+    "rootDirs": ["src", "test", "."],
     "outDir": "dist",
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
     "baseUrl": ".",
@@ -34,7 +34,8 @@
   ],
   "include": [
     "src/**/*",
-    "test/**/*"
+    "test/**/*",
+    "vitest.config.ts"
   ],
   "references": [
     { "path": "../ilmomasiina-models" }

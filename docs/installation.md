@@ -411,3 +411,17 @@ pre-configured PostgreSQL server, so an external database server is not required
 
 Due to how the dev Docker is set up, you will still need to rebuild the development image if you change the
 dependencies, package.json or ESLint configs. You'll also need Node.js and pnpm installed locally to do that.
+
+### Test database setup
+
+To run tests, you'll likely want another test database so test data doesn't clutter your manual development database.
+
+1. Follow the same steps as in [the usual database setup](#database-setup), but name the database something different. This example uses `ilmo_test`.
+2. Create a `.env.test` file at the root of this repository. Assuming your test database runs on the same MySQL/Postgres server, just put this in:
+    ```shell
+    DB_DATABASE=ilmo_test
+    RESET_TEST_DB_ON_START=1
+    ```
+    - The latter line truncates all database tables whenever you run `npm test` to avoid the test database growing.
+      **Make absolutely sure you're not using an important database when you add it.** It may be a good idea to move your
+      regular database configs to `.env.development` or `.env.production`, and copy the necessary bits over to `.env.test`.

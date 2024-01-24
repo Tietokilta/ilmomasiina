@@ -16,6 +16,7 @@ module.exports = {
     "**/dist/**",
     "**/build/**",
     ".eslintrc.js",
+    "jest.config.js",
     "*.scss",
     "*.json"
   ],

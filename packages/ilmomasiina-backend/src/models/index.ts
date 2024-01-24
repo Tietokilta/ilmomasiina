@@ -21,6 +21,14 @@ export function getSequelize() {
   return sequelize;
 }
 
+export async function closeDatabase() {
+  if (sequelize) {
+    const old = sequelize;
+    sequelize = null;
+    await old.close();
+  }
+}
+
 async function runMigrations() {
   if (!sequelize) throw new Error();
   const storage = new SequelizeStorage({ sequelize });
@@ -36,7 +44,7 @@ async function runMigrations() {
 }
 
 export default async function setupDatabase() {
-  if (sequelize) return;
+  if (sequelize) return sequelize;
 
   debugLog('Connecting to database');
   sequelize = new Sequelize(sequelizeConfig.default);
@@ -99,4 +107,6 @@ export default async function setupDatabase() {
   Answer.belongsTo(Question);
 
   await runMigrations();
+
+  return sequelize;
 }
