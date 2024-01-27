@@ -420,8 +420,9 @@ To run tests, you'll likely want another test database so test data doesn't clut
 2. Create a `.env.test` file at the root of this repository. Assuming your test database runs on the same MySQL/Postgres server, just put this in:
     ```shell
     DB_DATABASE=ilmo_test
-    RESET_TEST_DB_ON_START=1
+    THIS_IS_A_TEST_DB_AND_CAN_BE_WIPED=1
     ```
-    - The latter line truncates all database tables whenever you run `npm test` to avoid the test database growing.
-      **Make absolutely sure you're not using an important database when you add it.** It may be a good idea to move your
-      regular database configs to `.env.development` or `.env.production`, and copy the necessary bits over to `.env.test`.
+    - The latter line is required to avoid accidental loss of data, because the test suite truncates all database
+      tables whenever you run `npm test`. **Make absolutely sure you're not using an important database for testing.**
+      You most likely want to move your regular database configs to `.env.development` or `.env.production`, and copy
+      the necessary bits over to `.env.test`.

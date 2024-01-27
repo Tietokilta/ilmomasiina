@@ -1,4 +1,5 @@
-import { afterAll, beforeAll } from 'vitest';
+import { faker } from '@faker-js/faker';
+import { afterAll, beforeAll, beforeEach } from 'vitest';
 
 import initApp from '../src/app';
 import setupDatabase, { closeDatabase } from '../src/models';
@@ -12,4 +13,14 @@ beforeAll(async () => {
 afterAll(async () => {
   await server.close();
   await closeDatabase();
+});
+
+beforeEach(async () => {
+  // Ensure deterministic test data.
+  faker.seed(133742069);
+  // Delete test data that can conflict between tests.
+  await sequelize.getQueryInterface().bulkDelete('user', {}, { truncate: true, cascade: true } as any);
+  // Event truncation cascades to all other event data:
+  await sequelize.getQueryInterface().bulkDelete('event', {}, { truncate: true, cascade: true } as any);
+  await sequelize.getQueryInterface().bulkDelete('auditlog', {}, { truncate: true, cascade: true } as any);
 });
