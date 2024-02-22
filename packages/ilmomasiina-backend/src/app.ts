@@ -50,7 +50,8 @@ export default async function initApp(): Promise<FastifyInstance> {
     httpPart === 'body' ? bodyCompiler.compile(schema) : defaultCompiler.compile(schema)
   ));
 
-  // Enable admin registration if no users are present
+  // Enable admin registration if no users are present.
+  // The "cached" flag is present to prevent an unnecessary DB check on every /api/events call.
   server.decorate('initialSetupDone', await isInitialSetupDone());
 
   // Register fastify-sensible (https://github.com/fastify/fastify-sensible)

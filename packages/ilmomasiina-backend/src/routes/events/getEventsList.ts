@@ -10,7 +10,7 @@ import { Event } from '../../models/event';
 import { Quota } from '../../models/quota';
 import { Signup } from '../../models/signup';
 import { ascNullsFirst } from '../../models/util';
-import { InitialSetupNeeded } from '../admin/users/createInitialUser';
+import { InitialSetupNeeded, isInitialSetupDone } from '../admin/users/createInitialUser';
 import { stringifyDates } from '../utils';
 
 function eventOrder(): Order {
@@ -29,7 +29,7 @@ export async function getEventsListForUser(
   reply: FastifyReply,
 ): Promise<UserEventListResponse> {
   // When the application hasn't been set up for the first time, throw an error.
-  if (!this.initialSetupDone) {
+  if (!this.initialSetupDone && !(await isInitialSetupDone())) {
     throw new InitialSetupNeeded('Initial setup of Ilmomasiina is needed.');
   }
 
