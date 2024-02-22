@@ -1,0 +1,114 @@
+name: Lint & test
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [dev]
+    types: [synchronize, opened, reopened, ready_for_review]
+  workflow_call:
+
+jobs:
+  lint:
+    name: ESLint
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+
+    - name: Check out the repo
+      uses: actions/checkout@v4
+
+    - uses: pnpm/action-setup@v3
+      with:
+        version: 8
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: 'pnpm'
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile --ignore-scripts
+
+    - name: Run ESLint
+      run: npm run lint
+
+  typecheck:
+    name: Type checking
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+
+    - name: Check out the repo
+      uses: actions/checkout@v4
+
+    - uses: pnpm/action-setup@v3
+      with:
+        version: 8
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: 'pnpm'
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile --ignore-scripts
+
+    - name: Run type checking
+      run: npm run typecheck
+
+  test:
+    name: Tests
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        # https://docs.github.com/en/actions/using-containerized-services/creating-postgresql-service-containers
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+
+    - name: Check out the repo
+      uses: actions/checkout@v4
+
+    - uses: pnpm/action-setup@v3
+      with:
+        version: 8
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: 'pnpm'
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile --ignore-scripts
+
+    - name: Run tests
+      run: |
+        cp .env.test.example .env.test
+        npm run test
+      # Non-database test variables are kept in a separate file
+      env:
+        DB_DIALECT: postgres
+        DB_HOST: localhost
+        DB_USER: postgres
+        DB_PASSWORD: testpass
+        DB_DATABASE: testdb
+        THIS_IS_A_TEST_DB_AND_CAN_BE_WIPED: 1
