@@ -181,10 +181,10 @@ const editorEventToServer = (form: EditorEvent): EventUpdateBody => ({
     form.eventType === EditorEventType.ONLY_EVENT ? null : form.registrationEndDate?.toISOString() ?? null,
   quotas: form.quotas,
   openQuotaSize: form.useOpenQuota ? form.openQuotaSize : 0,
-  questions: form.questions.map((question) => ({
+  questions: form.questions?.map((question) => ({
     ...question,
     options: question.type === 'select' || question.type === 'checkbox' ? question.options : null,
-  })),
+  })) ?? [],
 });
 
 export const getEvent = (id: EventID) => async (dispatch: DispatchAction, getState: GetState) => {

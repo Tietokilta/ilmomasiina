@@ -35,7 +35,7 @@ EventUpdateBody, 'quotas' | 'questions' | 'date' | 'endDate' | 'registrationStar
   date: Date | undefined;
   endDate: Date | undefined;
 
-  questions: EditorQuestion[];
+  questions?: EditorQuestion[];
 
   registrationStartDate: Date | undefined;
   registrationEndDate: Date | undefined;
