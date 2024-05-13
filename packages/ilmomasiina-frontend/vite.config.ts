@@ -5,7 +5,7 @@ import { defineConfig } from 'vite';
 import checker from 'vite-plugin-checker';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
-import momentPlugin from './src/rollupMomentPlugin';
+import momentPlugin from './rollupMomentPlugin';
 
 /* eslint-disable no-console */
 

@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -20,24 +16,20 @@
     "jsx": "react",
     "incremental": true,
     "outDir": "dist",
-    "rootDirs": [
-      "src",
-      "."
-    ],
+    "rootDirs": ["src", "."],
     "baseUrl": ".",
     "paths": {
-      "@tietokilta/ilmomasiina-components": ["../ilmomasiina-components/src/index.ts"],
-      "@tietokilta/ilmomasiina-components/dist/*": ["../ilmomasiina-components/src/*"],
+      "@tietokilta/ilmomasiina-components": [
+        "../ilmomasiina-components/src/index.ts"
+      ],
+      "@tietokilta/ilmomasiina-components/dist/*": [
+        "../ilmomasiina-components/src/*"
+      ],
       "@tietokilta/ilmomasiina-models": ["../ilmomasiina-models/src/index.ts"]
     }
   },
-  "exclude": [
-    "dist"
-  ],
-  "include": [
-    "src",
-    "vite.config.ts"
-  ],
+  "exclude": ["dist"],
+  "include": ["src", "vite.config.ts", "rollupMomentPlugin.ts"],
   "references": [
     { "path": "../ilmomasiina-components" },
     { "path": "../ilmomasiina-models" }
