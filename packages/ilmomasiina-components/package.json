@@ -26,8 +26,6 @@
   },
   "dependencies": {
     "@tietokilta/ilmomasiina-models": "workspace:2.0.0-alpha13",
-    "@types/lodash-es": "^4.17.12",
-    "@types/react": "^17.0.75",
     "bootstrap": "^4.6.2",
     "final-form": "^4.20.10",
     "i18next": "^23.10.0",
@@ -46,6 +44,8 @@
   },
   "devDependencies": {
     "rimraf": "^5.0.5",
-    "typescript": "~5.2.2"
+    "typescript": "~5.2.2",
+    "@types/lodash-es": "^4.17.12",
+    "@types/react": "^17.0.75"
   }
 }

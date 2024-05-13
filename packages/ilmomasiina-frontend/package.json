@@ -17,16 +17,6 @@
     "@sentry/browser": "^6.19.7",
     "@tietokilta/ilmomasiina-components": "workspace:2.0.0-alpha13",
     "@tietokilta/ilmomasiina-models": "workspace:2.0.0-alpha13",
-    "@types/history": "^4.7.11",
-    "@types/lodash-es": "^4.17.12",
-    "@types/node": "^18",
-    "@types/node-sass": "^4.11.7",
-    "@types/react": "^17.0.75",
-    "@types/react-datepicker": "^4.19.6",
-    "@types/react-dom": "^17.0.25",
-    "@types/react-redux": "^7.1.33",
-    "@types/react-router-dom": "^5.3.3",
-    "@vitejs/plugin-react": "^4.2.1",
     "bootstrap": "^4.6.2",
     "connected-react-router": "^6.9.3",
     "csv-stringify": "^6.4.5",
@@ -57,14 +47,24 @@
     "redux-persist": "^6.0.0",
     "redux-thunk": "^2.4.2",
     "reselect": "^4.1.8",
-    "sass": "^1.71.1",
+    "sass": "^1.71.1"
+  },
+  "devDependencies": {
     "ts-node": "^10.9.2",
     "typescript": "~5.2.2",
     "vite": "^5.1.4",
     "vite-plugin-checker": "^0.6.4",
-    "vite-tsconfig-paths": "^4.3.1"
-  },
-  "devDependencies": {
+    "vite-tsconfig-paths": "^4.3.1",
+    "@types/history": "^4.7.11",
+    "@types/lodash-es": "^4.17.12",
+    "@types/node": "^20.12.11",
+    "@types/node-sass": "^4.11.7",
+    "@types/react": "^17.0.75",
+    "@types/react-datepicker": "^4.19.6",
+    "@types/react-dom": "^17.0.25",
+    "@types/react-redux": "^7.1.33",
+    "@types/react-router-dom": "^5.3.3",
+    "@vitejs/plugin-react": "^4.2.1",
     "rimraf": "^5.0.5"
   }
 }

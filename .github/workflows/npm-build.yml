@@ -10,7 +10,6 @@ jobs:
       packages: write
       contents: read
     steps:
-
       - name: Check out the repo
         uses: actions/checkout@v4
 
@@ -19,9 +18,9 @@ jobs:
       - name: Setup Node.js for NPM
         uses: actions/setup-node@v4
         with:
-          registry-url: 'https://registry.npmjs.org'
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
+          registry-url: "https://registry.npmjs.org"
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -41,7 +40,7 @@ jobs:
       - name: Setup Node.js for GitHub Packages
         uses: actions/setup-node@v4
         with:
-          registry-url: 'https://npm.pkg.github.com'
+          registry-url: "https://npm.pkg.github.com"
 
       - name: Publish to GitHub Packages
         run: |

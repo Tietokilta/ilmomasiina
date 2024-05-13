@@ -4,7 +4,7 @@
 # Node modules will be installed at the build phase and included in the container image.
 # Sources and other files are intended to be provided using bind mounts.
 
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /opt/ilmomasiina
 
@@ -13,27 +13,27 @@ COPY .eslint* package.json pnpm-*.yaml ./
 
 # Copy static resources from each package
 COPY packages/ilmomasiina-frontend/package.json \
-     packages/ilmomasiina-frontend/tsconfig.json \
-     packages/ilmomasiina-frontend/.eslint* \
-     packages/ilmomasiina-frontend/
+  packages/ilmomasiina-frontend/tsconfig.json \
+  packages/ilmomasiina-frontend/.eslint* \
+  packages/ilmomasiina-frontend/
 
 COPY packages/ilmomasiina-components/package.json \
-     packages/ilmomasiina-components/tsconfig.json \
-     packages/ilmomasiina-components/.eslint* \
-     packages/ilmomasiina-components/
+  packages/ilmomasiina-components/tsconfig.json \
+  packages/ilmomasiina-components/.eslint* \
+  packages/ilmomasiina-components/
 
 COPY packages/ilmomasiina-backend/package.json \
-     packages/ilmomasiina-backend/tsconfig.json \
-     packages/ilmomasiina-backend/.eslint* \
-     packages/ilmomasiina-backend/
+  packages/ilmomasiina-backend/tsconfig.json \
+  packages/ilmomasiina-backend/.eslint* \
+  packages/ilmomasiina-backend/
 
 COPY packages/ilmomasiina-models/package.json \
-     packages/ilmomasiina-models/tsconfig.json \
-     packages/ilmomasiina-models/
+  packages/ilmomasiina-models/tsconfig.json \
+  packages/ilmomasiina-models/
 
 ENV NODE_ENV=development
 
 ENV HOST=0.0.0.0
 
 # Install dependencies (we're running as root, so the postinstall script doesn't run automatically)
-RUN npm install -g pnpm@8 && pnpm install --frozen-lockfile
+RUN corepack enable && pnpm install --frozen-lockfile

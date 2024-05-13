@@ -1,6 +1,5 @@
 # Build stage:
-FROM node:18-alpine as builder
-
+FROM node:20-alpine as builder
 RUN apk add --no-cache brotli
 
 # Build-time env variables
@@ -33,7 +32,7 @@ RUN find packages/ilmomasiina-frontend/build -type f\
   -regex ".*\.\(js\|json\|html\|map\|css\|svg\|ico\|txt\)" -exec gzip -k "{}" \; -exec brotli "{}" \;
 
 # Main stage:
-FROM node:18-alpine
+FROM node:20-alpine
 
 # Accept VERSION at build time, pass to backend server
 ARG VERSION
