@@ -55,6 +55,7 @@ export async function testEvent({
     webpageUrl: faker.internet.url(),
     category: faker.lorem.words({ min: 1, max: 2 }),
     draft: false,
+    telegramQuestion: true,
     verificationEmail: faker.lorem.paragraphs({ min: 1, max: 5 }),
   });
   if (hasDate) {
@@ -166,6 +167,9 @@ export async function testSignups(
           firstName: signup.firstName ?? undefined,
           lastName: signup.lastName ?? undefined,
         });
+      }
+      if (event.telegramQuestion) {
+        signup.telegram = faker.person.firstName() + faker.person.lastName();
       }
     } else {
       // Unconfirmed signup

@@ -94,6 +94,7 @@ ADD `category` VARCHAR(255) NOT NULL DEFAULT '' AFTER `webpageUrl`;
 ALTER TABLE `event`
 ADD `nameQuestion` BOOLEAN NOT NULL DEFAULT 1 AFTER `signupsPublic`,
 ADD `emailQuestion` BOOLEAN NOT NULL DEFAULT 1 AFTER `signupsPublic`;
+ADD `telegramQuestion`BOOLEAN NOT NULL DEFAULT ! AFTER `signupsPublic`;
 
 -- allow hiding names in signups
 

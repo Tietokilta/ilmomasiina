@@ -40,6 +40,7 @@ const SignupRow = ({ position, signup }: SignupProps) => {
       {signup.confirmed && event.nameQuestion && <td key="firstName">{signup.firstName}</td>}
       {signup.confirmed && event.nameQuestion && <td key="lastName">{signup.lastName}</td>}
       {signup.confirmed && event.emailQuestion && <td key="email">{signup.email}</td>}
+      {signup.confirmed && event.telegramQuestion && <td key="telegram">{signup.telegram}</td>}
       {!signup.confirmed && nameEmailCols && (
         <td colSpan={nameEmailCols} className="font-italic">{t('editor.signups.unconfirmed')}</td>
       )}
@@ -92,6 +93,7 @@ const SignupsTab = () => {
             {event.nameQuestion && <th key="firstName">{t('editor.signups.column.firstName')}</th>}
             {event.nameQuestion && <th key="lastName">{t('editor.signups.column.lastName')}</th>}
             {event.emailQuestion && <th key="email">{t('editor.signups.column.email')}</th>}
+            {event.telegramQuestion && <th key="telegram">{t('editor.signups.column.telegram')}</th>}
             <th key="quota">{t('editor.signups.column.quota')}</th>
             {event.questions.map((q) => (
               <th key={q.id}>{q.question}</th>

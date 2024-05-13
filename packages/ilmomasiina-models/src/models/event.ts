@@ -18,6 +18,7 @@ export default interface EventAttributes {
   signupsPublic: boolean;
   nameQuestion: boolean;
   emailQuestion: boolean;
+  telegramQuestion: boolean;
   verificationEmail: string | null;
   updatedAt: Date;
 }

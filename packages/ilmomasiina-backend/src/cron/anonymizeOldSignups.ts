@@ -11,6 +11,7 @@ import { Signup } from '../models/signup';
 const redactedName = 'Deleted';
 const redactedEmail = 'deleted@gdpr.invalid';
 const redactedAnswer = 'Deleted';
+const redactedTelegram = 'Deleted';
 
 const debugLog = debug('app:cron:anonymize');
 
@@ -43,6 +44,9 @@ export default async function anonymizeOldSignups() {
             },
             email: {
               [Op.ne]: redactedEmail,
+            },
+            telegram: {
+              [Op.ne]: redactedTelegram,
             },
           },
         },
@@ -85,6 +89,7 @@ export default async function anonymizeOldSignups() {
       firstName: redactedName,
       lastName: redactedName,
       email: redactedEmail,
+      telegram: redactedTelegram,
     }, {
       where: { id: ids },
     });

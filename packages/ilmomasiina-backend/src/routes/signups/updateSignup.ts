@@ -21,7 +21,7 @@ export default async function updateSignup(
   const updatedSignup = await getSequelize().transaction(async (transaction) => {
     // Retrieve event data and lock the row for editing
     const signup = await Signup.scope('active').findByPk(request.params.id, {
-      attributes: ['id', 'quotaId', 'confirmedAt', 'firstName', 'lastName', 'email', 'language'],
+      attributes: ['id', 'quotaId', 'confirmedAt', 'firstName', 'lastName', 'email', 'telegram', 'language'],
       transaction,
       lock: Transaction.LOCK.UPDATE,
     });
@@ -65,6 +65,13 @@ export default async function updateSignup(
       const { email } = request.body;
       if (!email) throw new BadRequest('Missing email');
       emailField = { email };
+    }
+
+    let telegramField = {};
+    if (notConfirmedYet && event.telegramQuestion) {
+      const { telegram } = request.body;
+      if (!telegram) throw new BadRequest('Missing telegram question');
+      telegramField = { telegram };
     }
 
     // Update signup language if provided
@@ -132,11 +139,12 @@ export default async function updateSignup(
       };
     });
 
-    // Update fields for the signup (name and email only editable on first confirmation)
+    // Update fields for the signup (name, email and telegram only editable on first confirmation)
     const updatedFields = {
       ...nameFields,
       ...emailField,
       ...languageField,
+      ...telegramField,
       namePublic: Boolean(request.body.namePublic),
       confirmedAt: new Date(),
     };

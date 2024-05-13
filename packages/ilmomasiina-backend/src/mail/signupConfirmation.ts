@@ -44,6 +44,7 @@ export default async function sendSignupConfirmationMail(signup: Signup) {
   const params = {
     name: fullName,
     email: signup.email,
+    telegram: signup.telegram,
     quota: quota.title,
     answers: questionFields,
     edited,

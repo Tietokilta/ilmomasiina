@@ -84,6 +84,9 @@ export const userFullEventAttributes = Type.Intersect(
       emailQuestion: Type.Boolean({
         description: 'Whether signups should contain an email field. Also enables confirmation emails.',
       }),
+      telegramQuestion: Type.Boolean({
+        description: 'Whether signups should contain a telegram field.',
+      }),
     }),
   ],
 );

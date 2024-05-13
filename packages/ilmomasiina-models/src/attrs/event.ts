@@ -17,6 +17,7 @@ export const eventGetEventAttrs = [
   'signupsPublic',
   'nameQuestion',
   'emailQuestion',
+  'telegramQuestion',
 ];
 
 /** Attributes included in GET /api/admin/events/ID for Event instances. */

@@ -48,6 +48,10 @@ export const editableSignupAttributes = Type.Object({
     Type.String({ format: 'email' }),
     { description: 'Email of the attendee. Null if not set yet.' },
   ),
+  telegram: Nullable(
+    Type.String(),
+    { description: 'Telegram of the attendee. Null if not set yet.' },
+  ),
   namePublic,
   answers: Type.Array(
     signupAnswer,

@@ -7,6 +7,7 @@ export default interface SignupAttributes {
   lastName: string | null;
   namePublic: boolean;
   email: string | null;
+  telegram: string | null;
   language: string | null;
   confirmedAt: Date | null;
   status: SignupStatus | null;

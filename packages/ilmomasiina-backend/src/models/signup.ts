@@ -14,8 +14,8 @@ import type { Quota } from './quota';
 import { generateRandomId, RANDOM_ID_LENGTH } from './randomId';
 
 export interface SignupCreationAttributes
-  extends Optional<SignupAttributes, 'id' | 'firstName' | 'lastName' | 'namePublic' | 'email' | 'confirmedAt'
-  | 'language' | 'status' | 'position' | 'createdAt'> {}
+  extends Optional<SignupAttributes, 'id' | 'firstName' | 'lastName' | 'namePublic' | 'email' | 'telegram'
+  | 'confirmedAt' | 'language' | 'status' | 'position' | 'createdAt'> {}
 
 export class Signup extends Model<SignupAttributes, SignupCreationAttributes> implements SignupAttributes {
   public id!: string;
@@ -23,6 +23,7 @@ export class Signup extends Model<SignupAttributes, SignupCreationAttributes> im
   public lastName!: string | null;
   public namePublic!: boolean;
   public email!: string | null;
+  public telegram!: string | null;
   public language!: string | null;
   public confirmedAt!: Date | null;
   public status!: SignupStatus | null;
@@ -82,6 +83,12 @@ export default function setupSignupModel(sequelize: Sequelize) {
         type: DataTypes.STRING,
         validate: {
           isEmail: true,
+        },
+      },
+      telegram: {
+        type: DataTypes.STRING,
+        validate: {
+          notEmpty: true,
         },
       },
       language: {

@@ -39,6 +39,7 @@ export class Event extends Model<EventManualAttributes, EventCreationAttributes>
   public signupsPublic!: boolean;
   public nameQuestion!: boolean;
   public emailQuestion!: boolean;
+  public telegramQuestion!: boolean;
   public verificationEmail!: string | null;
 
   public questions?: Question[];
@@ -153,6 +154,11 @@ export default function setupEventModel(sequelize: Sequelize) {
         defaultValue: true,
       },
       emailQuestion: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true,
+      },
+      telegramQuestion: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: true,

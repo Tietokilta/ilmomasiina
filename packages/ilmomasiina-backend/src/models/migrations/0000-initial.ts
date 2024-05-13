@@ -83,6 +83,11 @@ export default defineMigration({
           allowNull: false,
           defaultValue: true,
         },
+        telegramQuestion: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
+          defaultValue: true,
+        },
         verificationEmail: {
           type: DataTypes.TEXT,
         },
@@ -170,6 +175,9 @@ export default defineMigration({
           defaultValue: false,
         },
         email: {
+          type: DataTypes.STRING,
+        },
+        telegram: {
           type: DataTypes.STRING,
         },
         confirmedAt: {
@@ -307,6 +315,11 @@ export default defineMigration({
           primaryKey: true,
         },
         email: {
+          type: DataTypes.STRING,
+          allowNull: false,
+          unique: true,
+        },
+        telegram: {
           type: DataTypes.STRING,
           allowNull: false,
           unique: true,

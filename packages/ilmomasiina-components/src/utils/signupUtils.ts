@@ -116,6 +116,7 @@ export type FormattedSignup = {
   firstName: string | null;
   lastName: string | null;
   email: string | null;
+  telegram: string | null;
   answers: Record<QuestionID, string | string[]>;
   quota: string;
   createdAt: string;
@@ -124,9 +125,11 @@ export type FormattedSignup = {
 
 /** Formats all signups to an event into a single list. */
 export function getSignupsForAdminList(event: AdminEventResponse): FormattedSignup[] {
-  const signupsArray = getSignupsAsList(event);
+  const signupsArray:(SignupWithQuota<any>)[] = getSignupsAsList(event);
   const sorted = orderBy(signupsArray, [
-    (signup) => [SignupStatus.IN_QUOTA, SignupStatus.IN_OPEN_QUOTA, SignupStatus.IN_QUEUE, null].indexOf(signup.status),
+    (signup) => {
+      [SignupStatus.IN_QUOTA, SignupStatus.IN_OPEN_QUOTA, SignupStatus.IN_QUEUE, null].indexOf(signup.status);
+    },
     'createdAt',
   ]);
 
@@ -160,6 +163,7 @@ export function convertSignupsToCSV(event: AdminEventResponse, signups: Formatte
     [
       ...(event.nameQuestion ? ['Etunimi', 'Sukunimi'] : []),
       ...(event.emailQuestion ? ['Sähköpostiosoite'] : []),
+      ...(event.telegramQuestion ? ['Telegram-nick tai Puhelinnumero'] : []),
       'Kiintiö',
       ...event.questions.map(({ question }) => question),
       'Ilmoittautumisaika',

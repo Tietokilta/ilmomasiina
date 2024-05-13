@@ -10,6 +10,7 @@ import Questions from './Questions';
 const QuestionsTab = () => {
   const nameQuestion = useFieldValue<boolean>('nameQuestion');
   const emailQuestion = useFieldValue<boolean>('emailQuestion');
+  const telegramQuestion = useFieldValue<boolean>('telephoneQuestion');
   const { t } = useTranslation();
   return (
     <div>
@@ -37,6 +38,19 @@ const QuestionsTab = () => {
           emailQuestion
             ? t('editor.questions.emailQuestion.infoOn')
             : t('editor.questions.emailQuestion.infoOff')
+        }
+      />
+      <FieldRow
+        name="telegramQuestion"
+        label={t('editor.questions.telegramQuestion')}
+        as={Form.Check}
+        type="checkbox"
+        checkAlign
+        checkLabel={t('editor.questions.telegramQuestion.check')}
+        help={
+          telegramQuestion
+            ? t('editor.questions.telegramQuestion.infoOn')
+            : t('editor.questions.telegramQuestion.infoOff')
         }
       />
       <Questions />
