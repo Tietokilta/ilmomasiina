@@ -4,13 +4,13 @@ import { Counter, Rate, Trend } from "k6/metrics";
 
 // Define custom metrics for events list and individual events
 const eventsListMetrics = {
-  http_req_duration: new Trend("http_req_duration_events_list"),
+  http_req_duration: new Trend("http_req_duration_events_list", true),
   http_req_failed: new Rate("http_req_failed_events_list"),
   http_reqs: new Counter("http_reqs_events_list"),
 };
 
 const individualEventsMetrics = {
-  http_req_duration: new Trend("http_req_duration_individual_events"),
+  http_req_duration: new Trend("http_req_duration_individual_events", true),
   http_req_failed: new Rate("http_req_failed_individual_events"),
   http_reqs: new Counter("http_reqs_individual_events"),
 };
