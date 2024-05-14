@@ -20,5 +20,6 @@
     ],
     // Used server-side.
     "no-console": "off"
-  }
+  },
+  "ignorePatterns": ["loadTest.js"]
 }
