@@ -75,6 +75,7 @@
     "@types/debug": "^4.1.12",
     "@types/email-templates": "^10.0.4",
     "@types/http-errors": "^2.0.4",
+    "@types/k6": "^0.51.0",
     "@types/lodash": "^4.14.202",
     "@types/node": "^18",
     "@types/node-cron": "^3.0.11",
