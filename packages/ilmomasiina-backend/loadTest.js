@@ -34,7 +34,6 @@ export const options = {
       vus: 100,
       duration: "30s",
       tags: { my_custom_tag: "events_list" },
-      env: { MYVAR: "events_list" },
     },
     individual_events: {
       executor: "constant-vus",
@@ -43,14 +42,11 @@ export const options = {
       startTime: "30s",
       duration: "30s",
       tags: { my_custom_tag: "individual_events" },
-      env: { MYVAR: "individual_events" },
     },
   },
 };
 
 export function eventsList(data) {
-  if (__ENV.MYVAR !== "events_list") fail();
-
   let url = data.eventsList;
   let res = http.get(url);
 
@@ -66,8 +62,6 @@ export function eventsList(data) {
 }
 
 export function individualEvents(data) {
-  if (__ENV.MYVAR !== "individual_events") fail();
-
   let route =
     data.eventRoutes[Math.floor(Math.random() * data.eventRoutes.length)];
   let res = http.get(route);
