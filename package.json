@@ -16,7 +16,8 @@
     "lint": "eslint packages",
     "lint:fix": "npm run lint -- --fix",
     "typecheck": "pnpm run -r --workspace-concurrency=1 typecheck",
-    "test": "pnpm run -r test"
+    "test": "pnpm run -r test",
+    "test:backend": "pnpm run --filter ilmomasiina-backend test"
   },
   "repository": {
     "type": "git",

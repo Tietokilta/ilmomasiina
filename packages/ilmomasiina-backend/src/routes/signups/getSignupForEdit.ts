@@ -6,7 +6,7 @@ import { Event } from '../../models/event';
 import { Question } from '../../models/question';
 import { Quota } from '../../models/quota';
 import { Signup } from '../../models/signup';
-import { stringifyDates } from '../utils';
+import { StringifyApi } from '../utils';
 import { NoSuchSignup } from './errors';
 
 /** Requires editTokenVerification */
@@ -46,19 +46,19 @@ export default async function getSignupForEdit(
 
   const response = {
     signup: {
-      ...stringifyDates(signup.get({ plain: true })),
+      ...signup.get({ plain: true }),
       confirmed: Boolean(signup.confirmedAt),
       status: signup.status,
       answers: signup.answers!,
       quota: signup.quota!,
     },
     event: {
-      ...stringifyDates(event.get({ plain: true })),
+      ...event.get({ plain: true }),
       questions: event.questions!.map((question) => question.get({ plain: true })),
     },
   };
 
   reply.status(200);
 
-  return response;
+  return response as unknown as StringifyApi<typeof response>;
 }
