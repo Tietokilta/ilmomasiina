@@ -7,6 +7,7 @@
     "node": "^18",
     "npm": "^7"
   },
+  "packageManager": "pnpm@9.1.1",
   "scripts": {
     "bootstrap": "pnpm install",
     "clean": "pnpm run -r clean",
@@ -37,7 +38,6 @@
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-simple-import-sort": "^12.0.0",
-    "pnpm": "^8.15.3",
     "typescript": "~5.2.2"
   },
   "browserslist": {
