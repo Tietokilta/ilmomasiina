@@ -31,7 +31,7 @@ export const options = {
     events_list: {
       executor: "constant-vus",
       exec: "eventsList",
-      vus: 50,
+      vus: 100,
       duration: "30s",
       tags: { my_custom_tag: "events_list" },
       env: { MYVAR: "events_list" },
@@ -39,7 +39,7 @@ export const options = {
     individual_events: {
       executor: "constant-vus",
       exec: "individualEvents",
-      vus: 50,
+      vus: 100,
       startTime: "30s",
       duration: "30s",
       tags: { my_custom_tag: "individual_events" },
