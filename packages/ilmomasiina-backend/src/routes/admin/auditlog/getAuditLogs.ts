@@ -4,7 +4,7 @@ import { Op, WhereOptions } from 'sequelize';
 import type { AuditLogResponse, AuditLoqQuery } from '@tietokilta/ilmomasiina-models';
 import { auditLoqQuery } from '@tietokilta/ilmomasiina-models';
 import { AuditLog } from '../../../models/auditlog';
-import { stringifyDates } from '../../utils';
+import { StringifyApi } from '../../utils';
 
 const MAX_LOGS = 100;
 
@@ -57,11 +57,12 @@ export default async function getAuditLogItems(
   });
 
   response.status(200);
-  return {
-    rows: logs.rows.map((r) => stringifyDates({
+  const res = {
+    rows: logs.rows.map((r) => ({
       ...r.get({ plain: true }),
       createdAt: r.createdAt,
     })),
     count: logs.count,
   };
+  return res as unknown as StringifyApi<typeof res>;
 }

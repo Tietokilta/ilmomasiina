@@ -8,7 +8,7 @@ import { Event } from '../../../models/event';
 import { Question } from '../../../models/question';
 import { Quota } from '../../../models/quota';
 import { eventDetailsForAdmin } from '../../events/getEventDetails';
-import { stringifyDates, toDate } from '../../utils';
+import { toDate } from '../../utils';
 
 export default async function createEvent(
   request: FastifyRequest<{ Body: EventCreateBody }>,
@@ -55,5 +55,5 @@ export default async function createEvent(
   const eventDetails = await eventDetailsForAdmin(event.id);
 
   response.status(201);
-  return stringifyDates(eventDetails);
+  return eventDetails;
 }

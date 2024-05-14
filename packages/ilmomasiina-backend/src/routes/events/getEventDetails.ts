@@ -18,7 +18,7 @@ import { Event } from '../../models/event';
 import { Question } from '../../models/question';
 import { Quota } from '../../models/quota';
 import { Signup } from '../../models/signup';
-import { stringifyDates } from '../utils';
+import { StringifyApi } from '../utils';
 
 export async function eventDetailsForUser(
   eventSlug: EventSlug,
@@ -87,15 +87,15 @@ export async function eventDetailsForUser(
     registrationClosed = now > endDate;
   }
 
-  return {
-    ...stringifyDates(event.get({ plain: true })),
+  const res = {
+    ...(event.get({ plain: true })),
     questions: event.questions!.map((question) => question.get({ plain: true })),
     quotas: quotas.map((quota) => ({
       ...quota.get({ plain: true }),
       signups: event.signupsPublic // Hide all signups from non-admins if answers are not public
         // When signups are public:
         ? quota.signups!.map((signup) => ({
-          ...stringifyDates(signup.get({ plain: true })),
+          ...(signup.get({ plain: true })),
           // Hide name if necessary
           firstName: event.nameQuestion && signup.namePublic ? signup.firstName : null,
           lastName: event.nameQuestion && signup.namePublic ? signup.lastName : null,
@@ -111,6 +111,7 @@ export async function eventDetailsForUser(
     millisTillOpening,
     registrationClosed,
   };
+  return res as unknown as StringifyApi<typeof res>;
 }
 
 export async function eventDetailsForAdmin(
@@ -165,7 +166,7 @@ export async function eventDetailsForAdmin(
   });
 
   // Admins get a simple result with many columns
-  return stringifyDates({
+  const res = {
     ...event.get({ plain: true }),
     questions: event.questions!.map((question) => question.get({ plain: true })),
     updatedAt: event.updatedAt,
@@ -179,7 +180,8 @@ export async function eventDetailsForAdmin(
       })),
       signupCount: quota.signups!.length,
     })),
-  });
+  };
+  return res as unknown as StringifyApi<typeof res>;
 }
 
 export async function getEventDetailsForUser(
