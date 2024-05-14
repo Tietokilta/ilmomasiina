@@ -44,7 +44,7 @@ export default async function initApp(): Promise<FastifyInstance> {
 
   const server = fastify({
     trustProxy: config.isAzure || config.trustProxy, // Get IPs from X-Forwarded-For
-    logger: config.nodeEnv !== 'test', // Enable logger when not testing
+    logger: !['test', 'bench'].some((env) => env === config.nodeEnv), // Enable logger when not testing or benchmarking
   });
   server.setValidatorCompiler(({ httpPart, schema }) => (
     httpPart === 'body' ? bodyCompiler.compile(schema) : defaultCompiler.compile(schema)
