@@ -17,12 +17,12 @@ const individualEventsMetrics = {
 
 // Fetch the dynamic routes in the setup function
 export function setup() {
-  const eventsList = http.get("http://localhost:3001/api/events").json();
+  const eventsList = http.get("http://localhost:3000/api/events").json();
   const eventRoutes = eventsList.map(
-    (event) => `http://localhost:3001/api/events/${event.slug}`
+    (event) => `http://localhost:3000/api/events/${event.slug}`
   );
 
-  return { eventsList: "http://localhost:3001/api/events", eventRoutes };
+  return { eventsList: "http://localhost:3000/api/events", eventRoutes };
 }
 
 export const options = {

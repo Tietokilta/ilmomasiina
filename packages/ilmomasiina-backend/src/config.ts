@@ -25,7 +25,7 @@ if (!process.env.BASE_URL && process.env.EMAIL_BASE_URL) {
 }
 
 const config = {
-  nodeEnv: envEnum('NODE_ENV', ['production', 'development', 'test'], 'development'),
+  nodeEnv: envEnum('NODE_ENV', ['production', 'development', 'test', 'bench'], 'development'),
   /** Whether to log SQL queries from Sequelize. */
   debugDbLogging: envBoolean('DEBUG_DB_LOGGING', false),
 
