@@ -28,6 +28,7 @@ function errorString(
   // - editSignup.errors.default
   // - errors.default
   const keys = types.flatMap((type) => prefixes.map((pre) => `${pre}.${type}.${part}`));
+  // @ts-expect-error TODO: fix this
   return t(keys, params);
 }
 
