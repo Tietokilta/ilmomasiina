@@ -53,20 +53,18 @@ const config = {
 
   /** ClearDB connection string. */
   clearDbUrl: envString('CLEARDB_DATABASE_URL', null),
-  /** `mysql` and `postgres` are supported. */
-  dbDialect: envString('DB_DIALECT', null),
   /** Hostname for the database. */
-  dbHost: envString('DB_HOST', null),
+  dbHost: envString('DB_HOST', undefined),
   /** Port for the database. */
-  dbPort: envInteger('DB_PORT', null),
+  dbPort: envInteger('DB_PORT', 5432),
   /** Whether to use SSL for the database. */
   dbSsl: envBoolean('DB_SSL', false),
   /** Username for the database. */
-  dbUser: envString('DB_USER', null),
+  dbUser: envString('DB_USER', undefined),
   /** Password for the database. */
-  dbPassword: envString('DB_PASSWORD', null),
+  dbPassword: envString('DB_PASSWORD', undefined),
   /** Database name. */
-  dbDatabase: envString('DB_DATABASE', null),
+  dbDatabase: envString('DB_DATABASE', undefined),
   /** Required to run tests, as they reset the test database for every test. */
   allowTestsToResetDb: envBoolean('THIS_IS_A_TEST_DB_AND_CAN_BE_WIPED', false),
 

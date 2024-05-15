@@ -1,10 +1,12 @@
+import { eq } from 'drizzle-orm';
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { HttpError, Unauthorized } from 'http-errors';
 
 import type { AdminLoginBody, AdminLoginResponse } from '@tietokilta/ilmomasiina-models';
 import AdminAuthSession, { AdminTokenData } from '../../authentication/adminAuthSession';
 import AdminPasswordAuth from '../../authentication/adminPasswordAuth';
-import { User } from '../../models/user';
+import { db } from '../../drizzle/db';
+import { userTable } from '../../drizzle/schema';
 import CustomError from '../../util/customError';
 
 export function adminLogin(session: AdminAuthSession) {
@@ -13,20 +15,20 @@ export function adminLogin(session: AdminAuthSession) {
     reply: FastifyReply,
   ): Promise<AdminLoginResponse> => {
     // Verify user
-    const user = await User.findOne({
-      where: { email: request.body.email },
-      attributes: ['id', 'password', 'email'],
-    });
+    const existing = await db.select().from(userTable).where(eq(userTable.email, request.body.email)).execute()
+      .then((res) => (res.length > 0 ? res[0] : null));
 
     // Verify password
-    if (!user || !AdminPasswordAuth.verifyHash(request.body.password, user.password)) {
+    if (!existing || !AdminPasswordAuth.verifyHash(request.body.password, existing.password)) {
       // Mitigate user enumeration by timing: waste some time if we didn't actually verify a password
-      if (!user) AdminPasswordAuth.createHash('hunter2');
+      if (!userTable) {
+        await await new Promise((r) => { setTimeout(r, 2000); });
+      }
       throw new Unauthorized('Invalid email or password');
     }
 
     // Authentication success -> generate auth token
-    const accessToken = session.createSession({ user: user.id, email: user.email });
+    const accessToken = session.createSession({ user: existing.id, email: existing.email });
     reply.status(200);
     return { accessToken };
   };
@@ -41,8 +43,9 @@ export function renewAdminToken(session: AdminAuthSession) {
     const sessionData = session.verifySession(request);
 
     // Verify that the user exists
-    const user = await User.findByPk(sessionData.user);
-    if (!user) {
+    const existing = await db.select().from(userTable).where(eq(userTable.id, sessionData.user)).execute()
+      .then((res) => (res.length > 0 ? res[0] : null));
+    if (!existing) {
       throw new Unauthorized('User no longer exists');
     }
 

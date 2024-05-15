@@ -1,18 +1,10 @@
+export const signupStatuses = ['in-quota', 'in-open', 'in-queue'] as const;
 /** Possible statuses for a signup. */
-export enum SignupStatus {
-  IN_QUOTA = 'in-quota',
-  IN_OPEN_QUOTA = 'in-open',
-  IN_QUEUE = 'in-queue',
-}
+export type SignupStatus = typeof signupStatuses[number];
 
-/** Possible question types. */
-export enum QuestionType {
-  TEXT = 'text',
-  TEXT_AREA = 'textarea',
-  NUMBER = 'number',
-  SELECT = 'select',
-  CHECKBOX = 'checkbox',
-}
+export const questionTypes = ['text', 'textarea', 'number', 'select', 'checkbox'] as const;
+/** Possible types for a question. */
+export type QuestionType = typeof questionTypes[number];
 
 /** Event types that can be audit logged. */
 export enum AuditEvent {

@@ -5,7 +5,6 @@ import path from 'path';
 
 import config from '../config';
 import i18n from '../i18n';
-import { Event } from '../models/event';
 import mailTransporter from './config';
 
 export interface ConfirmationMailParams {
@@ -18,7 +17,7 @@ export interface ConfirmationMailParams {
   }[];
   edited: boolean;
   date: string | null;
-  event: Event;
+  event: { title: string, location: string | null };
   cancelLink: string;
 }
 
@@ -28,7 +27,7 @@ export interface NewUserMailParams {
 }
 
 export interface PromotedFromQueueMailParams {
-  event: Event;
+  event: { title: string, location: string | null };
   date: string | null;
 }
 

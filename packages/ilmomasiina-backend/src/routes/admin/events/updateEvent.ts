@@ -1,15 +1,15 @@
+import {
+  and, eq, notInArray,
+} from 'drizzle-orm';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { NotFound } from 'http-errors';
-import { Op, Transaction } from 'sequelize';
 
 import type {
   AdminEventPathParams, AdminEventResponse, EditConflictError, EventUpdateBody, WouldMoveSignupsToQueueError,
 } from '@tietokilta/ilmomasiina-models';
 import { AuditEvent } from '@tietokilta/ilmomasiina-models';
-import { getSequelize } from '../../../models';
-import { Event } from '../../../models/event';
-import { Question } from '../../../models/question';
-import { Quota } from '../../../models/quota';
+import { db } from '../../../drizzle/db';
+import { eventTable, questionTable, quotaTable } from '../../../drizzle/schema';
 import { eventDetailsForAdmin } from '../../events/getEventDetails';
 import { refreshSignupPositions } from '../../signups/computeSignupPosition';
 import { toDate } from '../../utils';
@@ -19,52 +19,49 @@ export default async function updateEvent(
   request: FastifyRequest<{ Params: AdminEventPathParams, Body: EventUpdateBody }>,
   response: FastifyReply,
 ): Promise<AdminEventResponse | EditConflictError | WouldMoveSignupsToQueueError> {
-  await getSequelize().transaction(async (transaction) => {
-  // Get the event with all relevant information for the update
-    const event = await Event.findByPk(request.params.id, {
-      attributes: ['id', 'openQuotaSize', 'draft', 'updatedAt'],
-      transaction,
-      lock: Transaction.LOCK.UPDATE,
-    });
-    if (event === null) {
+  const { updatedAt, ...body } = request.body;
+  await db.transaction(async (db) => {
+    const event = await db.select()
+      .from(eventTable)
+      .where(eq(eventTable.id, request.params.id))
+      .execute()
+      .then((rows) => (rows.length > 0 ? rows[0] : null));
+
+    if (!event) {
       throw new NotFound('No event found with id');
     }
-    // Postgres doesn't support FOR UPDATE with LEFT JOIN
-    event.quotas = await Quota.findAll({
-      where: { eventId: event.id },
-      attributes: ['id'],
-      transaction,
-      lock: Transaction.LOCK.UPDATE,
-    });
-    event.questions = await Question.findAll({
-      where: { eventId: event.id },
-      attributes: ['id'],
-      transaction,
-      lock: Transaction.LOCK.UPDATE,
-    });
 
-    // Find existing questions and quotas for requested IDs
-    const updatedQuestions = request.body.questions?.map((question) => ({
+    const quotas = await db.select()
+      .from(quotaTable)
+      .where(eq(quotaTable.eventId, event.id))
+      .execute();
+
+    const questions = await db.select()
+      .from(questionTable)
+      .where(eq(questionTable.eventId, event.id))
+      .execute();
+
+    const updatedQuestions = body.questions?.map((question) => ({
       ...question,
-      existing: question.id ? event.questions!.find((old) => question.id === old.id) : undefined,
+      existing: question.id ? questions.find((old) => question.id === old.id) : undefined,
     }));
-    const updatedQuotas = request.body.quotas?.map((quota) => ({
+
+    const updatedQuotas = body.quotas?.map((quota) => ({
       ...quota,
-      existing: quota.id ? event.quotas!.find((old) => quota.id === old.id) : undefined,
+      existing: quota.id ? quotas.find((old) => quota.id === old.id) : undefined,
     }));
 
-    // Find questions and quotas that were requested by ID but don't exist
     const deletedQuestions = updatedQuestions
-      ?.filter((question) => !question.existing && question.id)
-      .map((question) => question.id as Question['id'])
-    ?? [];
-    const deletedQuotas = updatedQuotas
-      ?.filter((quota) => !quota.existing && quota.id)
-      .map((quota) => quota.id as Quota['id'])
-    ?? [];
+      ?.filter((question): question is typeof question & { id: string } => !question.existing && !!question.id)
+      .map((question) => question.id)
+      ?? [];
 
-    // Check for edit conflicts
-    const expectedUpdatedAt = new Date(request.body.updatedAt ?? '');
+    const deletedQuotas = updatedQuotas
+      ?.filter((quota): quota is typeof quota & { id: string } => !quota.existing && !!quota.id)
+      .map((quota) => quota.id)
+      ?? [];
+
+    const expectedUpdatedAt = new Date(updatedAt ?? '');
     if (
       event.updatedAt.getTime() !== expectedUpdatedAt.getTime()
       || deletedQuestions.length
@@ -73,46 +70,41 @@ export default async function updateEvent(
       throw new EditConflict(event.updatedAt, deletedQuotas, deletedQuestions);
     }
 
-    // Update the Event
     const wasPublic = !event.draft;
-    await event.update({
-      ...request.body,
-      registrationEndDate: toDate(request.body.registrationEndDate),
-      registrationStartDate: toDate(request.body.registrationStartDate),
-      date: toDate(request.body.date),
-      endDate: toDate(request.body.endDate),
-    }, { transaction });
+    await db.update(eventTable)
+      .set({
+        ...body,
+        registrationEndDate: toDate(body.registrationEndDate),
+        registrationStartDate: toDate(body.registrationStartDate),
+        date: toDate(body.date),
+        endDate: toDate(body.endDate),
+      })
+      .where(eq(eventTable.id, event.id))
+      .execute();
 
     if (updatedQuestions !== undefined) {
       const reuseQuestionIds = updatedQuestions
         .map((question) => question.id)
-        .filter((questionId) => questionId) as Question['id'][];
+        .filter((questionId): questionId is string => !!questionId);
 
-      // Remove previous Questions not present in request
-      await Question.destroy({
-        where: {
-          eventId: event.id,
-          id: {
-            [Op.notIn]: reuseQuestionIds,
-          },
-        },
-        transaction,
-      });
+      await db.delete(questionTable)
+        .where(and(eq(questionTable.eventId, event.id), notInArray(questionTable.id, reuseQuestionIds)))
+        .execute();
 
-      // Update or create the new Questions
       await Promise.all(updatedQuestions.map(async (question, order) => {
         const questionAttribs = {
           ...question,
           order,
         };
-        // Update if an id was provided
         if (question.existing) {
-          await question.existing.update(questionAttribs, { transaction });
+          await db.update(questionTable)
+            .set(questionAttribs)
+            .where(eq(questionTable.id, question.existing.id))
+            .execute();
         } else {
-          await Question.create({
-            ...questionAttribs,
-            eventId: event.id,
-          }, { transaction });
+          await db.insert(questionTable)
+            .values({ ...questionAttribs, eventId: event.id })
+            .execute();
         }
       }));
     }
@@ -120,47 +112,39 @@ export default async function updateEvent(
     if (updatedQuotas !== undefined) {
       const reuseQuotaIds = updatedQuotas
         .map((quota) => quota.id)
-        .filter((quotaId) => quotaId) as Quota['id'][];
+        .filter((quotaId): quotaId is string => !!quotaId);
 
-      // Remove previous Quotas not present in request
-      await Quota.destroy({
-        where: {
-          eventId: event.id,
-          id: {
-            [Op.notIn]: reuseQuotaIds,
-          },
-        },
-        transaction,
-      });
+      await db.delete(quotaTable)
+        .where(and(eq(quotaTable.eventId, event.id), notInArray(quotaTable.id, reuseQuotaIds)))
+        .execute();
 
-      // Update or create the new Quotas
       await Promise.all(updatedQuotas.map(async (quota, order) => {
         const quotaAttribs = {
           ...quota,
           order,
         };
-        // Update if an id was provided
         if (quota.existing) {
-          await quota.existing.update(quotaAttribs, { transaction });
+          await db.update(quotaTable)
+            .set(quotaAttribs)
+            .where(eq(quotaTable.id, quota.existing.id))
+            .execute();
         } else {
-          await Quota.create({
-            ...quotaAttribs,
-            eventId: event.id,
-          }, { transaction });
+          await db.insert(quotaTable)
+            .values({ ...quotaAttribs, eventId: event.id })
+            .execute();
         }
       }));
     }
 
-    // Refresh positions, but don't move signups to queue unless explicitly allowed
-    await refreshSignupPositions(event, transaction, request.body.moveSignupsToQueue);
+    await refreshSignupPositions(event, body.moveSignupsToQueue);
 
     const isPublic = !event.draft;
     let action: AuditEvent;
     if (isPublic === wasPublic) action = AuditEvent.EDIT_EVENT;
     else action = isPublic ? AuditEvent.PUBLISH_EVENT : AuditEvent.UNPUBLISH_EVENT;
 
-    await request.logEvent(action, { event, transaction });
-  });
+    await request.logEvent(action, { event });
+  }, { isolationLevel: 'serializable' });
 
   const updatedEvent = await eventDetailsForAdmin(request.params.id);
 

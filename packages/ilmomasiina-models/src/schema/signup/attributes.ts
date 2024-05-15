@@ -1,6 +1,6 @@
 import { Type } from '@sinclair/typebox';
 
-import { SignupStatus } from '../../enum';
+import { signupStatuses } from '../../enum';
 import { questionID } from '../question/attributes';
 import { Nullable } from '../utils';
 
@@ -75,7 +75,7 @@ export const publicEditableSignupAttributes = Type.Object({
 /** Non-editable, automatically updated signup attributes. */
 export const signupDynamicAttributes = Type.Object({
   status: Nullable(
-    Type.Enum(SignupStatus, { title: 'SignupStatus' }),
+    Type.Union(signupStatuses.map((s) => Type.Literal(s)), { title: 'SignupStatus' }),
     { description: 'Status of the signup. If null, the status has not been computed yet.' },
   ),
   position: Nullable(

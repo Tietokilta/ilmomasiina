@@ -10,7 +10,7 @@ import { SortEnd } from 'react-sortable-hoc';
 
 import { FieldRow } from '@tietokilta/ilmomasiina-components';
 import useEvent from '@tietokilta/ilmomasiina-components/dist/utils/useEvent';
-import { QuestionType } from '@tietokilta/ilmomasiina-models';
+import { questionTypes } from '@tietokilta/ilmomasiina-models';
 import { EditorQuestion } from '../../../modules/editor/types';
 import { useFieldValue } from './hooks';
 import SelectBox from './SelectBox';
@@ -84,13 +84,7 @@ const QuestionRow = ({ name, index, remove }: QuestionProps) => {
           label={t('editor.questions.questionType')}
           as={SelectBox}
           required
-          options={[
-            [QuestionType.TEXT, t('editor.questions.questionType.text')],
-            [QuestionType.TEXT_AREA, t('editor.questions.questionType.textarea')],
-            [QuestionType.NUMBER, t('editor.questions.questionType.number')],
-            [QuestionType.SELECT, t('editor.questions.questionType.select')],
-            [QuestionType.CHECKBOX, t('editor.questions.questionType.checkbox')],
-          ]}
+          options={questionTypes.map((qT) => [qT, t(`editor.questions.questionType.${qT}`)])}
         />
         {(type === 'select' || type === 'checkbox') && (
           <>
@@ -148,7 +142,7 @@ const Questions = () => {
       required: false,
       public: false,
       question: '',
-      type: QuestionType.TEXT,
+      type: 'text',
       options: [''],
     });
   });

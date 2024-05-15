@@ -1,15 +1,14 @@
+import { lt } from 'drizzle-orm';
 import moment from 'moment';
-import { Op, WhereOptions } from 'sequelize';
 
 import config from '../config';
-import { AuditLog } from '../models/auditlog';
+import { db } from '../drizzle/db';
+import { auditlogTable } from '../drizzle/schema';
 
 export default async function deleteOldAuditLogs() {
-  await AuditLog.unscoped().destroy({
-    where: {
-      createdAt: {
-        [Op.lt]: moment().subtract(config.anonymizeAfterDays, 'days').toDate(),
-      },
-    } as WhereOptions,
-  });
+  await db.delete(auditlogTable)
+    .where(
+      lt(auditlogTable.createdAt, moment().subtract(config.anonymizeAfterDays, 'days').toDate()),
+    )
+    .execute();
 }

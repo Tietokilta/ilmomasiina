@@ -1,11 +1,10 @@
+import { and, eq } from 'drizzle-orm';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import type { SignupForEditResponse, SignupPathParams } from '@tietokilta/ilmomasiina-models';
-import { Answer } from '../../models/answer';
-import { Event } from '../../models/event';
-import { Question } from '../../models/question';
-import { Quota } from '../../models/quota';
-import { Signup } from '../../models/signup';
+import { db } from '../../drizzle/db';
+import { SIGNUP_IS_ACTIVE } from '../../drizzle/helpers';
+import { signupTable } from '../../drizzle/schema';
 import { StringifyApi } from '../utils';
 import { NoSuchSignup } from './errors';
 
@@ -14,48 +13,37 @@ export default async function getSignupForEdit(
   request: FastifyRequest<{ Params: SignupPathParams }>,
   reply: FastifyReply,
 ): Promise<SignupForEditResponse> {
-  const signup = await Signup.scope('active').findByPk(request.params.id, {
-    include: [
-      {
-        model: Answer,
-        required: false,
-      },
-      {
-        model: Quota,
-        include: [
-          {
-            model: Event,
-            include: [
-              {
-                model: Question,
-                required: false,
-              },
-            ],
+  const signup = await db.query.signupTable.findFirst({
+    where: and(SIGNUP_IS_ACTIVE, eq(signupTable.id, request.params.id)),
+    with: {
+      answers: true,
+      quota: {
+        with: {
+          event: {
+            with: {
+              questions: true,
+            },
           },
-        ],
+        },
       },
-    ],
-    order: [[Quota, Event, Question, 'order', 'ASC']],
+    },
   });
-  if (signup === null) {
+  if (!signup) {
     // Event not found with id, probably deleted
     throw new NoSuchSignup('No signup found with given id');
   }
 
-  const event = signup.quota!.event!;
-
+  const { quota, ...signupWithoutQuota } = signup;
+  const { event, ...restOfQuota } = quota;
   const response = {
     signup: {
-      ...signup.get({ plain: true }),
+      ...signupWithoutQuota,
       confirmed: Boolean(signup.confirmedAt),
       status: signup.status,
-      answers: signup.answers!,
-      quota: signup.quota!,
+      answers: signup.answers,
+      quota: restOfQuota,
     },
-    event: {
-      ...event.get({ plain: true }),
-      questions: event.questions!.map((question) => question.get({ plain: true })),
-    },
+    event,
   };
 
   reply.status(200);

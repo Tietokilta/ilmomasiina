@@ -1,11 +1,15 @@
+import assert from 'assert';
+import { eq } from 'drizzle-orm';
 import { testEvent, testSignups } from 'test/testData';
 import { describe, expect, test } from 'vitest';
 
 import { EDIT_TOKEN_HEADER, SignupForEditResponse } from '@tietokilta/ilmomasiina-models';
-import { Signup } from '../../src/models/signup';
+import { db } from '../../src/drizzle/db';
+import { answerTable, quotaTable } from '../../src/drizzle/schema';
 import { refreshSignupPositionsAndGet } from '../../src/routes/signups/computeSignupPosition';
 import { generateToken } from '../../src/routes/signups/editTokens';
 
+type Signup = Awaited<ReturnType<typeof testSignups>>[number];
 async function fetchSignupForEdit(signup: Signup, editToken?: string | false) {
   const headers: Record<string, string> = {};
   if (editToken !== false) {
@@ -16,6 +20,7 @@ async function fetchSignupForEdit(signup: Signup, editToken?: string | false) {
     url: `/api/signups/${signup.id}`,
     headers,
   });
+  expect(response.statusCode).toBeLessThan(500);
   return [response.json<SignupForEditResponse>(), response] as const;
 }
 
@@ -23,9 +28,10 @@ describe('getSignupForEdit', () => {
   test('returns signup for editing', async () => {
     const event = await testEvent();
     const [signup] = await testSignups(event, { count: 1, confirmed: true });
-    const quota = await signup.getQuota();
-    const answers = await signup.getAnswers();
-
+    const quota = await db.query.quotaTable.findFirst({ where: eq(quotaTable.id, signup.quotaId) });
+    const answers = await db.query.answerTable.findMany({ where: eq(answerTable.signupId, signup.id) });
+    expect(quota).not.toBeNull();
+    assert(quota);
     const [data, response] = await fetchSignupForEdit(signup);
 
     expect(response.statusCode).toBe(200);

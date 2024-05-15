@@ -1,10 +1,8 @@
 import { FastifyInstance } from 'fastify';
-import { Transaction } from 'sequelize';
 
 import type { AuditEvent } from '@tietokilta/ilmomasiina-models';
-import { AuditLog } from '../models/auditlog';
-import type { Event } from '../models/event';
-import type { Signup } from '../models/signup';
+import { db, Transaction } from '../drizzle/db';
+import { auditlogTable } from '../drizzle/schema';
 
 /**
  * Creates an {@link AuditLogger}
@@ -16,24 +14,24 @@ function eventLogger(ipAddress: string, user?: () => (string | null)) {
   return async (
     action: AuditEvent,
     {
-      transaction, event, signup, extra,
+      event, signup, extra, transaction,
     }: {
-      event?: Pick<Event, 'id' | 'title'>,
-      signup?: Signup,
-      transaction?: Transaction,
+      event?: { id: string, title: string },
+      signup?: { id: string, firstName: string | null, lastName: string | null },
       extra?: object,
+      transaction?: Transaction,
     },
   ) => {
-    await AuditLog.create({
+    (transaction ?? db).insert(auditlogTable).values({
       user: user ? user() : null,
       action,
-      eventId: event?.id || signup?.quota?.event?.id || null,
-      eventName: event?.title || signup?.quota?.event?.title || null,
+      eventId: event?.id || null,
+      eventName: event?.title || null,
       signupId: signup?.id || null,
       signupName: signup ? `${signup.firstName} ${signup.lastName}` : null,
       extra: extra ? JSON.stringify(extra) : null,
       ipAddress,
-    }, { transaction });
+    }).execute();
   };
 }
 

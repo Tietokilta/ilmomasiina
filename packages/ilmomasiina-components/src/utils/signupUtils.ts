@@ -126,7 +126,7 @@ export type FormattedSignup = {
 export function getSignupsForAdminList(event: AdminEventResponse): FormattedSignup[] {
   const signupsArray = getSignupsAsList(event);
   const sorted = orderBy(signupsArray, [
-    (signup) => [SignupStatus.IN_QUOTA, SignupStatus.IN_OPEN_QUOTA, SignupStatus.IN_QUEUE, null].indexOf(signup.status),
+    (signup) => (['in-quota', 'in-open', 'in-queue', null] as (SignupStatus | null)[]).indexOf(signup.status),
     'createdAt',
   ]);
 

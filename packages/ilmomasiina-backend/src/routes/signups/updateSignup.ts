@@ -1,15 +1,13 @@
+import { and, eq } from 'drizzle-orm';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { BadRequest } from 'http-errors';
-import { Transaction } from 'sequelize';
 
 import type { SignupPathParams, SignupUpdateBody, SignupUpdateResponse } from '@tietokilta/ilmomasiina-models';
 import { AuditEvent } from '@tietokilta/ilmomasiina-models';
+import { db } from '../../drizzle/db';
+import { SIGNUP_IS_ACTIVE } from '../../drizzle/helpers';
+import { answerTable, signupTable } from '../../drizzle/schema';
 import sendSignupConfirmationMail from '../../mail/signupConfirmation';
-import { getSequelize } from '../../models';
-import { Answer } from '../../models/answer';
-import { Event } from '../../models/event';
-import { Question } from '../../models/question';
-import { Signup } from '../../models/signup';
 import { signupsAllowed } from './createNewSignup';
 import { NoSuchSignup, SignupsClosed } from './errors';
 
@@ -18,38 +16,50 @@ export default async function updateSignup(
   request: FastifyRequest<{ Params: SignupPathParams, Body: SignupUpdateBody }>,
   reply: FastifyReply,
 ): Promise<SignupUpdateResponse> {
-  const updatedSignup = await getSequelize().transaction(async (transaction) => {
-    // Retrieve event data and lock the row for editing
-    const signup = await Signup.scope('active').findByPk(request.params.id, {
-      attributes: ['id', 'quotaId', 'confirmedAt', 'firstName', 'lastName', 'email', 'language'],
-      transaction,
-      lock: Transaction.LOCK.UPDATE,
+  const updatedSignup = await db.transaction(async (db) => {
+    const signup = await db.query.signupTable.findFirst({
+      where: and(SIGNUP_IS_ACTIVE, eq(signupTable.id, request.params.id)),
+      columns: {
+        id: true,
+        quotaId: true,
+        confirmedAt: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        language: true,
+      },
+      with: {
+        quota: {
+          with: {
+            event: {
+              with: {
+                questions: {
+                  columns: {
+                    id: true,
+                    question: true,
+                    type: true,
+                    options: true,
+                    required: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
-    if (signup === null) {
+    if (!signup) {
       throw new NoSuchSignup('Signup expired or already deleted');
     }
-
-    const quota = await signup.getQuota({
-      include: [
-        {
-          model: Event,
-          include: [
-            {
-              model: Question,
-            },
-          ],
-        },
-      ],
-      transaction,
-    });
-    const event = quota.event!;
+    const { quota } = signup;
+    const { event } = quota;
     if (!signupsAllowed(event)) {
       throw new SignupsClosed('Signups closed for this event.');
     }
 
     /** Is this signup already confirmed (i.e. is this the first update for this signup) */
     const notConfirmedYet = !signup.confirmedAt;
-    const questions = event.questions!;
+    const { questions } = event;
 
     // Check that required common fields are present (if first time confirming)
     let nameFields = {};
@@ -115,7 +125,7 @@ export default async function updateSignup(
             break;
           case 'select': {
             // Check that the select answer is valid
-            if (!question.options!.includes(answer)) {
+            if (!question.options?.includes(answer)) {
               throw new BadRequest(`Invalid answer to question ${question.question}`);
             }
             break;
@@ -141,21 +151,16 @@ export default async function updateSignup(
       confirmedAt: new Date(),
     };
 
-    await signup.update(updatedFields, { transaction });
+    await db.update(signupTable).set(updatedFields).where(eq(signupTable.id, signup.id)).execute();
 
     // Update the Answers for the Signup
-    await Answer.destroy({
-      where: {
-        signupId: signup.id,
-      },
-      transaction,
-    });
-    await Answer.bulkCreate(newAnswers, { transaction });
+    await db.delete(answerTable).where(eq(answerTable.signupId, signup.id)).execute();
+    await db.insert(answerTable).values(newAnswers).execute();
 
     await request.logEvent(AuditEvent.EDIT_SIGNUP, {
       signup,
       event: quota.event,
-      transaction,
+      transaction: db,
     });
 
     return signup;

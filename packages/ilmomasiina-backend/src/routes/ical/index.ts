@@ -1,9 +1,13 @@
+import {
+  and, eq, isNotNull,
+} from 'drizzle-orm';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { createEvents, DateArray } from 'ics';
-import { Op } from 'sequelize';
 
 import config from '../../config';
-import { Event } from '../../models/event';
+import { db } from '../../drizzle/db';
+import { EVENT_USER_VISIBLE } from '../../drizzle/helpers';
+import { eventTable } from '../../drizzle/schema';
 
 function dateToArray(date: Date) {
   return [
@@ -21,19 +25,9 @@ function dateToArray(date: Date) {
 const uidDomain = new URL(config.baseUrl ?? 'http://localhost').hostname;
 
 export async function eventsAsICal() {
-  const events = await Event.scope('user').findAll({
-    where: {
-      listed: true,
-      // only events, not signup-only
-      date: { [Op.ne]: null },
-      // ignore legacy events with no end date
-      endDate: { [Op.ne]: null },
-    },
-    order: [
-      ['date', 'ASC'],
-      ['registrationEndDate', 'ASC'],
-      ['title', 'ASC'],
-    ],
+  const events = await db.query.eventTable.findMany({
+    where: and(EVENT_USER_VISIBLE, eq(eventTable.listed, true), isNotNull(eventTable.date), isNotNull(eventTable.endDate)),
+    orderBy: [eventTable.date, eventTable.registrationEndDate, eventTable.title],
   });
 
   const { error, value } = createEvents(events.map((event) => ({

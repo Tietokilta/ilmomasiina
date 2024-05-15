@@ -1,40 +1,36 @@
+import { eq } from 'drizzle-orm';
 import moment from 'moment-timezone';
 
 import config from '../config';
+import { db } from '../drizzle/db';
+import {
+  answerTable, eventTable, questionTable, quotaTable,
+} from '../drizzle/schema';
 import i18n from '../i18n';
-import { Signup } from '../models/signup';
 import { generateToken } from '../routes/signups/editTokens';
 import EmailService from '.';
 
-export default async function sendSignupConfirmationMail(signup: Signup) {
+export default async function sendSignupConfirmationMail(signup: { firstName: string | null, lastName: string | null, email: string | null, language: string | null, id: string, quotaId: string }) {
   if (signup.email === null) return;
 
   const lng = signup.language ?? undefined;
 
-  // TODO: convert to include
-  const answers = await signup.getAnswers();
-  const quota = await signup.getQuota();
-  const event = await quota.getEvent();
-  const questions = await event.getQuestions();
+  const results = await db.select({ event: { title: eventTable.title, location: eventTable.location }, date: eventTable.date, quotaTitle: quotaTable.title }).from(quotaTable).where(eq(quotaTable.id, signup.quotaId)).innerJoin(eventTable, eq(quotaTable.eventId, eventTable.id))
+    .execute();
+  if (results.length === 0) return;
+  const res = results[0];
+  const questions = await db.select().from(answerTable).innerJoin(questionTable, eq(answerTable.questionId, questionTable.id)).where(eq(answerTable.signupId, signup.id))
+    .execute();
 
   // Show name only if filled
   const fullName = `${signup.firstName ?? ''} ${signup.lastName ?? ''}`.trim();
 
-  const questionFields = questions
-    .map((question) => <const>[
-      question,
-      answers.find((answer) => answer.questionId === question.id),
-    ])
-    .filter(([, answer]) => answer)
-    .map(([question, answer]) => ({
-      label: question.question,
-      answer: Array.isArray(answer!.answer) ? answer!.answer.join(', ') : answer!.answer,
-    }));
+  const questionFields = questions.map(({ answer, question }) => ({ label: question.question, answer: Array.isArray(answer.answer) ? answer.answer.join(', ') : answer.answer }));
 
-  const edited = answers.some((answer) => answer.createdAt.getTime() !== answer.updatedAt.getTime());
+  const edited = questions.some(({ answer }) => answer.createdAt.getTime() !== answer.updatedAt.getTime());
 
   const dateFormat = i18n.t('dateFormat.general', { lng });
-  const date = event.date && moment(event.date).tz(config.timezone).format(dateFormat);
+  const date = res.date && moment(res.date).tz(config.timezone).format(dateFormat);
 
   const editToken = generateToken(signup.id);
   const cancelLink = config.editSignupUrl
@@ -44,11 +40,11 @@ export default async function sendSignupConfirmationMail(signup: Signup) {
   const params = {
     name: fullName,
     email: signup.email,
-    quota: quota.title,
+    quota: res.quotaTitle,
     answers: questionFields,
     edited,
     date,
-    event,
+    event: res.event,
     cancelLink,
   };
 

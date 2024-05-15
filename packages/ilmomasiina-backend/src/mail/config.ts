@@ -48,7 +48,7 @@ const mailTransporter: Transporter = (() => {
       });
       input.on('end', () => {
         console.log(data);
-        callback(null, { envelope, messageId } as any);
+        if (callback) { callback(null, { envelope, messageId } as any); }
       });
     },
   });

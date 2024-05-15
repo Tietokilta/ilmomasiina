@@ -1,23 +1,17 @@
+import { and, asc, eq } from 'drizzle-orm';
 import moment from 'moment-timezone';
-import { Transaction, WhereOptions } from 'sequelize';
 
 import { AuditEvent, SignupStatus } from '@tietokilta/ilmomasiina-models';
 import { internalAuditLogger } from '../../auditlog';
 import config from '../../config';
+import { db } from '../../drizzle/db';
+import { quotaTable, signupTable } from '../../drizzle/schema';
 import i18n from '../../i18n';
 import EmailService from '../../mail';
-import { getSequelize } from '../../models';
-import { Event } from '../../models/event';
-import { Quota } from '../../models/quota';
-import { Signup } from '../../models/signup';
 import { WouldMoveSignupsToQueue } from '../admin/events/errors';
 
-async function sendPromotedFromQueueMail(signup: Signup, eventId: Event['id']) {
+async function sendPromotedFromQueueMail(signup: { email: string | null, language: string | null }, event: { id: string, location: string | null, title: string, date: Date | null }) {
   if (signup.email === null) return;
-
-  // Re-fetch event for all attributes
-  const event = await Event.findByPk(eventId);
-  if (event === null) throw new Error('event missing when sending queue email');
 
   const lng = signup.language ?? undefined;
   const dateFormat = i18n.t('dateFormat.general', { lng });
@@ -36,115 +30,78 @@ async function sendPromotedFromQueueMail(signup: Signup, eventId: Event['id']) {
  * ordinary users. `moveSignupsToQueue = false` is passed if a warning can be shown (i.e. in admin-side editors).
  */
 export async function refreshSignupPositions(
-  eventRef: Event,
-  transaction?: Transaction,
+  event: { id: string, openQuotaSize: number | null, title: string, date: Date | null, location: string | null },
   moveSignupsToQueue: boolean = true,
-): Promise<Signup[]> {
-  // Wrap in transaction if not given
-  if (!transaction) {
-    return getSequelize().transaction(
-      async (trans) => refreshSignupPositions(eventRef, trans),
-    );
-  }
+) {
+  return db.transaction(async (tx) => {
+    const signups = await tx.select()
+      .from(signupTable)
+      .innerJoin(quotaTable, eq(signupTable.quotaId, quotaTable.id))
+      .where(and(eq(quotaTable.eventId, event.id)))
+      .orderBy(asc(signupTable.createdAt), asc(signupTable.id))
+      .execute();
 
-  // Lock event to prevent simultaneous changes
-  const event = await Event.findByPk(eventRef.id, {
-    attributes: ['id', 'title', 'openQuotaSize'],
-    transaction,
-    lock: Transaction.LOCK.UPDATE,
-  });
-  if (!event) {
-    throw new Error('event missing from DB');
-  }
-  const signups = await Signup.scope('active').findAll({
-    attributes: ['id', 'quotaId', 'firstName', 'lastName', 'email', 'status', 'position', 'language'],
-    include: [
-      {
-        model: Quota,
-        attributes: ['id', 'size'],
-      },
-    ],
-    where: {
-      '$quota.eventId$': event.id,
-    } as WhereOptions,
-    // Honor creation time, tie-break by random ID in case of same millisecond
-    order: [
-      ['createdAt', 'ASC'],
-      ['id', 'ASC'],
-    ],
-    lock: Transaction.LOCK.UPDATE,
-    transaction,
-  });
+    const quotaSignups = new Map<string, number>();
+    let inOpenQuota = 0;
+    let inQueue = 0;
+    let movedToQueue = 0;
 
-  // Assign each signup to a quota or the queue.
-  const quotaSignups = new Map<Quota['id'], number>();
-  let inOpenQuota = 0;
-  let inQueue = 0;
-  let movedToQueue = 0;
+    const result = signups.map((signup) => {
+      let status: SignupStatus;
+      let position: number;
 
-  const result = signups.map((signup: Signup) => {
-    let status: SignupStatus;
-    let position: number;
+      let inChosenQuota = quotaSignups.get(signup.quota.id) ?? 0;
+      const chosenQuotaSize = signup.quota?.size ?? Infinity;
 
-    let inChosenQuota = quotaSignups.get(signup.quotaId) ?? 0;
-    const chosenQuotaSize = signup.quota!.size ?? Infinity;
-
-    // Assign the selected or open quotas if free. Never worsen a signup's status.
-    if (inChosenQuota < chosenQuotaSize) {
-      inChosenQuota += 1;
-      quotaSignups.set(signup.quotaId, inChosenQuota);
-      status = SignupStatus.IN_QUOTA;
-      position = inChosenQuota;
-    } else if (inOpenQuota < event.openQuotaSize) {
-      inOpenQuota += 1;
-      status = SignupStatus.IN_OPEN_QUOTA;
-      position = inOpenQuota;
-    } else {
-      inQueue += 1;
-      status = SignupStatus.IN_QUEUE;
-      position = inQueue;
-      if (signup.status !== SignupStatus.IN_QUEUE) {
-        movedToQueue += 1;
+      if (inChosenQuota < chosenQuotaSize) {
+        inChosenQuota += 1;
+        quotaSignups.set(signup.quota.id, inChosenQuota);
+        status = 'in-quota';
+        position = inChosenQuota;
+      } else if (inOpenQuota < (event.openQuotaSize ?? 0)) {
+        inOpenQuota += 1;
+        status = 'in-open';
+        position = inOpenQuota;
+      } else {
+        inQueue += 1;
+        status = 'in-queue';
+        position = inQueue;
+        if (signup.signup.status !== 'in-queue') {
+          movedToQueue += 1;
+        }
       }
+
+      return { signup, status, position };
+    });
+
+    if (movedToQueue > 0 && !moveSignupsToQueue) {
+      throw new WouldMoveSignupsToQueue(movedToQueue);
     }
 
-    return { signup, status, position };
-  });
+    await Promise.all(result.map(async ({ signup, status }) => {
+      if (signup.signup.status === 'in-queue' && status !== 'in-queue') {
+        await sendPromotedFromQueueMail(signup.signup, event);
+        await internalAuditLogger(AuditEvent.PROMOTE_SIGNUP, { signup: signup.signup, event });
+      }
+    }));
 
-  if (movedToQueue > 0 && !moveSignupsToQueue) {
-    throw new WouldMoveSignupsToQueue(movedToQueue);
-  }
-
-  // If a signup was just promoted from the queue, send an email about it asynchronously.
-  await Promise.all(result.map(async ({ signup, status }) => {
-    if (signup.status === 'in-queue' && status !== 'in-queue') {
-      sendPromotedFromQueueMail(signup, event.id);
-
-      await internalAuditLogger(AuditEvent.PROMOTE_SIGNUP, {
-        signup,
-        event,
-        transaction,
-      });
-    }
-  }));
-
-  // Store changes in database, if any.
-  await Promise.all(result.map(async ({ signup, status, position }) => {
-    if (signup.status !== status || signup.position !== position) {
-      await signup.update(
-        { status, position },
-        { transaction },
-      );
-    }
-  }));
-
-  return result.map(({ signup }) => signup);
+    return Promise.all(result.map(async ({ signup: s, status, position }) => {
+      if (s.signup.status !== status || s.signup.position !== position) {
+        return db.update(signupTable)
+          .set({ status, position })
+          .where(eq(signupTable.id, s.signup.id)).returning({ id: signupTable.id, status: signupTable.status, position: signupTable.position })
+          .execute()
+          .then((res) => res[0]);
+      }
+      return { id: s.signup.id, status: s.signup.status, position: s.signup.position };
+    }));
+  }, { accessMode: 'read write', isolationLevel: 'serializable' });
 }
 
 /**
  * Like `refreshSignupPositions`, but returns the status for the given signup.
  */
-export async function refreshSignupPositionsAndGet(event: Event, signupId: Signup['id']) {
+export async function refreshSignupPositionsAndGet(event: Parameters<typeof refreshSignupPositions>[0], signupId: string) {
   const result = await refreshSignupPositions(event);
   const signup = result.find(({ id }) => id === signupId);
   if (!signup) throw new Error('failed to compute status');
