@@ -86,7 +86,7 @@ const QuestionRow = ({ name, index, remove }: QuestionProps) => {
           required
           options={[
             [QuestionType.TEXT, t('editor.questions.questionType.text')],
-            [QuestionType.TEXT_AREA, t('editor.questions.questionType.textArea')],
+            [QuestionType.TEXT_AREA, t('editor.questions.questionType.textarea')],
             [QuestionType.NUMBER, t('editor.questions.questionType.number')],
             [QuestionType.SELECT, t('editor.questions.questionType.select')],
             [QuestionType.CHECKBOX, t('editor.questions.questionType.checkbox')],

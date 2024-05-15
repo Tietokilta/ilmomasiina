@@ -2,7 +2,7 @@
   "name": "@tietokilta/ilmomasiina-frontend",
   "version": "2.0.0-alpha13",
   "scripts": {
-    "build": "vite build",
+    "build": "pnpm typecheck && vite build",
     "clean": "rimraf build dist",
     "start": "vite",
     "typecheck": "tsc --build"

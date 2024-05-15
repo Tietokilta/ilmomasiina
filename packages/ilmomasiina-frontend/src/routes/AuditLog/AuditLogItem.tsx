@@ -12,7 +12,7 @@ type Props = {
   item: AuditLogItemSchema;
 };
 
-const ACTION_STRINGS: Record<AuditEvent, string> = {
+const ACTION_STRINGS = {
   [AuditEvent.CREATE_EVENT]: 'auditLog.description.createEvent',
   [AuditEvent.EDIT_EVENT]: 'auditLog.description.editEvent',
   [AuditEvent.PUBLISH_EVENT]: 'auditLog.description.publishEvent',
@@ -25,7 +25,7 @@ const ACTION_STRINGS: Record<AuditEvent, string> = {
   [AuditEvent.DELETE_USER]: 'auditLog.description.deleteUser',
   [AuditEvent.RESET_PASSWORD]: 'auditLog.description.resetPassword',
   [AuditEvent.CHANGE_PASSWORD]: 'auditLog.description.changeOwnPassword',
-};
+} as const;
 
 function useItemDescription(item: AuditLogItemSchema) {
   const { t } = useTranslation();

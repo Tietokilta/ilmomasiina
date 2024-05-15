@@ -14,13 +14,13 @@ export enum EditorTab {
   SIGNUPS = 'signups',
 }
 
-const tabTitles: Record<EditorTab, string> = {
+const tabTitles = {
   [EditorTab.BASIC_DETAILS]: 'editor.tabs.basic',
   [EditorTab.QUOTAS]: 'editor.tabs.quotas',
   [EditorTab.QUESTIONS]: 'editor.tabs.questions',
   [EditorTab.EMAILS]: 'editor.tabs.emails',
   [EditorTab.SIGNUPS]: 'editor.tabs.signups',
-};
+} as const;
 
 type TabProps = Props & {
   id: EditorTab;

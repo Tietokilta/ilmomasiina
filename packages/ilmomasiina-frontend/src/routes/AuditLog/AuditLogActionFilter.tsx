@@ -20,7 +20,7 @@ const ACTIONS = [
   [AuditEvent.DELETE_USER, 'auditLog.filter.action.deleteUser'],
   [AuditEvent.RESET_PASSWORD, 'auditLog.filter.action.resetPassword'],
   [AuditEvent.CHANGE_PASSWORD, 'auditLog.filter.action.changeOwnPassword'],
-];
+] as const;
 
 const AuditLogActionFilter = () => {
   const dispatch = useTypedDispatch();
