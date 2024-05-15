@@ -6,16 +6,14 @@ import { i18n as componentsI18n, i18nResources as componentsRes } from '@tietoki
 import * as en from './locales/en.json';
 import * as fi from './locales/fi.json';
 
-const resources = {
-  fi: {
-    ...componentsRes.fi,
-    ...fi,
-  },
-  en: {
-    ...componentsRes.en,
-    ...en,
-  },
-};
+export const defaultNS = ['frontend', 'components'] as const;
+const fiCombined = { ...fi, ...componentsRes.fi } as const;
+const enCombined = { ...en, ...componentsRes.en } as const;
+export const resources = {
+  // these generate typescript errors if not exact match
+  fi: fiCombined as typeof enCombined,
+  en: enCombined as typeof fiCombined,
+} as const;
 
 i18n
   .use(LanguageDetector)
@@ -23,7 +21,7 @@ i18n
   .init({
     resources,
     fallbackLng: 'fi',
-    defaultNS: ['frontend', 'components'],
+    defaultNS,
     supportedLngs: Object.keys(resources),
     interpolation: {
       // for React
