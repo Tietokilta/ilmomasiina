@@ -1,5 +1,3 @@
-version: "3.2"
-
 # This compose file is for development use only – Do not use this in production!
 
 # This compose file builds Ilmomasiina and serves it at http://localhost:3000.
