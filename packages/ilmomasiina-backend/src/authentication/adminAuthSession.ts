@@ -14,7 +14,7 @@ export interface AdminTokenData {
 
 export default class AdminAuthSession {
   /** Session lifetime in seconds */
-  static TTL = config.nodeEnv === 'development' ? 365 * 24 * 60 * 60 : 10 * 60;
+  static TTL = config.nodeEnv === 'development' ? 365 * 24 * 60 * 60 : 3 * 60 * 60;
 
   private readonly sign: typeof SignerSync;
   private readonly verify: typeof VerifierSync;
