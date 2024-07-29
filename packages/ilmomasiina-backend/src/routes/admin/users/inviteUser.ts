@@ -1,14 +1,14 @@
+import { eq } from 'drizzle-orm';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { Conflict } from 'http-errors';
-import { Transaction } from 'sequelize';
 
 import type { UserCreateSchema, UserInviteSchema, UserSchema } from '@tietokilta/ilmomasiina-models';
 import { AuditEvent } from '@tietokilta/ilmomasiina-models';
 import { AuditLogger } from '../../../auditlog';
 import AdminPasswordAuth from '../../../authentication/adminPasswordAuth';
+import { db, Transaction } from '../../../drizzle/db';
+import { userTable } from '../../../drizzle/schema';
 import EmailService from '../../../mail';
-import { getSequelize } from '../../../models';
-import { User } from '../../../models/user';
 import generatePassword from './generatePassword';
 
 /**
@@ -20,32 +20,23 @@ import generatePassword from './generatePassword';
 export async function createUser(
   params: UserCreateSchema,
   auditLogger: AuditLogger,
-  transaction: Transaction,
+  tx: Transaction,
 ): Promise<UserSchema> {
-  const existing = await User.findOne({
-    where: { email: params.email },
-    transaction,
-  });
+  const existing = await tx.select({ id: userTable.id }).from(userTable).where(eq(userTable.email, params.email)).execute()
+    .then((rows) => rows[0]);
 
   if (existing) throw new Conflict('User with given email already exists');
 
   // Create new user with hashed password
-  const user = await User.create(
-    {
-      ...params,
-      password: AdminPasswordAuth.createHash(params.password),
-    },
-    { transaction },
-  );
-
-  const res = {
-    id: user.id,
-    email: user.email,
-  };
+  const res = await tx.insert(userTable).values({
+    ...params,
+    password: AdminPasswordAuth.createHash(params.password),
+  }).returning({ id: userTable.id, email: userTable.email }).execute()
+    .then((rows) => rows[0]);
 
   await auditLogger(AuditEvent.CREATE_USER, {
     extra: res,
-    transaction,
+    transaction: tx,
   });
 
   return res;
@@ -61,7 +52,7 @@ export default async function inviteUser(
   // Generate secure password
   const password = generatePassword();
 
-  const user = await getSequelize().transaction(async (transaction) => createUser(
+  const user = await db.transaction(async (transaction) => createUser(
     {
       email: request.body.email,
       password,

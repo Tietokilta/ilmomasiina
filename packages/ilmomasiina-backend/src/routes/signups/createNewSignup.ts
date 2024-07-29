@@ -1,14 +1,15 @@
+import { and, eq } from 'drizzle-orm';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import type { SignupCreateBody, SignupCreateResponse } from '@tietokilta/ilmomasiina-models';
-import { Event } from '../../models/event';
-import { Quota } from '../../models/quota';
-import { Signup } from '../../models/signup';
+import { db } from '../../drizzle/db';
+import { EVENT_USER_VISIBLE } from '../../drizzle/helpers';
+import { eventTable, quotaTable, signupTable } from '../../drizzle/schema';
 import { refreshSignupPositions } from './computeSignupPosition';
 import { generateToken } from './editTokens';
 import { NoSuchQuota, SignupsClosed } from './errors';
 
-export const signupsAllowed = (event: Event) => {
+export const signupsAllowed = (event: { registrationStartDate: Date | null, registrationEndDate: Date | null }) => {
   if (event.registrationStartDate === null || event.registrationEndDate === null) {
     return false;
   }
@@ -22,28 +23,25 @@ export default async function createSignup(
   response: FastifyReply,
 ): Promise<SignupCreateResponse> {
   // Find the given quota and event.
-  const quota = await Quota.findByPk(request.body.quotaId, {
-    attributes: [],
-    include: [
-      {
-        model: Event.scope('user'),
-        attributes: ['id', 'registrationStartDate', 'registrationEndDate', 'openQuotaSize'],
-      },
-    ],
-  });
-
+  const res = await db.select().from(quotaTable).innerJoin(eventTable, eq(quotaTable.eventId, eventTable.id)).where(
+    and(eq(quotaTable.id, request.body.quotaId), EVENT_USER_VISIBLE),
+  )
+    .execute()
+    .then((rows) => rows.at(0));
   // Do some validation.
-  if (!quota || !quota.event) {
+  if (!res || !res.event) {
     throw new NoSuchQuota('Quota doesn\'t exist.');
   }
+  const { quota, event } = res;
 
-  if (!signupsAllowed(quota.event)) {
+  if (!signupsAllowed(event)) {
     throw new SignupsClosed('Signups closed for this event.');
   }
 
   // Create the signup.
-  const newSignup = await Signup.create({ quotaId: request.body.quotaId });
-  await refreshSignupPositions(quota.event);
+  const newSignup = await db.insert(signupTable).values({ quotaId: quota.id }).returning({ id: signupTable.id }).execute()
+    .then((rows) => rows[0]);
+  await refreshSignupPositions(event);
 
   const editToken = generateToken(newSignup.id);
 

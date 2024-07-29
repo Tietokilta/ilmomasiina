@@ -1,27 +1,21 @@
+import { eq, sql } from 'drizzle-orm';
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { col, fn, Order } from 'sequelize';
 
-import type { AdminEventListResponse, EventListQuery, UserEventListResponse } from '@tietokilta/ilmomasiina-models';
 import {
-  adminEventListEventAttrs,
-  eventListEventAttrs,
-} from '@tietokilta/ilmomasiina-models/dist/attrs/event';
-import { Event } from '../../models/event';
-import { Quota } from '../../models/quota';
-import { Signup } from '../../models/signup';
-import { ascNullsFirst } from '../../models/util';
+  type AdminEventListResponse, type EventListQuery, type UserEventListResponse,
+} from '@tietokilta/ilmomasiina-models';
+import { db } from '../../drizzle/db';
+import { EVENT_USER_VISIBLE, SIGNUP_IS_ACTIVE } from '../../drizzle/helpers';
+import { eventTable, quotaTable } from '../../drizzle/schema';
 import { InitialSetupNeeded, isInitialSetupDone } from '../admin/users/createInitialUser';
 import { StringifyApi } from '../utils';
 
-function eventOrder(): Order {
-  return [
-    // events without signup (date=NULL) come first
-    ['date', ascNullsFirst()],
-    ['registrationEndDate', 'ASC'],
-    ['title', 'ASC'],
-    [Quota, 'order', 'ASC'],
-  ];
-}
+const eventOrder = [
+  // events without signup (date=NULL) come first
+  sql`${eventTable.date} ASC NULLS FIRST`,
+  eventTable.registrationEndDate,
+  eventTable.title,
+];
 
 export async function getEventsListForUser(
   this: FastifyInstance<any, any, any, any, any>,
@@ -32,84 +26,71 @@ export async function getEventsListForUser(
   if (!this.initialSetupDone && !(await isInitialSetupDone())) {
     throw new InitialSetupNeeded('Initial setup of Ilmomasiina is needed.');
   }
-
-  const events = await Event.scope('user').findAll({
-    attributes: eventListEventAttrs,
-    where: { listed: true, ...request.query },
-    // Include quotas of event and count of signups
-    include: [
-      {
-        model: Quota,
-        attributes: [
-          'id',
-          'title',
-          'size',
-          [fn('COUNT', col('quotas->signups.id')), 'signupCount'],
-        ],
-        include: [
-          {
-            model: Signup.scope('active'),
-            required: false,
-            attributes: [],
+  const events = await db.query.eventTable.findMany({
+    where: EVENT_USER_VISIBLE,
+    with: {
+      quotas: {
+        with: {
+          signups: {
+            columns: { id: true },
+            where: SIGNUP_IS_ACTIVE,
           },
-        ],
+        },
+        orderBy: [quotaTable.order],
       },
-    ],
-    group: [col('event.id'), col('quotas.id')],
-    order: eventOrder(),
+    },
+    orderBy: eventOrder,
+  });
+  const res = events.map((event) => {
+    const { quotas, ...rest } = event;
+
+    return ({
+      ...(rest),
+      quotas: quotas.map((quota) => ({
+        ...quota,
+        signupCount: quota.signups.length,
+        signups: undefined,
+      })),
+    });
   });
 
-  const res = events.map((event) => ({
-    ...event.get({ plain: true }),
-    quotas: event.quotas!.map((quota) => ({
-      ...quota.get({ plain: true }),
-      signupCount: Number(quota.signupCount),
-    })),
-  }));
-
   reply.status(200);
-  return res as StringifyApi<typeof res>;
+  return res as unknown as StringifyApi<typeof res>;
 }
 export async function getEventsListForAdmin(
   request: FastifyRequest<{ Querystring: EventListQuery }>,
   reply: FastifyReply,
 ): Promise<AdminEventListResponse> {
   // Admin view also shows id, draft and listed fields.
-
-  const events = await Event.findAll({
-    attributes: adminEventListEventAttrs,
-    where: request.query,
-    // Include quotas of event and count of signups
-    include: [
-      {
-        model: Quota,
-        attributes: [
-          'id',
-          'title',
-          'size',
-          [fn('COUNT', col('quotas->signups.id')), 'signupCount'],
-        ],
-        include: [
-          {
-            model: Signup.scope('active'),
-            required: false,
-            attributes: [],
+  const events = await db.query.eventTable.findMany({
+    where: request.query.category ? eq(eventTable.category, request.query.category) : undefined,
+    with: {
+      quotas: {
+        with: {
+          signups: {
+            columns: { id: true },
+            where: SIGNUP_IS_ACTIVE,
           },
-        ],
+        },
+        orderBy: [quotaTable.order],
       },
-    ],
-    group: [col('event.id'), col('quotas.id')],
-    order: eventOrder(),
+    },
+    orderBy: eventOrder,
   });
 
-  const res = events.map((event) => ({
-    ...event.get({ plain: true }),
-    quotas: event.quotas!.map((quota) => ({
-      ...quota.get({ plain: true }),
-      signupCount: Number(quota.signupCount!),
-    })),
-  }));
+  const res = events.map((event) => {
+    const { quotas, ...rest } = event;
+
+    return ({
+      ...rest,
+      quotas: quotas.map((quota) => ({
+        ...quota,
+        signupCount: quota.signups.length,
+        signups: undefined,
+      })),
+    });
+  });
 
   reply.status(200);
-  return res as StringifyApi<typeof res>;
+  return res as unknown as StringifyApi<typeof res>;
 }

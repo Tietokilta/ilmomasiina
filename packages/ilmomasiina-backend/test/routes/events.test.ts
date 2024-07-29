@@ -1,17 +1,24 @@
+import assert from 'assert';
+import { eq } from 'drizzle-orm';
 import { sortBy } from 'lodash';
 import { describe, expect, test } from 'vitest';
 
 import { UserEventListResponse, UserEventResponse } from '@tietokilta/ilmomasiina-models';
-import { Event } from '../../src/models/event';
-import { fetchSignups, testEvent, testSignups } from '../testData';
+import { db } from '../../src/drizzle/db';
+import { questionTable, quotaTable } from '../../src/drizzle/schema';
+import {
+  fetchSignups, TestEvent, testEvent, testSignups,
+} from '../testData';
 
 async function fetchUserEventList() {
   const response = await server.inject({ method: 'GET', url: '/api/events' });
+  expect(response.statusCode).toBeLessThan(500);
   return [response.json<UserEventListResponse>(), response] as const;
 }
 
-async function fetchUserEventDetails(event: Event) {
+async function fetchUserEventDetails(event: TestEvent) {
   const response = await server.inject({ method: 'GET', url: `/api/events/${event.slug}` });
+  expect(response.statusCode).toBeLessThan(500);
   return [response.json<UserEventResponse>(), response] as const;
 }
 
@@ -110,8 +117,12 @@ describe('getEventDetails', () => {
 
     expect(before.questions.map((q) => q.id)).toEqual(sortBy(event.questions!, 'order').map((q) => q.id));
 
-    await event.questions!.at(-1)!.update({ order: 0 });
-    await event.questions![0].update({ order: event.questions!.length - 1 });
+    event.questions[event.questions.length - 1] = await db.update(questionTable).set({ order: 0 }).where(eq(questionTable.id, event.questions.at(-1)?.id ?? '')).returning()
+      .execute()
+      .then((r) => r[0]);
+    event.questions[0] = await db.update(questionTable).set({ order: event.questions!.length - 1 }).where(eq(questionTable.id, event.questions[0]?.id ?? '')).returning()
+      .execute()
+      .then((r) => r[0]);
 
     const [after] = await fetchUserEventDetails(event);
 
@@ -125,8 +136,12 @@ describe('getEventDetails', () => {
 
     expect(before.quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, 'order').map((q) => q.id));
 
-    await event.quotas!.at(-1)!.update({ order: 0 });
-    await event.quotas![0].update({ order: event.quotas!.length - 1 });
+    event.quotas[event.quotas.length - 1] = await db.update(quotaTable).set({ order: 0 }).where(eq(quotaTable.id, event.quotas.at(-1)?.id ?? '')).returning()
+      .execute()
+      .then((r) => r[0]);
+    event.quotas[0] = await db.update(quotaTable).set({ order: event.quotas!.length - 1 }).where(eq(quotaTable.id, event.quotas[0]?.id ?? '')).returning()
+      .execute()
+      .then((r) => r[0]);
 
     const [after] = await fetchUserEventDetails(event);
 
@@ -137,16 +152,19 @@ describe('getEventDetails', () => {
   test('returns public signups', async () => {
     const event = await testEvent({ quotaCount: 3 }, { signupsPublic: true });
     await testSignups(event, { count: 10, confirmed: true }, { namePublic: true });
-    await fetchSignups(event);
+    const quotas = await fetchSignups(event);
 
     const [data] = await fetchUserEventDetails(event);
 
     for (const quota of event.quotas!) {
       const found = data.quotas.find((q) => q.id === quota.id);
+      const quotaWithSignups = quotas.find((s) => s.id === quota.id);
       expect(found).toBeTruthy();
-      expect(found!.signups.length).toEqual(quota.signups!.length);
-      const firstSignup = quota.signups![0];
-      expect(found!.signups).toContainEqual({
+      assert(quotaWithSignups);
+      assert(found);
+      expect(found.signups.length).toEqual(quotaWithSignups.signups.length);
+      const firstSignup = quotaWithSignups?.signups[0];
+      expect(found?.signups).toContainEqual({
         firstName: firstSignup.firstName,
         lastName: firstSignup.lastName,
         confirmed: true,
@@ -186,12 +204,12 @@ describe('getEventDetails', () => {
   test('respects Question.public', async () => {
     const event = await testEvent({ quotaCount: 1, questionCount: 1 }, { signupsPublic: true });
     await testSignups(event, { confirmed: true, count: 1 }, { namePublic: false });
-    await fetchSignups(event);
-
-    await event.questions![0].update({ public: true });
+    const quotas = await fetchSignups(event);
+    await db.update(questionTable).set({ public: true }).where(eq(questionTable.id, event.questions[0].id));
     const [before] = await fetchUserEventDetails(event);
-
-    const signup = event.quotas![0].signups![0];
+    const quota = quotas.find((q) => q.id === event.quotas[0].id);
+    assert(quota);
+    const signup = quota.signups[0];
     expect(before.quotas[0].signups).toMatchObject([{
       answers: [{
         questionId: event.questions![0].id,
@@ -199,7 +217,7 @@ describe('getEventDetails', () => {
       }],
     }]);
 
-    await event.questions![0].update({ public: false });
+    await db.update(questionTable).set({ public: false }).where(eq(questionTable.id, event.questions[0].id));
     const [after] = await fetchUserEventDetails(event);
 
     expect(after.quotas[0].signups).toMatchObject([{
@@ -210,14 +228,17 @@ describe('getEventDetails', () => {
   test('returns non-public signup counts', async () => {
     const event = await testEvent({ quotaCount: 3 }, { signupsPublic: false });
     await testSignups(event, { count: 10 });
-    await fetchSignups(event);
+    const quotas = await fetchSignups(event);
 
     const [data] = await fetchUserEventDetails(event);
-
+    console.log(data);
     for (const quota of event.quotas!) {
       const found = data.quotas.find((q) => q.id === quota.id);
+      const quotaWithSignups = quotas.find((s) => s.id === quota.id);
       expect(found).toBeTruthy();
-      expect(found!.signupCount).toEqual(quota.signups!.length);
+      assert(found);
+      assert(quotaWithSignups);
+      expect(found.signupCount).toEqual(quotaWithSignups.signups.length);
     }
   });
 });
@@ -250,7 +271,7 @@ describe('getEventList', () => {
       quotas: expect.any(Array),
     });
 
-    const firstQuota = event.quotas![0];
+    const firstQuota = event.quotas[0];
     expect(data[0].quotas).toContainEqual({
       id: firstQuota.id,
       title: firstQuota.title,
@@ -262,14 +283,17 @@ describe('getEventList', () => {
   test('returns signup counts', async () => {
     const event = await testEvent({ quotaCount: 3 }, { signupsPublic: false });
     await testSignups(event, { count: 10 });
-    await fetchSignups(event);
+    const quotaSignups = await fetchSignups(event);
 
     const [data] = await fetchUserEventList();
 
-    for (const quota of event.quotas!) {
+    for (const quota of event.quotas) {
       const found = data[0].quotas.find((q) => q.id === quota.id);
+      const quotaWithSignups = quotaSignups.find((s) => s.id === quota.id);
       expect(found).toBeTruthy();
-      expect(found!.signupCount).toEqual(quota.signups!.length);
+      assert(quotaWithSignups);
+      assert(found);
+      expect(found.signupCount).toEqual(quotaWithSignups.signups.length);
     }
   });
 
@@ -291,14 +315,18 @@ describe('getEventList', () => {
     const event = await testEvent({ quotaCount: 3 });
     const [before] = await fetchUserEventList();
 
-    expect(before[0].quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, 'order').map((q) => q.id));
-
-    await event.quotas!.at(-1)!.update({ order: 0 });
-    await event.quotas![0].update({ order: event.quotas!.length - 1 });
+    expect(before[0].quotas.map((q) => q.id)).toEqual(sortBy(event.quotas, 'order').map((q) => q.id));
+    event.quotas[event.quotas.length - 1] = await db.update(quotaTable).set({ order: 0 }).where(eq(quotaTable.id, event.quotas.at(-1)?.id ?? '')).returning()
+      .execute()
+      .then((r) => r[0]);
+    event.quotas[0] = await db.update(quotaTable).set({ order: event.quotas.length - 1 }).where(eq(quotaTable.id, event.quotas[0]?.id ?? '')).returning()
+      .execute()
+      .then((r) => r[0]);
 
     const [after] = await fetchUserEventList();
-
+    console.log(event.quotas);
+    console.log(sortBy(event.quotas, 'order'));
     expect(before[0].quotas.map((q) => q.id)).not.toEqual(after[0].quotas.map((q) => q.id));
-    expect(after[0].quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, 'order').map((q) => q.id));
+    expect(after[0].quotas.map((q) => q.id)).toEqual(sortBy(event.quotas, 'order').map((q) => q.id));
   });
 });

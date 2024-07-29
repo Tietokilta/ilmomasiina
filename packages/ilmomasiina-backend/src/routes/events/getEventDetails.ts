@@ -1,80 +1,53 @@
+import {
+  and, asc, eq,
+  inArray,
+  sql,
+} from 'drizzle-orm';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { NotFound } from 'http-errors';
-import { Op } from 'sequelize';
 
 import type {
   AdminEventPathParams, AdminEventResponse, EventID, EventSlug, UserEventPathParams, UserEventResponse,
 } from '@tietokilta/ilmomasiina-models';
+import { db } from '../../drizzle/db';
+import { EVENT_USER_VISIBLE, SIGNUP_IS_ACTIVE } from '../../drizzle/helpers';
 import {
-  adminEventGetEventAttrs,
-  eventGetAnswerAttrs,
-  eventGetEventAttrs,
-  eventGetQuestionAttrs,
-  eventGetQuotaAttrs,
-  eventGetSignupAttrs,
-} from '@tietokilta/ilmomasiina-models/dist/attrs/event';
-import { Answer } from '../../models/answer';
-import { Event } from '../../models/event';
-import { Question } from '../../models/question';
-import { Quota } from '../../models/quota';
-import { Signup } from '../../models/signup';
+  answerTable, eventTable, questionTable, quotaTable, signupTable,
+} from '../../drizzle/schema';
 import { StringifyApi } from '../utils';
 
 export async function eventDetailsForUser(
   eventSlug: EventSlug,
 ): Promise<UserEventResponse> {
-  // First query general event information
-  const event = await Event.scope('user').findOne({
-    where: { slug: eventSlug },
-    attributes: eventGetEventAttrs,
-    include: [
-      {
-        model: Question,
-        attributes: eventGetQuestionAttrs,
+  const event = await db.query.eventTable.findFirst({
+    where: and(eq(eventTable.slug, eventSlug), EVENT_USER_VISIBLE),
+    with: {
+      questions: {
+        orderBy: [questionTable.order],
       },
-    ],
-    order: [[Question, 'order', 'ASC']],
+    },
   });
-
   if (!event) {
-    // Event not found with id, probably deleted
     throw new NotFound('No event found with slug');
   }
-
-  // Only return answers to public questions
-  const publicQuestions = event.questions!
-    .filter((question) => question.public)
-    .map((question) => question.id);
-
-  // Query all quotas for the event
-  const quotas = await Quota.findAll({
-    where: { eventId: event.id },
-    attributes: eventGetQuotaAttrs,
-    include: [
-      // Include all signups for the quota
-      {
-        model: Signup.scope('active'),
-        attributes: eventGetSignupAttrs,
-        required: false,
-        include: [
-          // ... and public answers of signups
-          {
-            model: Answer,
-            attributes: eventGetAnswerAttrs,
-            required: false,
-            where: { questionId: { [Op.in]: publicQuestions } },
+  const publicQuestionIds = event.questions.filter((q) => q.public).map((q) => (q.id));
+  const quotas = await db.query.quotaTable.findMany({
+    where: eq(quotaTable.eventId, event.id),
+    with: {
+      signups: {
+        where: (SIGNUP_IS_ACTIVE),
+        with: {
+          answers: {
+            // inArray cannot be empty, so we need to check if there are any public questions
+            where: publicQuestionIds.length > 0 ? inArray(answerTable.questionId, publicQuestionIds) : sql`1=0`,
           },
-        ],
+        },
+        orderBy: [signupTable.createdAt],
       },
-    ],
-    // First sort by Quota order, then by signup creation date
-    order: [
-      ['order', 'ASC'],
-      [Signup, 'createdAt', 'ASC'],
-    ],
+    },
+    orderBy: [quotaTable.order],
   });
 
-  // Dynamic extra fields
   let registrationClosed = true;
   let millisTillOpening = null;
 
@@ -88,26 +61,22 @@ export async function eventDetailsForUser(
   }
 
   const res = {
-    ...(event.get({ plain: true })),
-    questions: event.questions!.map((question) => question.get({ plain: true })),
+    ...(event),
+    questions: event.questions,
     quotas: quotas.map((quota) => ({
-      ...quota.get({ plain: true }),
-      signups: event.signupsPublic // Hide all signups from non-admins if answers are not public
-        // When signups are public:
-        ? quota.signups!.map((signup) => ({
-          ...(signup.get({ plain: true })),
-          // Hide name if necessary
+      ...quota,
+      signups: event.signupsPublic
+        ? quota.signups.map((signup) => ({
+          ...(signup),
           firstName: event.nameQuestion && signup.namePublic ? signup.firstName : null,
           lastName: event.nameQuestion && signup.namePublic ? signup.lastName : null,
-          answers: signup.answers!,
+          answers: signup.answers,
           status: signup.status,
           confirmed: signup.confirmedAt !== null,
         }))
-        // When signups are not public:
         : [],
-      signupCount: quota.signups!.length,
+      signupCount: quota.signups.length,
     })),
-
     millisTillOpening,
     registrationClosed,
   };
@@ -117,68 +86,43 @@ export async function eventDetailsForUser(
 export async function eventDetailsForAdmin(
   eventID: EventID,
 ): Promise<AdminEventResponse> {
-  // Admin queries include internal data such as confirmation email contents
-  // Admin queries include emails and signup IDs
-  // Admin queries also show past and draft events.
-
-  const event = await Event.findOne({
-    where: { id: eventID },
-    attributes: adminEventGetEventAttrs,
-    include: [
-      // Include all questions (also non-public for the form)
-      {
-        model: Question,
-        attributes: eventGetQuestionAttrs,
+  const event = await db.query.eventTable.findFirst({
+    where: and(eq(eventTable.id, eventID)),
+    with: {
+      questions: {
+        orderBy: [questionTable.order],
       },
-    ],
-    order: [[Question, 'order', 'ASC']],
+    },
   });
 
-  if (event === null) {
-    // Event not found with id, probably deleted
+  if (!event) {
     throw new NotFound('No event found with id');
   }
 
-  const quotas = await Quota.findAll({
-    where: { eventId: event.id },
-    attributes: eventGetQuotaAttrs,
-    // Include all signups for the quotas
-    include: [
-      {
-        model: Signup.scope('active'),
-        attributes: [...eventGetSignupAttrs, 'id', 'email'],
-        required: false,
-        // ... and answers of signups
-        include: [
-          {
-            model: Answer,
-            attributes: eventGetAnswerAttrs,
-            required: false,
-          },
-        ],
+  const quotas = await db.query.quotaTable.findMany({
+    where: eq(quotaTable.eventId, event.id),
+    with: {
+      signups: {
+        with: {
+          answers: true,
+        },
       },
-    ],
-    // First sort by Quota order, then by signup creation date
-    order: [
-      ['order', 'ASC'],
-      [Signup, 'createdAt', 'ASC'],
-    ],
+    },
+    orderBy: [asc(quotaTable.order), asc(signupTable.createdAt)],
   });
-
-  // Admins get a simple result with many columns
   const res = {
-    ...event.get({ plain: true }),
-    questions: event.questions!.map((question) => question.get({ plain: true })),
+    ...event,
+    questions: event.questions,
     updatedAt: event.updatedAt,
     quotas: quotas.map((quota) => ({
-      ...quota.get({ plain: true }),
-      signups: quota.signups!.map((signup) => ({
-        ...signup.get({ plain: true }),
+      ...quota,
+      signups: quota.signups.map((signup) => ({
+        ...signup,
         status: signup.status,
-        answers: signup.answers!.map((answer) => answer.get({ plain: true })),
+        answers: signup.answers,
         confirmed: Boolean(signup.confirmedAt),
       })),
-      signupCount: quota.signups!.length,
+      signupCount: quota.signups.length,
     })),
   };
   return res as unknown as StringifyApi<typeof res>;

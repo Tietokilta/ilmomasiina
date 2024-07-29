@@ -15,8 +15,8 @@ import anonymizeOldSignups from './cron/anonymizeOldSignups';
 import deleteOldAuditLogs from './cron/deleteOldAuditLogs';
 import deleteUnconfirmedSignups from './cron/deleteUnconfirmedSignups';
 import removeDeletedData from './cron/removeDeletedData';
+import { runMigrations } from './drizzle/db';
 import enforceHTTPS from './enforceHTTPS';
-import setupDatabase from './models';
 import setupRoutes from './routes';
 import { isInitialSetupDone } from './routes/admin/users/createInitialUser';
 
@@ -40,7 +40,9 @@ const defaultCompiler = new Ajv({
 ajvFormats(defaultCompiler);
 
 export default async function initApp(): Promise<FastifyInstance> {
-  await setupDatabase();
+  await runMigrations();
+
+  // This command run all migrations from the migrations folder and apply changes to the database
 
   const server = fastify({
     trustProxy: config.isAzure || config.trustProxy, // Get IPs from X-Forwarded-For

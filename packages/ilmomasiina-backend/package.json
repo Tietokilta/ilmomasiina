@@ -59,6 +59,7 @@
     "better-npm-run": "^0.1.1",
     "debug": "^4.3.4",
     "dotenv-flow": "^4.1.0",
+    "drizzle-orm": "^0.30.10",
     "email-templates": "^11.1.1",
     "fast-jwt": "^4.0.0",
     "fastify": "^4.26.1",
@@ -68,14 +69,10 @@
     "lodash": "^4.17.21",
     "moment": "^2.30.1",
     "moment-timezone": "^0.5.45",
-    "mysql2": "^3.9.1",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.10",
     "nodemailer-mailgun-transport": "^2.1.5",
-    "pg": "^8.11.3",
-    "pg-hstore": "^2.3.4",
-    "sequelize": "^6.37.1",
-    "umzug": "^3.7.0"
+    "postgres": "^3.4.4"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
@@ -90,6 +87,7 @@
     "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^6.4.14",
     "@types/nodemailer-mailgun-transport": "^1.4.6",
+    "drizzle-kit": "^0.21.1",
     "rimraf": "^5.0.5",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",

@@ -30,7 +30,10 @@ export const userSchema = Type.Intersect([
 ]);
 
 /** Response schema for fetching a list of users. */
-export const userListResponse = Type.Array(userSchema);
+export const userListResponse = Type.Array(Type.Intersect([userSchema, Type.Object({
+  // hack to make sure a field "password" should not be returned
+  password: Type.Optional(Type.Never()),
+})]));
 
 /** Path parameters necessary to fetch and manipulate users. */
 export const userPathParams = Type.Object({

@@ -8,9 +8,9 @@ import { useField } from 'react-final-form';
 import { useTranslation } from 'react-i18next';
 
 import type { Question, SignupUpdateBody } from '@tietokilta/ilmomasiina-models';
-import { QuestionType } from '@tietokilta/ilmomasiina-models';
 import FieldRow from '../../../components/FieldRow';
 import { useEditSignupContext } from '../../../modules/editSignup';
+import { never } from '../../../utils/helpers';
 import { stringifyAnswer } from '../../../utils/signupUtils';
 import useEvent from '../../../utils/useEvent';
 
@@ -50,7 +50,7 @@ const QuestionField = ({ name, question, disabled }: QuestionFieldProps) => {
   let input: ReactNode;
   let isCheckboxes = false;
   switch (question.type) {
-    case QuestionType.TEXT:
+    case 'text':
       input = (
         <Form.Control
           type="text"
@@ -62,7 +62,7 @@ const QuestionField = ({ name, question, disabled }: QuestionFieldProps) => {
         />
       );
       break;
-    case QuestionType.NUMBER:
+    case 'number':
       input = (
         <Form.Control
           type="number"
@@ -73,7 +73,7 @@ const QuestionField = ({ name, question, disabled }: QuestionFieldProps) => {
         />
       );
       break;
-    case QuestionType.CHECKBOX: {
+    case 'checkbox': {
       input = question.options?.map((option, optIndex) => (
         <Form.Check
           // eslint-disable-next-line react/no-array-index-key
@@ -91,7 +91,7 @@ const QuestionField = ({ name, question, disabled }: QuestionFieldProps) => {
       isCheckboxes = true;
       break;
     }
-    case QuestionType.TEXT_AREA:
+    case 'textarea':
       input = (
         <Form.Control
           as="textarea"
@@ -105,7 +105,7 @@ const QuestionField = ({ name, question, disabled }: QuestionFieldProps) => {
         />
       );
       break;
-    case QuestionType.SELECT:
+    case 'select':
       if (question.options && question.options.length > 3) {
         input = (
           <Form.Control
@@ -146,7 +146,7 @@ const QuestionField = ({ name, question, disabled }: QuestionFieldProps) => {
       }
       break;
     default:
-      return null;
+      return never(question.type);
   }
 
   return (

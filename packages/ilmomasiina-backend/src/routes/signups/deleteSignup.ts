@@ -1,49 +1,62 @@
+import { and, eq } from 'drizzle-orm';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import type { SignupPathParams } from '@tietokilta/ilmomasiina-models';
 import { AuditEvent } from '@tietokilta/ilmomasiina-models';
 import { AuditLogger } from '../../auditlog';
-import { getSequelize } from '../../models';
-import { Event } from '../../models/event';
-import { Quota } from '../../models/quota';
-import { Signup } from '../../models/signup';
+import { db } from '../../drizzle/db';
+import { SIGNUP_IS_ACTIVE } from '../../drizzle/helpers';
+import { signupTable } from '../../drizzle/schema';
 import { refreshSignupPositions } from './computeSignupPosition';
 import { signupsAllowed } from './createNewSignup';
 import { NoSuchSignup, SignupsClosed } from './errors';
 
 /** Requires admin authentication OR editTokenVerification */
 async function deleteSignup(id: string, auditLogger: AuditLogger, admin: boolean = false): Promise<void> {
-  await getSequelize().transaction(async (transaction) => {
-    const signup = await Signup.scope('active').findByPk(id, {
-      include: [
-        {
-          model: Quota,
-          attributes: ['id'],
-          include: [
-            {
-              model: Event,
-              attributes: ['id', 'title', 'registrationStartDate', 'registrationEndDate', 'openQuotaSize'],
+  await db.transaction(async (db) => {
+    const signup = await db.query.signupTable.findFirst({
+      where: and(SIGNUP_IS_ACTIVE, eq(signupTable.id, id)),
+      columns: {
+        id: true,
+        firstName: true,
+        lastName: true,
+      },
+      with: {
+        quota: {
+          columns: {
+            id: true,
+          },
+          with: {
+            event: {
+              columns: {
+                id: true,
+                registrationStartDate: true,
+                registrationEndDate: true,
+                openQuotaSize: true,
+                title: true,
+                date: true,
+                location: true,
+              },
             },
-          ],
+          },
         },
-      ],
-      transaction,
+      },
     });
-    if (signup === null) {
+    if (!signup) {
       throw new NoSuchSignup('No signup found with id');
     }
-    if (!admin && !signupsAllowed(signup.quota!.event!)) {
+    if (!admin && !signupsAllowed(signup.quota.event)) {
       throw new SignupsClosed('Signups closed for this event.');
     }
 
     // Delete the DB object
-    await signup.destroy({ transaction });
+    await db.delete(signupTable).where(eq(signupTable.id, signup.id)).execute();
 
     // Advance the queue and send emails to people that were accepted
-    await refreshSignupPositions(signup.quota!.event!, transaction);
+    await refreshSignupPositions(signup.quota.event);
 
     // Create an audit log event
-    await auditLogger(AuditEvent.DELETE_SIGNUP, { signup, transaction });
+    await auditLogger(AuditEvent.DELETE_SIGNUP, { signup, transaction: db });
   });
 }
 

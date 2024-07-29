@@ -1,12 +1,14 @@
 import debug from 'debug';
+import {
+  and, eq, inArray, isNotNull, isNull, lt, ne, or,
+} from 'drizzle-orm';
 import moment from 'moment';
-import { Op } from 'sequelize';
 
 import config from '../config';
-import { Answer } from '../models/answer';
-import { Event } from '../models/event';
-import { Quota } from '../models/quota';
-import { Signup } from '../models/signup';
+import { db } from '../drizzle/db';
+import {
+  answerTable, eventTable, quotaTable, signupTable,
+} from '../drizzle/schema';
 
 const redactedName = 'Deleted';
 const redactedEmail = 'deleted@gdpr.invalid';
@@ -17,82 +19,41 @@ const debugLog = debug('app:cron:anonymize');
 export default async function anonymizeOldSignups() {
   const redactOlderThan = moment().subtract(config.anonymizeAfterDays, 'days').toDate();
 
-  const signups = await Signup.findAll({
-    include: [
-      {
-        model: Quota,
-        attributes: [],
-        include: [
-          {
-            model: Event,
-            attributes: [],
-          },
-        ],
-      },
-    ],
-    where: {
-      [Op.and]: [
-        {
-          // Only anonymize if name and email aren't anonymized already
-          [Op.or]: {
-            firstName: {
-              [Op.ne]: redactedName,
-            },
-            lastName: {
-              [Op.ne]: redactedName,
-            },
-            email: {
-              [Op.ne]: redactedEmail,
-            },
-          },
-        },
-        {
-          [Op.or]: {
-            // Only anonymize if the event was long enough ago
-            '$quota.event.date$': {
-              [Op.lt]: redactOlderThan,
-            },
-            // Or the event has no date and the signup closed long enough ago
-            [Op.and]: {
-              '$quota.event.date$': {
-                [Op.eq]: null,
-              },
-              '$quota.event.registrationEndDate$': {
-                [Op.lt]: redactOlderThan,
-              },
-            },
-          },
-        },
-        {
-          // Don't touch unconfirmed signups
-          confirmedAt: {
-            [Op.not]: null,
-          },
-        },
-      ],
-    },
-  });
+  const signups = await db.select({ id: signupTable.id }).from(signupTable)
+    .innerJoin(quotaTable, eq(signupTable.quotaId, quotaTable.id))
+    .innerJoin(eventTable, eq(quotaTable.eventId, eventTable.id))
+    .where(and(
+      or(
+        ne(signupTable.firstName, redactedName),
+        ne(signupTable.lastName, redactedName),
+        ne(signupTable.email, redactedEmail),
+      ),
+      or(
+        lt(eventTable.date, redactOlderThan),
+        and(
+          isNull(eventTable.date),
+          lt(eventTable.registrationEndDate, redactOlderThan),
+        ),
+      ),
+      isNotNull(signupTable.confirmedAt),
+    ))
+    .execute();
   if (signups.length === 0) {
     debugLog('No old signups to redact');
     return;
   }
 
-  const ids = signups.map((signup) => signup.id);
-
+  const ids = signups.map((s) => s.id);
   console.info(`Redacting older signups: ${ids.join(', ')}`);
   try {
-    await Signup.update({
+    await db.update(signupTable).set({
       firstName: redactedName,
       lastName: redactedName,
       email: redactedEmail,
-    }, {
-      where: { id: ids },
-    });
-    await Answer.update({
-      answer: redactedAnswer,
-    }, {
-      where: { signupId: ids },
-    });
+    }).where(inArray(signupTable.id, ids)).execute();
+    await db.update(answerTable).set({
+      answer: [redactedAnswer],
+    }).where(inArray(answerTable.signupId, ids)).execute();
     debugLog('Signups anonymized');
   } catch (error) {
     console.error(error);

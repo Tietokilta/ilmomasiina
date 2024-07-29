@@ -1,12 +1,12 @@
 /* eslint-disable max-classes-per-file */
+import { count } from 'drizzle-orm';
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { Transaction } from 'sequelize';
 
 import { AdminLoginResponse, ErrorCode, UserCreateSchema } from '@tietokilta/ilmomasiina-models';
 import AdminAuthSession from '../../../authentication/adminAuthSession';
 import AdminPasswordAuth from '../../../authentication/adminPasswordAuth';
-import { getSequelize } from '../../../models';
-import { User } from '../../../models/user';
+import { db, Transaction } from '../../../drizzle/db';
+import { userTable } from '../../../drizzle/schema';
 import CustomError from '../../../util/customError';
 import { createUser } from './inviteUser';
 
@@ -22,8 +22,9 @@ export class InitialSetupAlreadyDone extends CustomError {
   }
 }
 
-export async function isInitialSetupDone(transaction?: Transaction) {
-  return await User.count({ transaction }) > 0;
+export async function isInitialSetupDone(tx?: Transaction) {
+  const transaction = tx || db;
+  return transaction.select({ count: count() }).from(userTable).execute().then((rows) => rows[0].count > 0);
 }
 
 /**
@@ -40,12 +41,12 @@ export default function createInitialUser(session: AdminAuthSession) {
   ): Promise<AdminLoginResponse> {
     AdminPasswordAuth.validateNewPassword(request.body.password);
 
-    const user = await getSequelize().transaction(async (transaction) => {
+    const user = await db.transaction(async (transaction) => {
       if (await isInitialSetupDone(transaction)) {
         throw new InitialSetupAlreadyDone('The initial admin user has already been created.');
       }
       return createUser(request.body, request.logEvent, transaction);
-    });
+    }, { isolationLevel: 'serializable' });
 
     const accessToken = session.createSession({ user: user.id, email: user.email });
 

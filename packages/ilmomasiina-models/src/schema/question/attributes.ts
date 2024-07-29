@@ -1,6 +1,6 @@
 import { Type } from '@sinclair/typebox';
 
-import { QuestionType } from '../../enum';
+import { questionTypes } from '../../enum';
 import { Nullable } from '../utils';
 
 export const questionID = Type.String({
@@ -18,7 +18,7 @@ export const questionAttributes = Type.Object({
   question: Type.String({
     description: 'The question shown to attendees.',
   }),
-  type: Type.Enum(QuestionType, {
+  type: Type.Union(questionTypes.map((q) => Type.Literal(q)), {
     title: 'QuestionType',
     description: 'The type of answer expected.',
   }),
