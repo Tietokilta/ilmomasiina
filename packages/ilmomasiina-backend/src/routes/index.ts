@@ -4,7 +4,6 @@ import { FastifyInstance } from "fastify";
 
 import * as schema from "@tietokilta/ilmomasiina-models";
 import { addLogEventHook } from "../auditlog";
-import AdminAuthSession from "../authentication/adminAuthSession";
 import getAuditLogItems from "./admin/auditlog/getAuditLogs";
 import getCategoriesList from "./admin/categories/getCategoriesList";
 import createEvent from "./admin/events/createEvent";
@@ -32,16 +31,12 @@ const errorResponses = {
   "5XX": schema.errorResponse,
 };
 
-export interface RouteOptions {
-  adminSession: AdminAuthSession;
-}
-
 /** Setup admin routes (prefixed with '/admin') */
-async function setupAdminRoutes(fastifyInstance: FastifyInstance, opts: RouteOptions) {
+async function setupAdminRoutes(fastifyInstance: FastifyInstance) {
   // Add session validation hook:
   // All the following routes require a valid session. The route functions are called only if the session is valid.
   // For invalid sessions, the hook automatically responds with a proper error response.
-  requireAdmin(opts.adminSession, fastifyInstance);
+  requireAdmin(fastifyInstance.adminSession, fastifyInstance);
 
   const server = fastifyInstance.withTypeProvider<TypeBoxTypeProvider>();
 
@@ -252,7 +247,7 @@ async function setupAdminRoutes(fastifyInstance: FastifyInstance, opts: RouteOpt
   );
 }
 
-async function setupPublicRoutes(fastifyInstance: FastifyInstance, opts: RouteOptions) {
+async function setupPublicRoutes(fastifyInstance: FastifyInstance) {
   const server = fastifyInstance.withTypeProvider<TypeBoxTypeProvider>();
 
   // Routes that require a signup edit token
@@ -322,7 +317,7 @@ async function setupPublicRoutes(fastifyInstance: FastifyInstance, opts: RouteOp
         },
       },
     },
-    adminLogin(opts.adminSession),
+    adminLogin,
   );
 
   server.post(
@@ -335,7 +330,7 @@ async function setupPublicRoutes(fastifyInstance: FastifyInstance, opts: RouteOp
         },
       },
     },
-    renewAdminToken(opts.adminSession),
+    renewAdminToken,
   );
 
   // Public routes for events
@@ -398,13 +393,13 @@ async function setupPublicRoutes(fastifyInstance: FastifyInstance, opts: RouteOp
         },
       },
     },
-    createInitialUser(opts.adminSession),
+    createInitialUser,
   );
 }
 
-export default async function setupRoutes(instance: FastifyInstance, opts: RouteOptions): Promise<void> {
+export default async function setupRoutes(instance: FastifyInstance): Promise<void> {
   addLogEventHook(instance);
 
-  await instance.register(setupAdminRoutes, { ...opts, prefix: "/admin" });
-  await instance.register(setupPublicRoutes, { ...opts, prefix: undefined });
+  await instance.register(setupAdminRoutes, { prefix: "/admin" });
+  await instance.register(setupPublicRoutes, { prefix: undefined });
 }

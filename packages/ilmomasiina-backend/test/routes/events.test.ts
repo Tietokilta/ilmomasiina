@@ -18,7 +18,7 @@ async function fetchUserEventDetails(event: Event) {
   return [response.json<UserEventResponse>(), response] as const;
 }
 
-describe("getEventDetails", () => {
+describe("GET /api/events/:id", () => {
   test("returns event information", async () => {
     const event = await testEvent();
     const [data, response] = await fetchUserEventDetails(event);
@@ -74,7 +74,15 @@ describe("getEventDetails", () => {
     const [data, response] = await fetchUserEventDetails(event);
 
     expect(response.statusCode).toBe(404);
-    expect(data.title).toBe(undefined);
+    expect(data.slug).toBe(undefined);
+  });
+
+  test("returns unlisted events", async () => {
+    const event = await testEvent({}, { listed: false });
+    const [data, response] = await fetchUserEventDetails(event);
+
+    expect(response.statusCode).toBe(200);
+    expect(data.slug).toBe(event.slug);
   });
 
   test("does not return draft events", async () => {
@@ -82,7 +90,7 @@ describe("getEventDetails", () => {
     const [data, response] = await fetchUserEventDetails(event);
 
     expect(response.statusCode).toBe(404);
-    expect(data.title).toBe(undefined);
+    expect(data.slug).toBe(undefined);
   });
 
   test("returns correct information about signup opening", async () => {
@@ -111,7 +119,9 @@ describe("getEventDetails", () => {
     const event = await testEvent({ questionCount: 3 });
     const [before] = await fetchUserEventDetails(event);
 
-    expect(before.questions.map((q) => q.id)).toEqual(sortBy(event.questions!, "order").map((q) => q.id));
+    expect(before.questions.map((q) => q.id)).toEqual(
+      sortBy(event.questions!, "order").map((q) => q.id),
+    );
 
     await event.questions!.at(-1)!.update({ order: 0 });
     await event.questions![0].update({ order: event.questions!.length - 1 });
@@ -119,7 +129,9 @@ describe("getEventDetails", () => {
     const [after] = await fetchUserEventDetails(event);
 
     expect(before.questions.map((q) => q.id)).not.toEqual(after.questions.map((q) => q.id));
-    expect(after.questions.map((q) => q.id)).toEqual(sortBy(event.questions!, "order").map((q) => q.id));
+    expect(after.questions.map((q) => q.id)).toEqual(
+      sortBy(event.questions!, "order").map((q) => q.id),
+    );
   });
 
   test("returns quotas in correct order", async () => {
@@ -231,7 +243,7 @@ describe("getEventDetails", () => {
   });
 });
 
-describe("getEventList", () => {
+describe("GET /api/events", () => {
   test("returns event information", async () => {
     const event = await testEvent();
     const [data, response] = await fetchUserEventList();
@@ -289,6 +301,13 @@ describe("getEventList", () => {
     expect(data).toEqual([]);
   });
 
+  test("does not return unlisted events", async () => {
+    await testEvent({}, { listed: false });
+    const [data] = await fetchUserEventList();
+
+    expect(data).toEqual([]);
+  });
+
   test("does not return draft events", async () => {
     await testEvent({}, { draft: true });
     const [data] = await fetchUserEventList();
@@ -300,7 +319,9 @@ describe("getEventList", () => {
     const event = await testEvent({ quotaCount: 3 });
     const [before] = await fetchUserEventList();
 
-    expect(before[0].quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, "order").map((q) => q.id));
+    expect(before[0].quotas.map((q) => q.id)).toEqual(
+      sortBy(event.quotas!, "order").map((q) => q.id),
+    );
 
     await event.quotas!.at(-1)!.update({ order: 0 });
     await event.quotas![0].update({ order: event.quotas!.length - 1 });
@@ -308,6 +329,8 @@ describe("getEventList", () => {
     const [after] = await fetchUserEventList();
 
     expect(before[0].quotas.map((q) => q.id)).not.toEqual(after[0].quotas.map((q) => q.id));
-    expect(after[0].quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, "order").map((q) => q.id));
+    expect(after[0].quotas.map((q) => q.id)).toEqual(
+      sortBy(event.quotas!, "order").map((q) => q.id),
+    );
   });
 });

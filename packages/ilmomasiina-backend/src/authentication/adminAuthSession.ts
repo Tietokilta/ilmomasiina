@@ -3,6 +3,7 @@ import { FastifyRequest } from "fastify";
 
 import type { UserID, UserSchema } from "@tietokilta/ilmomasiina-models";
 import config from "../config";
+import { User } from "../models/user";
 import { BadSession } from "./errors";
 
 export interface AdminTokenData {
@@ -33,8 +34,8 @@ export default class AdminAuthSession {
    *
    * @param userData admin user information to be included into the token
    */
-  createSession(userData: AdminTokenData): string {
-    return this.sign(userData);
+  createSession(user: User): string {
+    return this.sign({ user: user.id, email: user.email });
   }
 
   /**

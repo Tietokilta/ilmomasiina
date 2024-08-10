@@ -27,7 +27,10 @@ import { generateRandomId, RANDOM_ID_LENGTH } from "./randomId";
 export interface QuestionCreationAttributes
   extends Optional<QuestionAttributes, "id" | "options" | "required" | "public"> {}
 
-export class Question extends Model<QuestionAttributes, QuestionCreationAttributes> implements QuestionAttributes {
+export class Question
+  extends Model<QuestionAttributes, QuestionCreationAttributes>
+  implements QuestionAttributes
+{
   public id!: string;
   public order!: number;
   public question!: string;
@@ -91,10 +94,10 @@ export default function setupQuestionModel(sequelize: Sequelize) {
         // TODO: Once we upgrade to Sequelize v7, try migrating this to custom datatypes again.
         get(): string[] {
           const json = this.getDataValue("options");
-          return json === null ? null : JSON.parse(json as unknown as string);
+          return json == null ? json : JSON.parse(json as unknown as string);
         },
         set(val: string[] | null) {
-          const json = val === null ? null : JSON.stringify(val);
+          const json = val == null ? val : JSON.stringify(val);
           this.setDataValue("options", json as unknown as string[]);
         },
       },

@@ -121,10 +121,9 @@ export default async function initApp(): Promise<FastifyInstance> {
     },
   });
 
-  server.register(setupRoutes, {
-    prefix: "/api",
-    adminSession: new AdminAuthSession(config.feathersAuthSecret),
-  });
+  server.decorate("adminSession", new AdminAuthSession(config.feathersAuthSecret));
+
+  server.register(setupRoutes, { prefix: "/api" });
 
   if (config.nodeEnv !== "test") {
     // Every minute, remove signups that haven't been confirmed fast enough
@@ -145,6 +144,7 @@ export default async function initApp(): Promise<FastifyInstance> {
 
 declare module "fastify" {
   interface FastifyInstance {
+    adminSession: AdminAuthSession;
     /** If set to false, GET /api/events raises an error.
      * This is "cached" in the application instance to avoid an unnecessary database query.
      */

@@ -11,4 +11,5 @@ declare global {
   var sequelize: Sequelize;
   var emailSend: MockInstance<Parameters<(typeof EmailService)["send"]>, Promise<void>>;
   var adminUser: User;
+  var adminToken: string;
 }

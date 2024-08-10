@@ -29,6 +29,9 @@ beforeEach(async () => {
 
   // Create a test user to ensure full functionality.
   global.adminUser = await testUser();
+
+  // Create a token for the admin.
+  global.adminToken = server.adminSession.createSession(global.adminUser);
 });
 
 // Mock email sending: ensure no actual email is sent and allow checking for calls.
