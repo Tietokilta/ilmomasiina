@@ -93,6 +93,12 @@ export function testEventAttributes({
   return attribs;
 }
 
+export function testQuestionOptions() {
+  return faker.helpers.multiple(() => faker.lorem.words({ min: 1, max: 3 }), {
+    count: { min: 1, max: 8 },
+  });
+}
+
 export function testQuestionAttributes() {
   const attribs: Omit<QuestionCreationAttributes, "eventId" | "order"> = {
     question: faker.lorem.words({ min: 1, max: 5 }),
@@ -101,9 +107,7 @@ export function testQuestionAttributes() {
     public: faker.datatype.boolean(),
   };
   if (attribs.type === QuestionType.SELECT || attribs.type === QuestionType.CHECKBOX) {
-    attribs.options = faker.helpers.multiple(() => faker.lorem.words({ min: 1, max: 3 }), {
-      count: { min: 1, max: 8 },
-    });
+    attribs.options = testQuestionOptions();
   }
   return attribs;
 }
@@ -111,9 +115,7 @@ export function testQuestionAttributes() {
 export function testQuotaAttributes() {
   return {
     title: faker.lorem.words({ min: 1, max: 5 }),
-    size:
-      faker.helpers.maybe(() => faker.number.int({ min: 1, max: 50 }), { probability: 0.9 }) ??
-      null,
+    size: faker.helpers.maybe(() => faker.number.int({ min: 1, max: 50 }), { probability: 0.9 }) ?? null,
   };
 }
 
@@ -124,14 +126,9 @@ export function testQuotaAttributes() {
  * @param overrides Fields to set on the event right before saving.
  * @returns The created event, with `questions` and `quotas` populated.
  */
-export async function testEvent(
-  options: TestEventOptions = {},
-  overrides: Partial<EventAttributes> = {},
-) {
-  const {
-    questionCount = faker.number.int({ min: 1, max: 5 }),
-    quotaCount = faker.number.int({ min: 1, max: 4 }),
-  } = options;
+export async function testEvent(options: TestEventOptions = {}, overrides: Partial<EventAttributes> = {}) {
+  const { questionCount = faker.number.int({ min: 1, max: 5 }), quotaCount = faker.number.int({ min: 1, max: 4 }) } =
+    options;
   const event = new Event(testEventAttributes(options));
   event.set(overrides);
   try {

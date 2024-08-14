@@ -27,10 +27,7 @@ import { generateRandomId, RANDOM_ID_LENGTH } from "./randomId";
 export interface QuestionCreationAttributes
   extends Optional<QuestionAttributes, "id" | "options" | "required" | "public"> {}
 
-export class Question
-  extends Model<QuestionAttributes, QuestionCreationAttributes>
-  implements QuestionAttributes
-{
+export class Question extends Model<QuestionAttributes, QuestionCreationAttributes> implements QuestionAttributes {
   public id!: string;
   public order!: number;
   public question!: string;

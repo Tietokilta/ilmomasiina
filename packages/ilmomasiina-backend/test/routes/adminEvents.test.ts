@@ -1,26 +1,32 @@
-import { sortBy } from 'lodash';
-import { describe, expect, test } from 'vitest';
+import { faker } from "@faker-js/faker";
+import { sortBy } from "lodash";
+import { describe, expect, test } from "vitest";
 
-import { AdminEventListResponse, AdminEventResponse, EventCreateBody } from '@tietokilta/ilmomasiina-models';
-import { Event } from '../../src/models/event';
-import { Question } from '../../src/models/question';
-import { stringifyDates } from '../../src/routes/utils';
 import {
-  fetchSignups, testEvent, testEventAttributes, testSignups,
-} from '../testData';
+  AdminEventListResponse,
+  AdminEventResponse,
+  EventCreateBody,
+  EventUpdateBody,
+  QuestionType,
+} from "@tietokilta/ilmomasiina-models";
+import { Event } from "../../src/models/event";
+import { Question } from "../../src/models/question";
+import { Quota } from "../../src/models/quota";
+import { toDate } from "../../src/routes/utils";
+import { fetchSignups, testEvent, testEventAttributes, testQuestionOptions, testSignups } from "../testData";
 
 async function fetchAdminEventList() {
   const response = await server.inject({
-    method: 'GET',
-    url: '/api/admin/events',
+    method: "GET",
+    url: "/api/admin/events",
     headers: { authorization: adminToken },
   });
   return [response.json<AdminEventListResponse>(), response] as const;
 }
 
-async function fetchAdminEventDetails(event: Pick<Event, 'id'>) {
+async function fetchAdminEventDetails(event: Pick<Event, "id">) {
   const response = await server.inject({
-    method: 'GET',
+    method: "GET",
     url: `/api/admin/events/${event.id}`,
     headers: { authorization: adminToken },
   });
@@ -29,16 +35,35 @@ async function fetchAdminEventDetails(event: Pick<Event, 'id'>) {
 
 async function createEvent(body: EventCreateBody) {
   const response = await server.inject({
-    method: 'POST',
-    url: '/api/admin/events',
+    method: "POST",
+    url: "/api/admin/events",
     body,
     headers: { authorization: adminToken },
   });
   return [response.json<AdminEventResponse>(), response] as const;
 }
 
-describe('GET /api/admin/events/:id', () => {
-  test('returns event information', async () => {
+async function updateEvent(event: Pick<Event, "id">, body: EventUpdateBody) {
+  const response = await server.inject({
+    method: "PATCH",
+    url: `/api/admin/events/${event.id}`,
+    body,
+    headers: { authorization: adminToken },
+  });
+  return [response.json<AdminEventResponse>(), response] as const;
+}
+
+async function deleteEvent(event: Pick<Event, "id">) {
+  const response = await server.inject({
+    method: "DELETE",
+    url: `/api/admin/events/${event.id}`,
+    headers: { authorization: adminToken },
+  });
+  return [response.json<null>(), response] as const;
+}
+
+describe("GET /api/admin/events/:id", () => {
+  test("returns event information", async () => {
     const event = await testEvent();
     const [data, response] = await fetchAdminEventDetails(event);
 
@@ -90,7 +115,7 @@ describe('GET /api/admin/events/:id', () => {
     });
   });
 
-  test('returns past events', async () => {
+  test("returns past events", async () => {
     const event = await testEvent({ inPast: true });
     const [data, response] = await fetchAdminEventDetails(event);
 
@@ -98,7 +123,7 @@ describe('GET /api/admin/events/:id', () => {
     expect(data.id).toBe(event.id);
   });
 
-  test('returns unlisted events', async () => {
+  test("returns unlisted events", async () => {
     const event = await testEvent({}, { listed: false });
     const [data, response] = await fetchAdminEventDetails(event);
 
@@ -106,7 +131,7 @@ describe('GET /api/admin/events/:id', () => {
     expect(data.id).toBe(event.id);
   });
 
-  test('returns draft events', async () => {
+  test("returns draft events", async () => {
     const event = await testEvent({}, { draft: true });
     const [data, response] = await fetchAdminEventDetails(event);
 
@@ -114,11 +139,11 @@ describe('GET /api/admin/events/:id', () => {
     expect(data.id).toBe(event.id);
   });
 
-  test('returns questions in correct order', async () => {
+  test("returns questions in correct order", async () => {
     const event = await testEvent({ questionCount: 3 });
     const [before] = await fetchAdminEventDetails(event);
 
-    expect(before.questions.map((q) => q.id)).toEqual(sortBy(event.questions!, 'order').map((q) => q.id));
+    expect(before.questions.map((q) => q.id)).toEqual(sortBy(event.questions!, "order").map((q) => q.id));
 
     await event.questions!.at(-1)!.update({ order: 0 });
     await event.questions![0].update({ order: event.questions!.length - 1 });
@@ -126,14 +151,14 @@ describe('GET /api/admin/events/:id', () => {
     const [after] = await fetchAdminEventDetails(event);
 
     expect(before.questions.map((q) => q.id)).not.toEqual(after.questions.map((q) => q.id));
-    expect(after.questions.map((q) => q.id)).toEqual(sortBy(event.questions!, 'order').map((q) => q.id));
+    expect(after.questions.map((q) => q.id)).toEqual(sortBy(event.questions!, "order").map((q) => q.id));
   });
 
-  test('returns quotas in correct order', async () => {
+  test("returns quotas in correct order", async () => {
     const event = await testEvent({ quotaCount: 3 });
     const [before] = await fetchAdminEventDetails(event);
 
-    expect(before.quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, 'order').map((q) => q.id));
+    expect(before.quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, "order").map((q) => q.id));
 
     await event.quotas!.at(-1)!.update({ order: 0 });
     await event.quotas![0].update({ order: event.quotas!.length - 1 });
@@ -141,10 +166,10 @@ describe('GET /api/admin/events/:id', () => {
     const [after] = await fetchAdminEventDetails(event);
 
     expect(before.quotas.map((q) => q.id)).not.toEqual(after.quotas.map((q) => q.id));
-    expect(after.quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, 'order').map((q) => q.id));
+    expect(after.quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, "order").map((q) => q.id));
   });
 
-  test('always returns signups with full data', async () => {
+  test("always returns signups with full data", async () => {
     const event = await testEvent({ quotaCount: 3 }, { signupsPublic: false });
     await Question.update({ public: false, required: true }, { where: { eventId: event.id } });
     await testSignups(event, { count: 10 }, { namePublic: false });
@@ -181,8 +206,8 @@ describe('GET /api/admin/events/:id', () => {
   });
 });
 
-describe('GET /api/admin/events', () => {
-  test('returns event information', async () => {
+describe("GET /api/admin/events", () => {
+  test("returns event information", async () => {
     const event = await testEvent();
     const [data, response] = await fetchAdminEventList();
 
@@ -220,32 +245,32 @@ describe('GET /api/admin/events', () => {
     });
   });
 
-  test('returns past events', async () => {
+  test("returns past events", async () => {
     const event = await testEvent({ inPast: true });
     const [data] = await fetchAdminEventList();
 
     expect(data).toMatchObject([{ id: event.id }]);
   });
 
-  test('returns unlisted events', async () => {
+  test("returns unlisted events", async () => {
     const event = await testEvent({}, { listed: false });
     const [data] = await fetchAdminEventList();
 
     expect(data).toMatchObject([{ id: event.id }]);
   });
 
-  test('returns draft events', async () => {
+  test("returns draft events", async () => {
     const event = await testEvent({}, { draft: true });
     const [data] = await fetchAdminEventList();
 
     expect(data).toMatchObject([{ id: event.id }]);
   });
 
-  test('returns quotas in correct order', async () => {
+  test("returns quotas in correct order", async () => {
     const event = await testEvent({ quotaCount: 3 });
     const [before] = await fetchAdminEventList();
 
-    expect(before[0].quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, 'order').map((q) => q.id));
+    expect(before[0].quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, "order").map((q) => q.id));
 
     await event.quotas!.at(-1)!.update({ order: 0 });
     await event.quotas![0].update({ order: event.quotas!.length - 1 });
@@ -253,35 +278,86 @@ describe('GET /api/admin/events', () => {
     const [after] = await fetchAdminEventList();
 
     expect(before[0].quotas.map((q) => q.id)).not.toEqual(after[0].quotas.map((q) => q.id));
-    expect(after[0].quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, 'order').map((q) => q.id));
+    expect(after[0].quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, "order").map((q) => q.id));
   });
 });
 
 function eventBody(): EventCreateBody {
-  return stringifyDates({
-    ...testEventAttributes(),
-    questions: [], // TODO
+  const attribs = testEventAttributes();
+  return {
+    ...attribs,
+    date: attribs.date?.toISOString() ?? null,
+    endDate: attribs.endDate?.toISOString() ?? null,
+    registrationStartDate: attribs.registrationStartDate?.toISOString() ?? null,
+    registrationEndDate: attribs.registrationEndDate?.toISOString() ?? null,
+    questions: [],
     quotas: [],
-  });
+  };
 }
 
-describe('POST /api/admin/events', () => {
-  test('creates events', async () => {
-    const postBody = eventBody();
-    const [postData, postResponse] = await createEvent(postBody);
+describe("POST /api/admin/events", () => {
+  test("creates events", async () => {
+    const postBody: EventCreateBody = {
+      ...eventBody(),
+      questions: [
+        {
+          type: QuestionType.TEXT,
+          question: faker.lorem.words({ min: 1, max: 5 }),
+          required: true,
+          public: false,
+          options: null,
+        },
+        {
+          type: QuestionType.TEXT_AREA,
+          question: faker.lorem.words({ min: 1, max: 5 }),
+          required: true,
+          public: true,
+          options: null,
+        },
+        {
+          type: QuestionType.NUMBER,
+          question: faker.lorem.words({ min: 1, max: 5 }),
+          required: false,
+          public: true,
+          options: null,
+        },
+        {
+          type: QuestionType.SELECT,
+          question: faker.lorem.words({ min: 1, max: 5 }),
+          required: false,
+          public: false,
+          options: testQuestionOptions(),
+        },
+        {
+          type: QuestionType.CHECKBOX,
+          question: faker.lorem.words({ min: 1, max: 5 }),
+          required: true,
+          public: true,
+          options: testQuestionOptions(),
+        },
+      ],
+      quotas: faker.helpers.multiple(
+        () => ({
+          title: faker.lorem.words({ min: 1, max: 3 }),
+          size: faker.number.int({ min: 10, max: 50 }),
+        }),
+        { count: 2 },
+      ),
+    };
+    const [createBody, createResponse] = await createEvent(postBody);
 
-    expect(postResponse.statusCode).toBe(201);
+    expect(createResponse.statusCode).toBe(201);
 
-    const event = await Event.findByPk(postData.id);
+    const event = await Event.findByPk(createBody.id, { include: [Question, Quota] });
     expect(event).toBeTruthy();
     expect(event!.title).toBe(postBody.title);
     expect(event!.slug).toBe(postBody.slug);
     expect(event!.listed).toBe(postBody.listed);
     expect(event!.draft).toBe(postBody.draft);
-    expect(event!.date).toEqual(postBody.date ? new Date(postBody.date) : null);
-    expect(event!.endDate).toBe(postBody.endDate ? new Date(postBody.endDate) : null);
-    expect(event!.registrationStartDate).toBe(postBody.registrationStartDate ? new Date(postBody.registrationStartDate) : null);
-    expect(event!.registrationEndDate).toBe(postBody.registrationEndDate ? new Date(postBody.registrationEndDate) : null);
+    expect(event!.date).toStrictEqual(toDate(postBody.date));
+    expect(event!.endDate).toStrictEqual(toDate(postBody.endDate));
+    expect(event!.registrationStartDate).toStrictEqual(toDate(postBody.registrationStartDate));
+    expect(event!.registrationEndDate).toStrictEqual(toDate(postBody.registrationEndDate));
     expect(event!.openQuotaSize).toBe(postBody.openQuotaSize);
     expect(event!.description).toBe(postBody.description);
     expect(event!.price).toBe(postBody.price);
@@ -293,12 +369,65 @@ describe('POST /api/admin/events', () => {
     expect(event!.nameQuestion).toBe(postBody.nameQuestion);
     expect(event!.emailQuestion).toBe(postBody.emailQuestion);
     expect(event!.verificationEmail).toBe(postBody.verificationEmail);
-    expect(event!.createdAt).toEqual(event!.updatedAt);
+    expect(event!.createdAt).toStrictEqual(event!.updatedAt);
     expect(event!.updatedAt.getTime()).toBeGreaterThanOrEqual(Date.now() - 2000);
 
+    expect(event!.quotas!.length).toBe(createBody.quotas.length);
+    // TODO
+
+    expect(event!.questions!.length).toBe(createBody.questions.length);
+    // TODO
+
     // verify the POST response against the GET one, should be equal
-    const [getData, getResponse] = await fetchAdminEventDetails(postData);
+    const [getData, getResponse] = await fetchAdminEventDetails(createBody);
     expect(getResponse.statusCode).toBe(200);
-    expect(postData).toEqual(getData);
+    expect(createBody).toEqual(getData);
+  });
+
+  test("does not allow duplicate slugs", async () => {
+    const duplicate = await testEvent();
+
+    const createBody: EventCreateBody = {
+      ...eventBody(),
+      slug: duplicate.slug,
+    };
+    const [, createResponse] = await createEvent(createBody);
+    expect(createResponse.statusCode).toBe(500); // TODO: 409
+
+    const countAfter = await Event.count({ where: { slug: duplicate.slug } });
+    expect(countAfter).toBe(1);
+  });
+
+  test("can recreate deleted event slugs", async () => {
+    const duplicate = await testEvent();
+    await deleteEvent(duplicate);
+
+    const createBody: EventCreateBody = {
+      ...eventBody(),
+      slug: duplicate.slug,
+    };
+    const [, createResponse] = await createEvent(createBody);
+    expect(createResponse.statusCode).toBe(201);
+
+    const countAfter = await Event.count({ where: { slug: duplicate.slug } });
+    expect(countAfter).toBe(1);
+  });
+
+  test("validates event body", async () => {
+    // TODO
+  });
+});
+
+describe("PUT /api/admin/events/:id", () => {
+  test("updates events", async () => {
+    const event = await testEvent();
+
+    const updateBody: EventUpdateBody = {
+      ...eventBody(),
+    };
+
+    const [updateData, updateResponse] = await updateEvent(event, updateBody);
+
+    expect(updateResponse.statusCode).toBe(200);
   });
 });
