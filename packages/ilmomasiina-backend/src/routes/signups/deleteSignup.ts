@@ -13,7 +13,7 @@ import { NoSuchSignup, SignupsClosed } from "./errors";
 
 /** Requires admin authentication OR editTokenVerification */
 async function deleteSignup(id: string, auditLogger: AuditLogger, admin: boolean = false): Promise<void> {
-  await getSequelize().transaction(async (transaction) => {
+  const event = await getSequelize().transaction(async (transaction) => {
     const signup = await Signup.scope("active").findByPk(id, {
       include: [
         {
@@ -39,12 +39,15 @@ async function deleteSignup(id: string, auditLogger: AuditLogger, admin: boolean
     // Delete the DB object
     await signup.destroy({ transaction });
 
-    // Advance the queue and send emails to people that were accepted
-    await refreshSignupPositions(signup.quota!.event!, transaction);
-
     // Create an audit log event
     await auditLogger(AuditEvent.DELETE_SIGNUP, { signup, transaction });
+
+    return signup.quota!.event!;
   });
+
+  // Advance the queue and send emails to people that were accepted.
+  // Do this outside the transaction, as this shouldn't affect the user deleting the signup.
+  refreshSignupPositions(event).catch((error) => console.error(error));
 }
 
 /** Requires admin authentication */

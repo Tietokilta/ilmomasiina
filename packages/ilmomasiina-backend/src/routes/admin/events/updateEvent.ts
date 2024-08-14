@@ -14,7 +14,8 @@ import { getSequelize } from "../../../models";
 import { Event } from "../../../models/event";
 import { Question } from "../../../models/question";
 import { Quota } from "../../../models/quota";
-import { eventDetailsForAdmin } from "../../events/getEventDetails";
+import { basicEventInfoCached, eventDetailsForAdmin, eventDetailsForUserCached } from "../../events/getEventDetails";
+import { eventsListForUserCached } from "../../events/getEventsList";
 import { refreshSignupPositions } from "../../signups/computeSignupPosition";
 import { toDate } from "../../utils";
 import { EditConflict } from "./errors";
@@ -174,6 +175,10 @@ export default async function updateEvent(
 
     await request.logEvent(action, { event, transaction });
   });
+
+  eventsListForUserCached.invalidate();
+  basicEventInfoCached.invalidate();
+  eventDetailsForUserCached.invalidate();
 
   const updatedEvent = await eventDetailsForAdmin(request.params.id);
 

@@ -23,92 +23,123 @@ import { Event } from "../../models/event";
 import { Question } from "../../models/question";
 import { Quota } from "../../models/quota";
 import { Signup } from "../../models/signup";
+import createCache from "../../util/cache";
 import { StringifyApi } from "../utils";
 
+export const basicEventInfoCached = createCache({
+  maxAgeMs: 5000,
+  maxPendingAgeMs: 5000,
+  async get(eventSlug: EventSlug) {
+    // First query general event information
+    const event = await Event.scope("user").findOne({
+      where: { slug: eventSlug },
+      attributes: eventGetEventAttrs,
+      include: [
+        {
+          model: Question,
+          attributes: eventGetQuestionAttrs,
+        },
+      ],
+      order: [[Question, "order", "ASC"]],
+    });
+
+    if (!event) {
+      // Event not found with id, probably deleted
+      throw new NotFound("No event found with slug");
+    }
+
+    // Only return answers to public questions
+    const publicQuestions = event.questions!.filter((question) => question.public).map((question) => question.id);
+
+    return {
+      event: {
+        ...event.get({ plain: true }),
+        questions: event.questions!.map((question) => question.get({ plain: true })),
+      },
+      publicQuestions,
+    };
+  },
+});
+
+export const eventDetailsForUserCached = createCache({
+  maxAgeMs: 1000,
+  maxPendingAgeMs: 1000,
+  async get(eventSlug: EventSlug) {
+    const { event, publicQuestions } = await basicEventInfoCached(eventSlug);
+
+    // Query all quotas for the event
+    const quotas = await Quota.findAll({
+      where: { eventId: event.id },
+      attributes: eventGetQuotaAttrs,
+      include: [
+        // Include all signups for the quota
+        {
+          model: Signup.scope("active"),
+          attributes: eventGetSignupAttrs,
+          required: false,
+          include: [
+            // ... and public answers of signups
+            {
+              model: Answer,
+              attributes: eventGetAnswerAttrs,
+              required: false,
+              where: { questionId: { [Op.in]: publicQuestions } },
+            },
+          ],
+        },
+      ],
+      // First sort by Quota order, then by signup creation date
+      order: [
+        ["order", "ASC"],
+        [Signup, "createdAt", "ASC"],
+      ],
+    });
+
+    return {
+      event: {
+        ...event,
+        quotas: quotas.map((quota) => ({
+          ...quota.get({ plain: true }),
+          signups: event.signupsPublic // Hide all signups from non-admins if answers are not public
+            ? // When signups are public:
+              quota.signups!.map((signup) => ({
+                ...signup.get({ plain: true }),
+                // Hide name if necessary
+                firstName: event.nameQuestion && signup.namePublic ? signup.firstName : null,
+                lastName: event.nameQuestion && signup.namePublic ? signup.lastName : null,
+                answers: signup.answers!,
+                status: signup.status,
+                confirmed: signup.confirmedAt !== null,
+              }))
+            : // When signups are not public:
+              [],
+          signupCount: quota.signups!.length,
+        })),
+      },
+      registrationStartDate: event.registrationStartDate && new Date(event.registrationStartDate),
+      registrationEndDate: event.registrationEndDate && new Date(event.registrationEndDate),
+    };
+  },
+});
+
 export async function eventDetailsForUser(eventSlug: EventSlug): Promise<UserEventResponse> {
-  // First query general event information
-  const event = await Event.scope("user").findOne({
-    where: { slug: eventSlug },
-    attributes: eventGetEventAttrs,
-    include: [
-      {
-        model: Question,
-        attributes: eventGetQuestionAttrs,
-      },
-    ],
-    order: [[Question, "order", "ASC"]],
-  });
-
-  if (!event) {
-    // Event not found with id, probably deleted
-    throw new NotFound("No event found with slug");
-  }
-
-  // Only return answers to public questions
-  const publicQuestions = event.questions!.filter((question) => question.public).map((question) => question.id);
-
-  // Query all quotas for the event
-  const quotas = await Quota.findAll({
-    where: { eventId: event.id },
-    attributes: eventGetQuotaAttrs,
-    include: [
-      // Include all signups for the quota
-      {
-        model: Signup.scope("active"),
-        attributes: eventGetSignupAttrs,
-        required: false,
-        include: [
-          // ... and public answers of signups
-          {
-            model: Answer,
-            attributes: eventGetAnswerAttrs,
-            required: false,
-            where: { questionId: { [Op.in]: publicQuestions } },
-          },
-        ],
-      },
-    ],
-    // First sort by Quota order, then by signup creation date
-    order: [
-      ["order", "ASC"],
-      [Signup, "createdAt", "ASC"],
-    ],
-  });
+  const { event, registrationStartDate, registrationEndDate } = await eventDetailsForUserCached(eventSlug);
 
   // Dynamic extra fields
   let registrationClosed = true;
   let millisTillOpening = null;
 
-  if (event.registrationStartDate !== null && event.registrationEndDate !== null) {
-    const startDate = new Date(event.registrationStartDate);
+  if (registrationStartDate !== null && registrationEndDate !== null) {
+    const startDate = new Date(registrationStartDate);
     const now = new Date();
     millisTillOpening = Math.max(0, startDate.getTime() - now.getTime());
 
-    const endDate = new Date(event.registrationEndDate);
+    const endDate = new Date(registrationEndDate);
     registrationClosed = now > endDate;
   }
 
   const res = {
-    ...event.get({ plain: true }),
-    questions: event.questions!.map((question) => question.get({ plain: true })),
-    quotas: quotas.map((quota) => ({
-      ...quota.get({ plain: true }),
-      signups: event.signupsPublic // Hide all signups from non-admins if answers are not public
-        ? // When signups are public:
-          quota.signups!.map((signup) => ({
-            ...signup.get({ plain: true }),
-            // Hide name if necessary
-            firstName: event.nameQuestion && signup.namePublic ? signup.firstName : null,
-            lastName: event.nameQuestion && signup.namePublic ? signup.lastName : null,
-            answers: signup.answers!,
-            status: signup.status,
-            confirmed: signup.confirmedAt !== null,
-          }))
-        : // When signups are not public:
-          [],
-      signupCount: quota.signups!.length,
-    })),
-
+    ...event,
     millisTillOpening,
     registrationClosed,
   };
