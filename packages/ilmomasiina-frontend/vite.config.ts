@@ -29,9 +29,19 @@ const TIMEZONE = process.env.APP_TIMEZONE || "Europe/Helsinki";
  * Therefore we need to quote string values, which is easiest done using JSON.stringify.
  */
 function quoteValues(values: Record<string, string | number | boolean>) {
-  return Object.fromEntries(
-    Object.entries(values).map(([key, value]) => [key, JSON.stringify(value)]),
-  );
+  return Object.fromEntries(Object.entries(values).map(([key, value]) => [key, JSON.stringify(value)]));
+}
+
+/** Gets a boolean from the environment as true/false or 0/1. */
+export function envBoolean(name: string, defaultValue?: boolean) {
+  const value = process.env[name] ?? defaultValue;
+  if (value === true || value === "true" || value === "1") {
+    return true;
+  }
+  if (value === false || value === "false" || value === "0") {
+    return false;
+  }
+  throw new Error(`Env variable ${name} must be 'true', 'false', '0' or '1'`);
 }
 
 export default defineConfig(({ mode }) => ({
@@ -67,9 +77,10 @@ export default defineConfig(({ mode }) => ({
     BRANDING_FOOTER_GDPR_LINK: process.env.BRANDING_FOOTER_GDPR_LINK || "",
     BRANDING_FOOTER_HOME_TEXT: process.env.BRANDING_FOOTER_HOME_TEXT || "",
     BRANDING_FOOTER_HOME_LINK: process.env.BRANDING_FOOTER_HOME_LINK || "",
-    BRANDING_LOGIN_PLACEHOLDER_EMAIL:
-      process.env.BRANDING_LOGIN_PLACEHOLDER_EMAIL || "admin@tietokilta.fi",
+    BRANDING_LOGIN_PLACEHOLDER_EMAIL: process.env.BRANDING_LOGIN_PLACEHOLDER_EMAIL || "admin@tietokilta.fi",
     TIMEZONE,
+    ENABLE_LOCAL_AUTH: envBoolean(ENABLE_LOCAL_AUTH),
+    ENABLE_GOOGLE_AUTH: envBoolean(ENABLE_GOOGLE_AUTH),
   }),
 
   plugins: [

@@ -58,8 +58,8 @@ export default async function initApp(): Promise<FastifyInstance> {
   server.register(fastifySensible);
 
   // Enable configurable CORS
-  if (config.allowOrigin) {
-    const corsOrigins = config.allowOrigin === "*" ? "*" : (config.allowOrigin?.split(",") ?? []);
+  if (config.allowOrigin?.length) {
+    const corsOrigins = config.allowOrigin.length === 1 && config.allowOrigin[0] === "*" ? "*" : config.allowOrigin;
     await server.register(fastifyCors, {
       origin: corsOrigins,
     });

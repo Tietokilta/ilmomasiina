@@ -48,6 +48,19 @@ export function envString(name: string, defaultValue?: string | null) {
   throw new Error(`Env variable ${name} must be set`);
 }
 
+/** Gets a string array, separated by commas, from the environment. */
+export function envStringArray(name: string, defaultValue: null): string[] | null;
+export function envStringArray(name: string, defaultValue?: string[]): string[];
+export function envStringArray(name: string, defaultValue?: string[] | null) {
+  const value = process.env[name];
+  if (value === "") return [];
+  const array = value?.split(",") ?? defaultValue;
+  if (array !== undefined) {
+    return array;
+  }
+  throw new Error(`Env variable ${name} must be set`);
+}
+
 /**
  * Gets the location of the compiled frontend files from the environment or the default of 'frontend'.
  * Returns null if the environment variable is set but empty, or if the variable is unset and the default

@@ -1,7 +1,7 @@
 import dotenvFlow from "dotenv-flow";
 import path from "path";
 
-import { envBoolean, envEnum, envInteger, envString, frontendFilesPath } from "./util/config";
+import { envBoolean, envEnum, envInteger, envString, envStringArray, frontendFilesPath } from "./util/config";
 
 // Vite/Vitest sets BASE_URL. This conflicts with our config, but isn't used
 // in tests, so just overwrite it.
@@ -10,7 +10,7 @@ if (process.env.VITEST) {
 }
 
 // Load environment variables from .env files (from the root of repository)
-dotenvFlow.config({ path: path.resolve(__dirname, "../../..") });
+dotenvFlow.config({ path: path.resolve(__dirname, "../../.."), debug: true });
 
 // Compatibility for older configs
 if (!process.env.BASE_URL && process.env.EMAIL_BASE_URL) {
@@ -44,7 +44,7 @@ const config = {
   /** Location of the compiled frontend files. `null` to disable serving. */
   frontendFilesPath: frontendFilesPath(),
   /** Allowed origins for cross-site requests to API. Comma-separated, `*` for all. */
-  allowOrigin: envString("ALLOW_ORIGIN", null),
+  allowOrigin: envStringArray("ALLOW_ORIGIN", null),
 
   /** Version number added as a header to responses. */
   version: envString("VERSION", null),
@@ -74,6 +74,19 @@ const config = {
   newEditTokenSecret: envString("NEW_EDIT_TOKEN_SECRET"),
   /** Secret for Feathers' authentication module. */
   feathersAuthSecret: envString("FEATHERS_AUTH_SECRET"),
+
+  /** Whether local username/password authentication is enabled. */
+  enableLocalAuth: envBoolean("ENABLE_LOCAL_AUTH", true),
+  /** Whether Google OAuth2 authentication is enabled. */
+  enableGoogleAuth: envBoolean("ENABLE_GOOGLE_AUTH", false),
+  /** Client ID for Google OAuth2. */
+  googleAuthClientId: envString("GOOGLE_AUTH_CLIENT_ID", null),
+  /** Client secret for Google OAuth2. */
+  googleAuthClientSecret: envString("GOOGLE_AUTH_CLIENT_SECRET", null),
+  /** If true, Google accounts can log in without being explicitly added by an administrator. */
+  googleAuthAllowSignup: envBoolean("GOOGLE_AUTH_ALLOW_SIGNUP", false),
+  /** If set, only Google accounts with those domains are accepted. */
+  googleAuthAllowedDomains: envStringArray("GOOGLE_AUTH_ALLOWED_DOMAINS", null),
 
   /** From: address for emails. */
   mailFrom: envString("MAIL_FROM"),

@@ -16,3 +16,6 @@ declare const BRANDING_FOOTER_HOME_TEXT: string;
 declare const BRANDING_FOOTER_HOME_LINK: string;
 declare const BRANDING_LOGIN_PLACEHOLDER_EMAIL: string;
 declare const TIMEZONE: string;
+
+declare const ENABLE_LOCAL_AUTH: "true" | "false";
+declare const ENABLE_GOOGLE_AUTH: "true" | "false";
