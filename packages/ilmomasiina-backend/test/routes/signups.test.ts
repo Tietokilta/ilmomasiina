@@ -48,6 +48,8 @@ describe("getSignupForEdit", () => {
         },
         position: null,
         status: null,
+        confirmableForMillis: 0,
+        editableForMillis: expect.any(Number),
       },
     });
   });
