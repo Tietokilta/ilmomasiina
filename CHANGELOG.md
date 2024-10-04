@@ -4,6 +4,10 @@
 
 - **BREAKING:** Add logo to Header - make sure to change or disable it on your instance
 - **BREAKING:** Add dark mode variants of favicons - make sure to update yours
+- The remaining time to confirm or edit a signup is now shown on the signup form
+- Signups can now be edited for `SIGNUP_CONFIRM_MINS` minutes after creation, even if created just before an event's
+  signup closes, if configured with `SIGNUP_CONFIRM_AFTER_CLOSE` (recommended).
+- The confirmation time limit for signups is now configurable via `SIGNUP_CONFIRM_MINS`
 - Add shorter header text option for mobile, configurable via `BRANDING_HEADER_TITLE_TEXT_SHORT`
 
 ## 2.0.0-alpha33

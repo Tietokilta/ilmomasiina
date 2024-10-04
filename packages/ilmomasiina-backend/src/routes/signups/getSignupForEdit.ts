@@ -44,6 +44,18 @@ export default async function getSignupForEdit(
 
   const event = signup.quota!.event!;
 
+  // Determine how long the signup can be edited for.
+  let editableForMillis = 0;
+  const now = Date.now();
+  if (event.registrationEndDate != null) {
+    editableForMillis = Math.max(
+      0,
+      event.registrationEndDate.getTime() - now,
+      signup.editableAtLeastUntil.getTime() - now,
+    );
+  }
+  const confirmableForMillis = signup.confirmedAt ? 0 : Math.max(0, signup.confirmableUntil.getTime() - now);
+
   const response = {
     signup: {
       ...signup.get({ plain: true }),
@@ -51,6 +63,8 @@ export default async function getSignupForEdit(
       status: signup.status,
       answers: signup.answers!,
       quota: signup.quota!,
+      confirmableForMillis,
+      editableForMillis,
     },
     event: {
       ...event.get({ plain: true }),

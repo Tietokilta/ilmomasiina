@@ -8,7 +8,7 @@ import { useEditSignupContext } from "../../../modules/editSignup";
 import useFieldErrors from "./fieldError";
 
 const CommonFields = () => {
-  const { event, signup, registrationClosed } = useEditSignupContext();
+  const { event, signup, editingClosedOnLoad } = useEditSignupContext();
   const isNew = !signup!.confirmed;
   const { t } = useTranslation();
   const formatError = useFieldErrors();
@@ -22,7 +22,7 @@ const CommonFields = () => {
             label={t("editSignup.fields.firstName")}
             placeholder={t("editSignup.fields.firstName.placeholder")}
             required
-            readOnly={!isNew || registrationClosed}
+            readOnly={!isNew || editingClosedOnLoad}
             formatError={formatError}
           />
           <FieldRow
@@ -31,14 +31,14 @@ const CommonFields = () => {
             label={t("editSignup.fields.lastName")}
             placeholder={t("editSignup.fields.lastName.placeholder")}
             required
-            readOnly={!isNew || registrationClosed}
+            readOnly={!isNew || editingClosedOnLoad}
             formatError={formatError}
           />
           <FieldRow
             name="namePublic"
             as={Form.Check}
             type="checkbox"
-            disabled={registrationClosed}
+            disabled={editingClosedOnLoad}
             checkAlign
             checkLabel={<>{t("editSignup.namePublic")}</>}
           />
@@ -51,7 +51,7 @@ const CommonFields = () => {
           label={t("editSignup.fields.email")}
           placeholder={t("editSignup.fields.email.placeholder")}
           required
-          readOnly={!isNew || registrationClosed}
+          readOnly={!isNew || editingClosedOnLoad}
           formatError={formatError}
         />
       )}

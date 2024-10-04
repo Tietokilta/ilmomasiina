@@ -22,6 +22,7 @@ import {
 
 import { SignupStatus } from "@tietokilta/ilmomasiina-models";
 import type { SignupAttributes } from "@tietokilta/ilmomasiina-models/dist/models";
+import config from "../config";
 import type { Answer } from "./answer";
 import type { Quota } from "./quota";
 import { generateRandomId, RANDOM_ID_LENGTH } from "./randomId";
@@ -41,10 +42,7 @@ export interface SignupCreationAttributes
     | "createdAt"
   > {}
 
-export class Signup
-  extends Model<SignupAttributes, SignupCreationAttributes>
-  implements SignupAttributes
-{
+export class Signup extends Model<SignupAttributes, SignupCreationAttributes> implements SignupAttributes {
   public id!: string;
   public firstName!: string | null;
   public lastName!: string | null;
@@ -78,6 +76,18 @@ export class Signup
 
   public static readonly MAX_NAME_LENGTH = 255;
   public static readonly MAX_EMAIL_LENGTH = 255; // TODO
+
+  /** Gets the time this signup must be confirmed by before it expires. */
+  public get confirmableUntil(): Date {
+    return new Date(this.createdAt.getTime() + config.signupConfirmMins * 60 * 1000);
+  }
+
+  /** Gets the time this signup is editable until, regardless of signups closing. */
+  public get editableAtLeastUntil(): Date {
+    return config.signupConfirmAfterClose
+      ? new Date(this.createdAt.getTime() + config.signupConfirmMins * 60 * 1000)
+      : this.createdAt;
+  }
 }
 
 export default function setupSignupModel(sequelize: Sequelize) {
@@ -145,13 +155,12 @@ export default function setupSignupModel(sequelize: Sequelize) {
         active: () => ({
           where: {
             [Op.or]: {
-              // Is confirmed
+              // Is confirmed, or is new enough
               confirmedAt: {
-                [Op.ne]: null, // $means !=
+                [Op.ne]: null,
               },
-              // Under 30 minutes old
               createdAt: {
-                [Op.gt]: moment().subtract(30, "minutes").toDate(),
+                [Op.gt]: moment().subtract(config.signupConfirmMins, "minutes").toDate(),
               },
             },
           },

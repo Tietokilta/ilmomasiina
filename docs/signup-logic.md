@@ -37,8 +37,8 @@ The following actions currently trigger a refresh:
 
 ## Expired signups
 
-Signups expire after not being confirmed for 30 minutes. They immediately stop matching Signup's `defaultScope`
-and stop being visible to users.
+Signups expire after not being confirmed for 30 minutes (configurable).
+They immediately stop matching Signup's `defaultScope` and stop being visible to users.
 
 Following this, the `deleteUnconfirmedSignups.ts` cron job will delete them and trigger a state refresh.
 

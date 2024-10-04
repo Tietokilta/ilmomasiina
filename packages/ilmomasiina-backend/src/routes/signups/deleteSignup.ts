@@ -8,7 +8,7 @@ import { Event } from "../../models/event";
 import { Quota } from "../../models/quota";
 import { Signup } from "../../models/signup";
 import { refreshSignupPositions } from "./computeSignupPosition";
-import { signupsAllowed } from "./createNewSignup";
+import { signupEditable } from "./createNewSignup";
 import { NoSuchSignup, SignupsClosed } from "./errors";
 
 /** Requires admin authentication OR editTokenVerification */
@@ -32,7 +32,7 @@ async function deleteSignup(id: string, auditLogger: AuditLogger, admin: boolean
     if (signup === null) {
       throw new NoSuchSignup("No signup found with id");
     }
-    if (!admin && !signupsAllowed(signup.quota!.event!)) {
+    if (!admin && !signupEditable(signup.quota!.event!, signup)) {
       throw new SignupsClosed("Signups closed for this event.");
     }
 

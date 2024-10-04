@@ -1,3 +1,5 @@
+import { useCallback } from "react";
+
 import { useTranslation } from "react-i18next";
 
 import { timezone } from "../config";
@@ -68,4 +70,18 @@ export function getCsvDateTimeFormatter() {
     hour12: false,
     timeZone: timezone(),
   });
+}
+
+export function useDurationFormatter() {
+  const { t } = useTranslation();
+  return useCallback(
+    (ms: number) => {
+      const sec = ms / 1000;
+      if (sec < 120) return t("duration.secs", { count: Math.floor(sec) });
+      if (sec < 3600 + 60 - 1) return t("duration.mins", { count: Math.floor(sec / 60) });
+      if (sec < 86400 + 3600 - 1) return t("duration.hours", { count: Math.floor(sec / 3600) });
+      return t("duration.days", { count: Math.floor(sec / 86400) });
+    },
+    [t],
+  );
 }

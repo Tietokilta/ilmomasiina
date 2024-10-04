@@ -5,6 +5,7 @@ import { UniqueConstraintError } from "sequelize";
 
 import { QuestionType, QuotaID } from "@tietokilta/ilmomasiina-models";
 import { EventAttributes, SignupAttributes } from "@tietokilta/ilmomasiina-models/dist/models";
+import config from "../src/config";
 import { Answer, AnswerCreationAttributes } from "../src/models/answer";
 import { Event } from "../src/models/event";
 import { Question, QuestionCreationAttributes } from "../src/models/question";
@@ -169,13 +170,13 @@ export async function testSignups(
       if (expired) {
         // Expired signup (never confirmed)
         signup.createdAt = faker.date.recent({
-          refDate: moment().subtract(30, "minutes").toDate(),
+          refDate: moment().subtract(config.signupConfirmMins, "minutes").toDate(),
         });
       } else if (confirmed ?? faker.datatype.boolean({ probability: 0.8 })) {
         // Confirmed signup
         signup.confirmedAt = faker.date.recent();
         signup.createdAt = faker.date.between({
-          from: moment(signup.confirmedAt).subtract(30, "minutes").toDate(),
+          from: moment(signup.confirmedAt).subtract(config.signupConfirmMins, "minutes").toDate(),
           to: signup.confirmedAt,
         });
         if (event.nameQuestion) {
@@ -192,7 +193,7 @@ export async function testSignups(
       } else {
         // Unconfirmed signup
         signup.createdAt = faker.date.between({
-          from: moment().subtract(30, "minutes").toDate(),
+          from: moment().subtract(config.signupConfirmMins, "minutes").toDate(),
           to: new Date(),
         });
       }

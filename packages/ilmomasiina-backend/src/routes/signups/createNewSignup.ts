@@ -8,6 +8,7 @@ import { refreshSignupPositions } from "./computeSignupPosition";
 import { generateToken } from "./editTokens";
 import { NoSuchQuota, SignupsClosed } from "./errors";
 
+/** Checks whether signups can still be created. */
 export const signupsAllowed = (event: Event) => {
   if (event.registrationStartDate === null || event.registrationEndDate === null) {
     return false;
@@ -16,6 +17,10 @@ export const signupsAllowed = (event: Event) => {
   const now = new Date();
   return now >= event.registrationStartDate && now <= event.registrationEndDate;
 };
+
+/** Checks whether a signup is still editable. */
+export const signupEditable = (event: Event, signup: Signup) =>
+  signupsAllowed(event) || new Date() <= signup.editableAtLeastUntil;
 
 export default async function createSignup(
   request: FastifyRequest<{ Body: SignupCreateBody }>,

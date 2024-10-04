@@ -11,6 +11,12 @@ export const signupForEdit = Type.Composite([
   editableSignupAttributes,
   Type.Object({
     quota,
+    confirmableForMillis: Type.Integer({
+      description: "Time in ms remaining to confirm the signup until it expires. Zero for confirmed signups.",
+    }),
+    editableForMillis: Type.Integer({
+      description: "Time in ms the signup can be edited for. If zero, the signup cannot be edited.",
+    }),
   }),
   dynamicSignupAttributes,
 ]);

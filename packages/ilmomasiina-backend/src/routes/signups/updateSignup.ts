@@ -15,7 +15,7 @@ import { Answer } from "../../models/answer";
 import { Event } from "../../models/event";
 import { Question } from "../../models/question";
 import { Signup } from "../../models/signup";
-import { signupsAllowed } from "./createNewSignup";
+import { signupEditable } from "./createNewSignup";
 import { NoSuchSignup, SignupsClosed, SignupValidationError } from "./errors";
 
 /** Requires editTokenVerification */
@@ -26,7 +26,6 @@ export default async function updateSignup(
   const { updatedSignup, edited } = await getSequelize().transaction(async (transaction) => {
     // Retrieve event data and lock the row for editing
     const signup = await Signup.scope("active").findByPk(request.params.id, {
-      attributes: ["id", "quotaId", "confirmedAt", "firstName", "lastName", "email", "language", "status", "position"],
       transaction,
       lock: Transaction.LOCK.UPDATE,
     });
@@ -48,7 +47,7 @@ export default async function updateSignup(
       transaction,
     });
     const event = quota.event!;
-    if (!signupsAllowed(event)) {
+    if (!signupEditable(event, signup)) {
       throw new SignupsClosed("Signups closed for this event.");
     }
 

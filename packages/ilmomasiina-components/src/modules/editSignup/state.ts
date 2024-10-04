@@ -7,7 +7,9 @@ export type State = Partial<SignupForEditResponse> & {
   pending: boolean;
   error?: ApiError;
   editToken: string;
-  registrationClosed: boolean;
+  editingClosedOnLoad?: boolean;
+  confirmableUntil?: number;
+  editableUntil?: number;
   preview?: { setPreviewingForm: (form: boolean) => void };
 };
 
