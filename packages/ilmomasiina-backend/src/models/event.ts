@@ -1,4 +1,3 @@
-import moment from "moment";
 import {
   DataTypes,
   HasManyAddAssociationMixin,
@@ -211,20 +210,6 @@ export default function setupEventModel(sequelize: Sequelize) {
             [Op.and]: {
               // are not drafts,
               draft: false,
-              // and either:
-              [Op.or]: {
-                // closed less than a week ago
-                registrationEndDate: {
-                  [Op.gt]: moment().subtract(7, "days").toDate(),
-                },
-                // or happened less than a week ago
-                date: {
-                  [Op.gt]: moment().subtract(7, "days").toDate(),
-                },
-                endDate: {
-                  [Op.gt]: moment().subtract(7, "days").toDate(),
-                },
-              },
             },
           },
         }),

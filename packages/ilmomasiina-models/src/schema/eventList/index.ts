@@ -38,6 +38,11 @@ export const eventListQuery = Type.Object({
       description: "If set, only events with the provided category are included.",
     }),
   ),
+  since: Type.Optional(
+    Type.Date({
+      description: "If set, only events starting after this date are included.",
+    }),
+  ),
 });
 
 /** Query parameters applicable to the public event list API. */

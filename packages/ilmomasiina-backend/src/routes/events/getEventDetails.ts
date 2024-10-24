@@ -1,5 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { NotFound } from "http-errors";
+import moment from "moment";
 import { Op } from "sequelize";
 
 import type {
@@ -32,7 +33,25 @@ export const basicEventInfoCached = createCache({
   async get(eventSlug: EventSlug) {
     // First query general event information
     const event = await Event.scope("user").findOne({
-      where: { slug: eventSlug },
+      where: {
+        slug: eventSlug,
+        // are not drafts,
+        draft: false,
+        // and either:
+        [Op.or]: {
+          // closed less than a week ago
+          registrationEndDate: {
+            [Op.gt]: moment().subtract(7, "days").toDate(),
+          },
+          // or happened less than a week ago
+          date: {
+            [Op.gt]: moment().subtract(7, "days").toDate(),
+          },
+          endDate: {
+            [Op.gt]: moment().subtract(7, "days").toDate(),
+          },
+        },
+      },
       attributes: eventGetEventAttrs,
       include: [
         {

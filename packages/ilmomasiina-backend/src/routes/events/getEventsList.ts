@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { col, fn, Order } from "sequelize";
+import { col, fn, Op, Order, WhereOptions } from "sequelize";
 
 import type { AdminEventListResponse, EventListQuery, UserEventListResponse } from "@tietokilta/ilmomasiina-models";
 import { adminEventListEventAttrs, eventListEventAttrs } from "@tietokilta/ilmomasiina-models/dist/attrs/event";
@@ -24,8 +24,20 @@ function eventOrder(): Order {
 export const eventsListForUserCached = createCache({
   maxAgeMs: 1000,
   maxPendingAgeMs: 2000,
-  async get(category?: string) {
-    const where = category ? { category } : {};
+  async get(options: { category?: string; since?: Date }) {
+    const { category, since } = options;
+    const filters: WhereOptions = {};
+    if (category) {
+      filters.category = category;
+    }
+    if (since) {
+      filters.date = {
+        [Op.gt]: since,
+      };
+    }
+    const where = {
+      [Op.and]: filters,
+    };
 
     const events = await Event.scope("user").findAll({
       attributes: eventListEventAttrs,
@@ -68,7 +80,7 @@ export async function getEventsListForUser(
     throw new InitialSetupNeeded("Initial setup of Ilmomasiina is needed.");
   }
 
-  const res = await eventsListForUserCached(request.query.category);
+  const res = await eventsListForUserCached({ category: request.query.category, since: request.query.since });
   reply.status(200);
   return res as StringifyApi<typeof res>;
 }
