@@ -1,3 +1,5 @@
+import crypto from "crypto";
+
 interface Options<A, R> {
   /** Maximum number of milliseconds since start of call that a result can be reused. */
   maxAgeMs: number;
@@ -20,6 +22,27 @@ interface Ongoing<R> {
 interface CachedGet<A, R> {
   (key: A): Promise<R>;
   invalidate(key?: A): void;
+}
+
+function hashObject(object: any): string {
+  const hash = crypto.createHash("sha256");
+
+  function processObject(obj: any): void {
+    if (obj === null || obj === undefined) {
+      hash.update(String(obj));
+    } else if (typeof obj === "object") {
+      const keys = Object.keys(obj).sort();
+      for (const key of keys) {
+        hash.update(key);
+        processObject(obj[key]);
+      }
+    } else {
+      hash.update(String(obj));
+    }
+  }
+
+  processObject(object);
+  return hash.digest("hex");
 }
 
 /**
@@ -47,7 +70,7 @@ export default function createCache<A, R>({
   const cache = new Map<string, Ongoing<R>>();
 
   const cachedGet = (async (key: A) => {
-    const hashedKey = JSON.stringify(key);
+    const hashedKey = hashObject(key);
     const currentGet = cache.get(hashedKey);
 
     // Reuse successful and pending queries as described above.
@@ -87,7 +110,7 @@ export default function createCache<A, R>({
   }) as CachedGet<A, R>;
 
   cachedGet.invalidate = (key) => {
-    if (key) cache.delete(JSON.stringify(key));
+    if (key) cache.delete(hashObject(key));
     else cache.clear();
   };
 
