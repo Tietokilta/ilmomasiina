@@ -39,16 +39,16 @@ export const eventsListForUserCached = createCache({
       };
     } else {
       filters[Op.or as any] = {
-        // closed less than 6 months ago
+        // closed less than 7 days ago
         registrationEndDate: {
-          [Op.gt]: moment().subtract(6, "months").toDate(),
+          [Op.gt]: moment().subtract(7, "days").toDate(),
         },
-        // or happened less than 6 months ago
+        // or happened less than 7 days ago
         date: {
-          [Op.gt]: moment().subtract(6, "months").toDate(),
+          [Op.gt]: moment().subtract(7, "days").toDate(),
         },
         endDate: {
-          [Op.gt]: moment().subtract(6, "months").toDate(),
+          [Op.gt]: moment().subtract(7, "days").toDate(),
         },
       };
     }
