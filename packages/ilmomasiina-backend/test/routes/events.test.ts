@@ -5,8 +5,8 @@ import { UserEventListResponse, UserEventResponse } from "@tietokilta/ilmomasiin
 import { Event } from "../../src/models/event";
 import { fetchSignups, testEvent, testSignups } from "../testData";
 
-async function fetchUserEventList() {
-  const response = await server.inject({ method: "GET", url: "/api/events" });
+async function fetchUserEventList(query?: { since?: string }) {
+  const response = await server.inject({ method: "GET", url: "/api/events", query });
   return [response.json<UserEventListResponse>(), response] as const;
 }
 
@@ -294,6 +294,22 @@ describe("getEventList", () => {
     const [data] = await fetchUserEventList();
 
     expect(data).toEqual([]);
+  });
+
+  test("returns events since specified date", async () => {
+    const since = new Date();
+    await testEvent({ inPast: true });
+    const [data] = await fetchUserEventList({ since: since.toISOString() });
+    expect(data).toEqual([]);
+
+    await testEvent({ hasDate: true });
+    const [data2] = await fetchUserEventList({ since: since.toISOString() });
+    expect(data2).toHaveLength(1);
+
+    // 30 days in the future
+    const sinceFuture = new Date(since.getTime() + 2592000000);
+    const [data3] = await fetchUserEventList({ since: sinceFuture.toISOString() });
+    expect(data3).toEqual([]);
   });
 
   test("returns quotas in correct order", async () => {
