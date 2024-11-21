@@ -64,7 +64,7 @@ export async function testEvent(
   if (hasDate) {
     if (inPast) {
       event.endDate = faker.date.recent({
-        refDate: moment().subtract(14, "days").toDate(),
+        refDate: moment().subtract(8, "months").toDate(),
       });
       event.date = faker.date.recent({ refDate: event.endDate });
     } else {
@@ -75,7 +75,7 @@ export async function testEvent(
   if (hasSignup) {
     if (inPast && signupState === "closed") {
       event.registrationEndDate = faker.date.recent({
-        refDate: moment().subtract(14, "days").toDate(),
+        refDate: moment().subtract(8, "months").toDate(),
       });
       event.registrationStartDate = faker.date.recent({
         refDate: event.registrationEndDate,

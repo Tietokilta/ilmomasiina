@@ -44,10 +44,11 @@ export default function createCache<A, R>({
     return dummyGet;
   }
 
-  const cache = new Map<A, Ongoing<R>>();
+  const cache = new Map<string, Ongoing<R>>();
 
   const cachedGet = (async (key: A) => {
-    const currentGet = cache.get(key);
+    const hashedKey = JSON.stringify(key);
+    const currentGet = cache.get(hashedKey);
 
     // Reuse successful and pending queries as described above.
     if (
@@ -73,8 +74,8 @@ export default function createCache<A, R>({
       state: "running",
     };
     // Delete, then set, to ensure the key is bumped to the end.
-    cache.delete(key);
-    cache.set(key, newGet);
+    cache.delete(hashedKey);
+    cache.set(hashedKey, newGet);
 
     // Delete least-recently-used entries.
     if (cache.size > maxSize) {
@@ -86,7 +87,7 @@ export default function createCache<A, R>({
   }) as CachedGet<A, R>;
 
   cachedGet.invalidate = (key) => {
-    if (key) cache.delete(key);
+    if (key) cache.delete(JSON.stringify(key));
     else cache.clear();
   };
 

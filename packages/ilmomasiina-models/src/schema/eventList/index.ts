@@ -39,8 +39,9 @@ export const eventListQuery = Type.Object({
     }),
   ),
   since: Type.Optional(
-    Type.Date({
+    Type.String({
       description: "If set, only events starting after this date are included.",
+      format: "date-time",
     }),
   ),
 });

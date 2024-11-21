@@ -24,19 +24,20 @@ function eventOrder(): Order {
 export const eventsListForUserCached = createCache({
   maxAgeMs: 1000,
   maxPendingAgeMs: 2000,
-  async get(options: { category?: string; since?: Date }) {
+  async get(options: { category?: string; since?: string }) {
     const { category, since } = options;
+    const sinceDate = since ? new Date(since) : undefined;
     const filters: WhereOptions = {};
     if (category) {
       filters.category = category;
     }
     if (since) {
       filters.date = {
-        [Op.gt]: since,
+        [Op.gte]: sinceDate,
       };
     }
     const where = {
-      [Op.and]: filters,
+      ...filters,
     };
 
     const events = await Event.scope("user").findAll({
