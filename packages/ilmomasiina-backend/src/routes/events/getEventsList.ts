@@ -1,4 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import moment from "moment";
 import { col, fn, Op, Order, WhereOptions } from "sequelize";
 
 import type { AdminEventListResponse, EventListQuery, UserEventListResponse } from "@tietokilta/ilmomasiina-models";
@@ -26,14 +27,29 @@ export const eventsListForUserCached = createCache({
   maxPendingAgeMs: 2000,
   async get(options: { category?: string; since?: string }) {
     const { category, since } = options;
+    // Default to 7 days ago
     const sinceDate = since ? new Date(since) : undefined;
     const filters: WhereOptions = {};
     if (category) {
       filters.category = category;
     }
-    if (since) {
-      filters.date = {
+    if (since && !Number.isNaN(sinceDate)) {
+      filters.endDate = {
         [Op.gte]: sinceDate,
+      };
+    } else {
+      filters[Op.or as any] = {
+        // closed less than 6 months ago
+        registrationEndDate: {
+          [Op.gt]: moment().subtract(6, "months").toDate(),
+        },
+        // or happened less than 6 months ago
+        date: {
+          [Op.gt]: moment().subtract(6, "months").toDate(),
+        },
+        endDate: {
+          [Op.gt]: moment().subtract(6, "months").toDate(),
+        },
       };
     }
     const where = {

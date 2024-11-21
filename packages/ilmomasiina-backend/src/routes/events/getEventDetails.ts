@@ -37,20 +37,6 @@ export const basicEventInfoCached = createCache({
         slug: eventSlug,
         // are not drafts,
         draft: false,
-        // and either:
-        [Op.or]: {
-          // closed less than a week ago
-          registrationEndDate: {
-            [Op.gt]: moment().subtract(7, "days").toDate(),
-          },
-          // or happened less than a week ago
-          date: {
-            [Op.gt]: moment().subtract(7, "days").toDate(),
-          },
-          endDate: {
-            [Op.gt]: moment().subtract(7, "days").toDate(),
-          },
-        },
       },
       attributes: eventGetEventAttrs,
       include: [
@@ -86,33 +72,44 @@ export const eventDetailsForUserCached = createCache({
   async get(eventSlug: EventSlug) {
     const { event, publicQuestions } = await basicEventInfoCached(eventSlug);
 
+    // If registrationEndDate or endDate or date is more than a week ago, return nothing
+    const isOld =
+      event.registrationEndDate &&
+      moment(event.registrationEndDate).isBefore(moment().subtract(7, "days")) &&
+      event.date &&
+      moment(event.date).isBefore(moment().subtract(7, "days")) &&
+      event.endDate &&
+      moment(event.endDate).isBefore(moment().subtract(7, "days"));
+
     // Query all quotas for the event
-    const quotas = await Quota.findAll({
-      where: { eventId: event.id },
-      attributes: eventGetQuotaAttrs,
-      include: [
-        // Include all signups for the quota
-        {
-          model: Signup.scope("active"),
-          attributes: eventGetSignupAttrs,
-          required: false,
+    const quotas = isOld
+      ? []
+      : await Quota.findAll({
+          where: { eventId: event.id },
+          attributes: eventGetQuotaAttrs,
           include: [
-            // ... and public answers of signups
+            // Include all signups for the quota
             {
-              model: Answer,
-              attributes: eventGetAnswerAttrs,
+              model: Signup.scope("active"),
+              attributes: eventGetSignupAttrs,
               required: false,
-              where: { questionId: { [Op.in]: publicQuestions } },
+              include: [
+                // ... and public answers of signups
+                {
+                  model: Answer,
+                  attributes: eventGetAnswerAttrs,
+                  required: false,
+                  where: { questionId: { [Op.in]: publicQuestions } },
+                },
+              ],
             },
           ],
-        },
-      ],
-      // First sort by Quota order, then by signup creation date
-      order: [
-        ["order", "ASC"],
-        [Signup, "createdAt", "ASC"],
-      ],
-    });
+          // First sort by Quota order, then by signup creation date
+          order: [
+            ["order", "ASC"],
+            [Signup, "createdAt", "ASC"],
+          ],
+        });
 
     return {
       event: {
