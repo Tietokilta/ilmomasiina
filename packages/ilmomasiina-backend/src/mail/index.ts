@@ -25,7 +25,7 @@ export interface ConfirmationMailParams {
 
 export interface NewUserMailParams {
   email: string;
-  password: string;
+  password: string | undefined;
 }
 
 export interface PromotedFromQueueMailParams {

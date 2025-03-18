@@ -1,9 +1,10 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { NotFound } from "http-errors";
+import { MethodNotAllowed, NotFound } from "http-errors";
 
 import type { UserPathParams } from "@tietokilta/ilmomasiina-models";
 import { AuditEvent } from "@tietokilta/ilmomasiina-models";
 import AdminPasswordAuth from "../../../authentication/adminPasswordAuth";
+import config from "../../../config";
 import EmailService from "../../../mail";
 import { getSequelize } from "../../../models";
 import { User } from "../../../models/user";
@@ -13,6 +14,8 @@ export default async function resetPassword(
   request: FastifyRequest<{ Params: UserPathParams }>,
   reply: FastifyReply,
 ): Promise<void> {
+  if (!config.enableLocalAuth) throw new MethodNotAllowed("Local auth is disabled");
+
   await getSequelize().transaction(async (transaction) => {
     // Try to fetch existing user
     const existing = await User.findByPk(request.params.id, {

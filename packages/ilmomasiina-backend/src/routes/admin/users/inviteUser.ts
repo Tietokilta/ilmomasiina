@@ -10,6 +10,7 @@ import EmailService from "../../../mail";
 import { getSequelize } from "../../../models";
 import { User } from "../../../models/user";
 import generatePassword from "./generatePassword";
+import config from "../../../config";
 
 /**
  * Private helper function to create a new user and save it to the database
@@ -29,11 +30,13 @@ export async function createUser(
 
   if (existing) throw new Conflict("User with given email already exists");
 
-  // Create new user with hashed password
+  // Create new user
   const user = await User.create(
     {
       ...params,
-      password: AdminPasswordAuth.createHash(params.password),
+      // Only hash store the password if local auth is enabled and the user provides a password
+      password:
+        config.enableLocalAuth && params.password != null ? AdminPasswordAuth.createHash(params.password) : null,
     },
     { transaction },
   );
@@ -59,7 +62,7 @@ export default async function inviteUser(
   reply: FastifyReply,
 ): Promise<UserSchema> {
   // Generate secure password
-  const password = generatePassword();
+  const password = config.enableLocalAuth ? generatePassword() : undefined;
 
   const user = await getSequelize().transaction(async (transaction) =>
     createUser(

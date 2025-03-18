@@ -7,7 +7,8 @@ export interface UserCreationAttributes extends Optional<UserAttributes, "id"> {
 export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
   public id!: number;
   public email!: string;
-  public password!: string;
+  public password!: string | null;
+  public googleUserId!: string | null;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -33,7 +34,11 @@ export default function setupUserModel(sequelize: Sequelize) {
       },
       password: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
+      },
+      googleUserId: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
     },
     {

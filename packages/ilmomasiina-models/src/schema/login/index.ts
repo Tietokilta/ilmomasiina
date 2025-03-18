@@ -2,12 +2,18 @@ import { Static, Type } from "@sinclair/typebox";
 
 /** Request body for login. */
 export const adminLoginBody = Type.Object({
-  email: Type.String({
-    description: "Email address.",
-  }),
-  password: Type.String({
-    description: "Plaintext password.",
-  }),
+  provider: Type.String(),
+  email: Type.Optional(
+    Type.String({
+      description: "Email address for local auth.",
+    }),
+  ),
+  password: Type.Optional(
+    Type.String({
+      description: "Plaintext password for local auth.",
+    }),
+  ),
+  oauthCode: Type.Optional(Type.String()),
 });
 /** Response schema for a successful login. */
 export const adminLoginResponse = Type.Object({

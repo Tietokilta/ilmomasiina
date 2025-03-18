@@ -85,8 +85,8 @@ const config = {
   googleAuthClientSecret: envString("GOOGLE_AUTH_CLIENT_SECRET", null),
   /** If true, Google accounts can log in without being explicitly added by an administrator. */
   googleAuthAllowSignup: envBoolean("GOOGLE_AUTH_ALLOW_SIGNUP", false),
-  /** If set, only Google accounts with those domains are accepted. */
-  googleAuthAllowedDomains: envStringArray("GOOGLE_AUTH_ALLOWED_DOMAINS", null),
+  /** If set, only Google accounts with those hosted (Google Workspace) domains are accepted. */
+  googleAuthAllowedDomains: envStringArray("GOOGLE_AUTH_ALLOWED_HOSTED_DOMAINS", null),
 
   /** From: address for emails. */
   mailFrom: envString("MAIL_FROM"),
@@ -177,6 +177,10 @@ if (config.newEditTokenSecret === "") {
 
 if (!config.feathersAuthSecret) {
   throw new Error("Env variable FEATHERS_AUTH_SECRET must be set to a nonempty value.");
+}
+
+if (config.googleAuthAllowSignup && !config.googleAuthAllowedDomains?.length) {
+  throw new Error("Env variable GOOGLE_AUTH_ALLOWED_DOMAINS must be set when GOOGLE_AUTH_ALLOW_SIGNUP is enabled.");
 }
 
 if (config.oldEditTokenSalt === config.newEditTokenSecret) {

@@ -56,6 +56,17 @@ module.exports = {
     // clearer to write it like a binary tree:
     // if { if { } else { } } else { if { } else { } }
     "no-lonely-if": "off",
+    // Disable for arrays.
+    "prefer-destructuring": ["error", {
+      VariableDeclarator: {
+        array: false,
+        object: true,
+      },
+      AssignmentExpression: {
+        array: false,
+        object: false,
+      },
+    }],
     // Not usable with formik.
     "react/jsx-props-no-spreading": "off",
     // TypeScript validates prop types, no need for this.

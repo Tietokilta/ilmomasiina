@@ -1,8 +1,9 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { NotFound } from "http-errors";
+import { MethodNotAllowed, NotFound } from "http-errors";
 
 import { AuditEvent, ErrorCode, UserChangePasswordSchema } from "@tietokilta/ilmomasiina-models";
 import AdminPasswordAuth from "../../../authentication/adminPasswordAuth";
+import config from "../../../config";
 import { getSequelize } from "../../../models";
 import { User } from "../../../models/user";
 import CustomError from "../../../util/customError";
@@ -17,6 +18,8 @@ export default async function changePassword(
   request: FastifyRequest<{ Body: UserChangePasswordSchema }>,
   reply: FastifyReply,
 ): Promise<void> {
+  if (!config.enableLocalAuth) throw new MethodNotAllowed("Local auth is disabled");
+
   AdminPasswordAuth.validateNewPassword(request.body.newPassword);
 
   await getSequelize().transaction(async (transaction) => {
@@ -29,8 +32,8 @@ export default async function changePassword(
     if (!existing) {
       throw new NotFound("User does not exist");
     } else {
-      // Verify old password
-      if (!AdminPasswordAuth.verifyHash(request.body.oldPassword, existing.password)) {
+      // Verify old password, if any
+      if (existing.password != null && !AdminPasswordAuth.verifyHash(request.body.oldPassword, existing.password)) {
         throw new WrongOldPassword("Incorrect password");
       }
       // Update user with a new password

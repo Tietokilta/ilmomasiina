@@ -73,6 +73,7 @@
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.10",
     "nodemailer-mailgun-transport": "^2.1.5",
+    "openid-client": "^6.3.1",
     "pg": "^8.11.3",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.1",

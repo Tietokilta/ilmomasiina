@@ -1,8 +1,9 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { HttpError, Unauthorized } from "http-errors";
+import { BadRequest, HttpError, Unauthorized } from "http-errors";
 
 import type { AdminLoginBody, AdminLoginResponse } from "@tietokilta/ilmomasiina-models";
 import AdminAuthSession, { AdminTokenData } from "../../authentication/adminAuthSession";
+import AdminGoogleAuth from "../../authentication/adminGoogleAuth";
 import AdminPasswordAuth from "../../authentication/adminPasswordAuth";
 import { User } from "../../models/user";
 import CustomError from "../../util/customError";
@@ -12,17 +13,32 @@ export function adminLogin(session: AdminAuthSession) {
     request: FastifyRequest<{ Body: AdminLoginBody }>,
     reply: FastifyReply,
   ): Promise<AdminLoginResponse> => {
-    // Verify user
-    const user = await User.findOne({
-      where: { email: request.body.email },
-      attributes: ["id", "password", "email"],
-    });
+    let user;
 
-    // Verify password
-    if (!user || !AdminPasswordAuth.verifyHash(request.body.password, user.password)) {
-      // Mitigate user enumeration by timing: waste some time if we didn't actually verify a password
-      if (!user) AdminPasswordAuth.createHash("hunter2");
-      throw new Unauthorized("Invalid email or password");
+    if (request.body.provider === "local") {
+      if (!request.body.email || !request.body.password) throw new BadRequest("Missing email and/or password");
+
+      // Find user
+      user = await User.findOne({ where: { email: request.body.email } });
+
+      // Verify password
+      let valid;
+      if (!user || !user.password) {
+        // Mitigate user enumeration by timing: waste some time if we can't actually verify a password
+        AdminPasswordAuth.createHash("hunter2");
+        valid = false;
+      } else {
+        valid = AdminPasswordAuth.verifyHash(request.body.password, user.password);
+      }
+      if (!valid) throw new Unauthorized("Invalid email or password");
+    } else if (request.body.provider === "google") {
+      if (!request.body.oauthCode) throw new BadRequest("Missing oauthCode");
+
+      const idToken = await AdminGoogleAuth.authenticate(request.body.oauthCode);
+
+      user = await User.findOne({ where: { googleUserId: idToken /* TODO .sub */ } });
+    } else {
+      throw new BadRequest("No valid login method found");
     }
 
     // Authentication success -> generate auth token

@@ -6,7 +6,9 @@ import { password, userAttributes, userID, userIdentity } from "./attributes";
 export const userCreateSchema = Type.Intersect([
   userAttributes,
   Type.Object({
-    password,
+    provider: Type.Optional(Type.String()),
+    password: Type.Optional(password),
+    oauthCode: Type.Optional(Type.String()),
   }),
 ]);
 
