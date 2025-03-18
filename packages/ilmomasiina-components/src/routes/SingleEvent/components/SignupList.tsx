@@ -4,8 +4,9 @@ import filter from "lodash-es/filter";
 import { Table } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 
+import { SignupStatus } from "@tietokilta/ilmomasiina-models";
 import { useSingleEventContext } from "../../../modules/singleEvent";
-import { OPENQUOTA, QuotaSignups, WAITLIST } from "../../../utils/signupUtils";
+import { QuotaSignups } from "../../../utils/signupUtils";
 import SignupListRow from "./SignupListRow";
 
 type Props = {
@@ -16,12 +17,11 @@ type Props = {
 const SignupList = ({ isSingleQuota, quota }: Props) => {
   const { signups } = quota;
   const { questions, nameQuestion } = useSingleEventContext().event!;
-  const isSpecialQuota = quota.id === OPENQUOTA || quota.id === WAITLIST;
-  const showQuotas = !isSingleQuota && isSpecialQuota;
+  const showQuotas = !isSingleQuota && quota.type !== SignupStatus.IN_QUOTA;
   const { t } = useTranslation();
   return (
     <div className="ilmo--quota-signups">
-      <h3>{quota.title}</h3>
+      <h3>{quota.type !== SignupStatus.IN_QUOTA ? t(`singleEvent.signups.quotaTitle.${quota.type}`) : quota.title}</h3>
       {!signups?.length ? (
         <p>{t("singleEvent.signups.emptyQuota")}</p>
       ) : (

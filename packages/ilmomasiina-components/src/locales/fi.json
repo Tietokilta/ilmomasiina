@@ -115,6 +115,8 @@
     "singleEvent.signupButton.preview": "Esikatsele ilmolomaketta",
     "singleEvent.signupButtons.title": "Ilmoittautuminen",
     "singleEvent.signups.emptyQuota": "Ei ilmoittautumisia.",
+    "singleEvent.signups.quotaTitle.in-open": "Avoin kiintiö",
+    "singleEvent.signups.quotaTitle.in-queue": "Jonossa",
     "singleEvent.signups.nameHidden": "Piilotettu",
     "singleEvent.signups.position": "Sija",
     "singleEvent.signups.name": "Nimi",

@@ -115,6 +115,8 @@
     "singleEvent.signupButton.preview": "Preview signup form",
     "singleEvent.signupButtons.title": "Sign up",
     "singleEvent.signups.emptyQuota": "No signups.",
+    "singleEvent.signups.quotaTitle.in-open": "Open quota",
+    "singleEvent.signups.quotaTitle.in-queue": "In queue",
     "singleEvent.signups.nameHidden": "Hidden",
     "singleEvent.signups.position": "Position",
     "singleEvent.signups.name": "Name",

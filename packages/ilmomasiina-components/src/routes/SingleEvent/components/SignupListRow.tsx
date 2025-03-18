@@ -15,7 +15,7 @@ type Props = {
 };
 
 const SignupListRow = ({ showQuota, signup, index }: Props) => {
-  const { firstName, lastName, namePublic, answers, quotaName, createdAt, confirmed } = signup;
+  const { firstName, lastName, namePublic, answers, quota, createdAt, confirmed } = signup;
 
   const { questions, nameQuestion } = useSingleEventContext().event!;
   const { t } = useTranslation();
@@ -38,7 +38,7 @@ const SignupListRow = ({ showQuota, signup, index }: Props) => {
       {filter(questions, "public").map((question) => (
         <td key={question.id}>{stringifyAnswer(find(answers, { questionId: question.id })?.answer || "")}</td>
       ))}
-      {showQuota && <td>{quotaName || ""}</td>}
+      {showQuota && <td>{quota.title || ""}</td>}
       <td>
         {actionDateFormat.format(new Date(createdAt))}
         <span className="ilmo--hover-only">.{msDateFormat.format(new Date(createdAt))}</span>

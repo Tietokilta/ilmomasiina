@@ -58,20 +58,6 @@ export function useMillisecondsDateTimeFormatter() {
   });
 }
 
-/** Returns a formatter for seconds-accurate datetimes like "31.12.2024 23:59:59". */
-export function getCsvDateTimeFormatter() {
-  return new Intl.DateTimeFormat("fi-FI", {
-    day: "numeric",
-    month: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    second: "numeric",
-    hour12: false,
-    timeZone: timezone(),
-  });
-}
-
 export function useDurationFormatter() {
   const { t } = useTranslation();
   return useCallback(
