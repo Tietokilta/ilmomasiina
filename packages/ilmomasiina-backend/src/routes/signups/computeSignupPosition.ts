@@ -93,13 +93,23 @@ async function refreshSignupPositionsInternal(
       inOpenQuota += 1;
       status = SignupStatus.IN_OPEN_QUOTA;
       position = inOpenQuota;
-    } else {
+    } else if (event.openQuotaSize > 0) {
+      // If there is an open quota, use a shared queue position.
+      // This doesn't perfectly reflect reality, as the signup may get accepted from queue
+      // before reaching position 1, but it's close enough.
       inQueue += 1;
       status = SignupStatus.IN_QUEUE;
       position = inQueue;
-      if (signup.status !== SignupStatus.IN_QUEUE) {
-        movedToQueue += 1;
-      }
+    } else {
+      // If there is no open quota, assign queue positions per quota.
+      inChosenQuota += 1;
+      quotaSignups.set(signup.quotaId, inChosenQuota);
+      status = SignupStatus.IN_QUEUE;
+      position = inChosenQuota - chosenQuotaSize;
+    }
+
+    if (status === SignupStatus.IN_QUEUE && signup.status !== SignupStatus.IN_QUEUE) {
+      movedToQueue += 1;
     }
 
     return { signup, status, position };
