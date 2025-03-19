@@ -44,8 +44,8 @@ services:
         source: ./packages/ilmomasiina-frontend/src
         target: /opt/ilmomasiina/packages/ilmomasiina-frontend/src
       - type: bind
-        source: ./packages/ilmomasiina-frontend/vite.config.ts
-        target: /opt/ilmomasiina/packages/ilmomasiina-frontend/vite.config.ts
+        source: ./packages/ilmomasiina-frontend/vite.config.mts
+        target: /opt/ilmomasiina/packages/ilmomasiina-frontend/vite.config.mts
       - type: bind
         source: ./packages/ilmomasiina-frontend/index.html
         target: /opt/ilmomasiina/packages/ilmomasiina-frontend/index.html

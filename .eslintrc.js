@@ -80,8 +80,8 @@ module.exports = {
     "import/no-extraneous-dependencies": ["error", {
       devDependencies: [
         "**/test/**",
-        "**/vite.config.ts",
-        "**/vitest.config.ts",
+        "**/vite.config.mts",
+        "**/vitest.config.mts",
         "**/.eslintrc.js"
       ],
     }],
