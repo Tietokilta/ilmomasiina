@@ -1,6 +1,7 @@
 import { Static, Type } from "@sinclair/typebox";
 
 import { quotaID } from "../quota/attributes";
+import { Nullable } from "../utils";
 import {
   dynamicSignupAttributes,
   editableSignupAttributes,
@@ -22,8 +23,7 @@ export const signupCreateResponse = Type.Object({
 });
 
 const signupLanguage = Type.Object({
-  language: Type.String({
-    maxLength: 8,
+  language: Nullable(Type.String({ maxLength: 8 }), {
     description: "The language code used for emails related to this signup",
   }),
 });
@@ -43,9 +43,10 @@ export const adminSignupUpdateBody = Type.Partial(
 );
 
 /** Request body for creating a signup as an admin. */
-export const adminSignupCreateBody = Type.Partial(
-  Type.Composite([signupCreateBody, editableSignupAttributes, signupLanguage, adminSignupUpdateOptions]),
-);
+export const adminSignupCreateBody = Type.Composite([
+  signupCreateBody,
+  Type.Partial(Type.Composite([editableSignupAttributes, signupLanguage, adminSignupUpdateOptions])),
+]);
 
 /** Response schema for successfully editing a signup. */
 export const signupUpdateResponse = signupIdentity;

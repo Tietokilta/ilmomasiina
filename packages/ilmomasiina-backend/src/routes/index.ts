@@ -145,7 +145,6 @@ async function setupAdminRoutes(fastifyInstance: FastifyInstance, opts: RouteOpt
     "/signups",
     {
       schema: {
-        params: schema.signupPathParams,
         body: schema.adminSignupCreateBody,
         response: {
           ...errorResponses,
