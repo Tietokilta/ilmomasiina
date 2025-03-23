@@ -5,76 +5,45 @@ import orderBy from "lodash-es/orderBy";
 import { useTranslation } from "react-i18next";
 
 import { timezone } from "@tietokilta/ilmomasiina-components";
-import {
-  AnySignupSchema,
-  getSignupsAsList,
-  QuotaSignups,
-  SignupWithQuota,
-  stringifyAnswer,
-} from "@tietokilta/ilmomasiina-components/dist/utils/signupUtils";
-import type { AdminEventResponse, AdminQuotaWithSignups, QuestionID, SignupID } from "@tietokilta/ilmomasiina-models";
+import { getSignupsAsList, stringifyAnswer } from "@tietokilta/ilmomasiina-components/dist/utils/signupUtils";
+import type { AdminEventResponse, AdminSignupSchema, QuestionID } from "@tietokilta/ilmomasiina-models";
 import { SignupStatus } from "@tietokilta/ilmomasiina-models";
+import { AdminQuotaSignups, AdminSignupWithQuota } from "../../../modules/editor/types";
 
-function getAnswersFromSignup(event: AdminEventResponse, signup: AnySignupSchema) {
+export function getAnswersFromSignup(event: AdminEventResponse, signup: AdminSignupSchema) {
   const answers: Record<QuestionID, string | string[]> = {};
 
-  event.questions.forEach((question) => {
+  for (const question of event.questions) {
     const answer = find(signup.answers, { questionId: question.id });
     answers[question.id] = answer?.answer || "";
-  });
+  }
 
   return answers;
 }
 
-export type FormattedSignup = {
-  id?: SignupID;
-  firstName: string | null;
-  lastName: string | null;
-  email: string | null;
-  answers: Record<QuestionID, string | string[]>;
-  quota: AdminQuotaWithSignups;
-  status: SignupStatus | null;
-  createdAt: Date;
-  confirmed: boolean;
-};
-
-function formatSignupForAdminList(
-  event: AdminEventResponse,
-  signup: SignupWithQuota<AdminEventResponse>,
-): FormattedSignup {
-  return {
-    ...signup,
-    createdAt: new Date(signup.createdAt),
-    answers: getAnswersFromSignup(event, signup),
-  };
-}
-
 /** Formats all signups to an event into a single list. */
-export function getSignupsForAdminList(event: AdminEventResponse): FormattedSignup[] {
+export function getSignupsForAdminList(event: AdminEventResponse): AdminSignupWithQuota[] {
   const signupsArray = getSignupsAsList(event);
-  const formatted = signupsArray.map((signup) => formatSignupForAdminList(event, signup));
-  return orderBy(formatted, [
+  return orderBy(signupsArray, [
     (signup) => [SignupStatus.IN_QUOTA, SignupStatus.IN_OPEN_QUOTA, SignupStatus.IN_QUEUE, null].indexOf(signup.status),
     "createdAt",
   ]);
 }
 
 /** Gathers all signups of an event into quotas (including those in the open quota) and the queue. */
-export function getSignupsByQuotaForAdminList(event: AdminEventResponse): QuotaSignups<FormattedSignup>[] {
+export function getSignupsByQuotaForAdminList(event: AdminEventResponse): AdminQuotaSignups[] {
   const quotas = event.quotas.map(
-    (quota): QuotaSignups<FormattedSignup> => ({
+    (quota): AdminQuotaSignups => ({
       ...quota,
       type: SignupStatus.IN_QUOTA,
       signups: quota.signups
         .filter((signup) => signup.status !== SignupStatus.IN_QUEUE)
-        .map((signup) => formatSignupForAdminList(event, { ...signup, quota })),
+        .map((signup) => ({ ...signup, quota })),
     }),
   );
 
-  const queueSignups = getSignupsAsList(event)
-    .filter((signup) => signup.status === SignupStatus.IN_QUEUE)
-    .map((signup) => formatSignupForAdminList(event, signup));
-  const queue: QuotaSignups<FormattedSignup>[] = queueSignups.length
+  const queueSignups = getSignupsAsList(event).filter((signup) => signup.status === SignupStatus.IN_QUEUE);
+  const queue: AdminQuotaSignups[] = queueSignups.length
     ? [
         {
           type: SignupStatus.IN_QUEUE,
@@ -107,7 +76,7 @@ function getCsvDateTimeFormatter() {
 /** Converts an array of signup rows from `getSignupsForAdminList` to a an array of CSV cells. */
 export function useConvertSignupsToCSV(
   event: AdminEventResponse | null,
-  signups: FormattedSignup[] | null,
+  signups: AdminSignupWithQuota[] | null,
 ): string[][] {
   const { t } = useTranslation();
   return useMemo(() => {
@@ -124,6 +93,7 @@ export function useConvertSignupsToCSV(
       ],
       // Data rows
       ...signups.map((signup) => {
+        const answerMap = getAnswersFromSignup(event, signup);
         const signupStatus =
           signup.status && signup.status !== SignupStatus.IN_QUOTA
             ? ` (${t(`editor.signups.column.status.${signup.status}`)})`
@@ -132,8 +102,8 @@ export function useConvertSignupsToCSV(
           ...(event.nameQuestion ? [signup.firstName || "", signup.lastName || ""] : []),
           ...(event.emailQuestion ? [signup.email || ""] : []),
           `${signup.quota.title}${signupStatus}`,
-          ...event.questions.map((question) => stringifyAnswer(signup.answers[question.id])),
-          dateFormat.format(signup.createdAt),
+          ...event.questions.map((question) => stringifyAnswer(answerMap[question.id])),
+          dateFormat.format(new Date(signup.createdAt)),
         ];
       }),
     ];

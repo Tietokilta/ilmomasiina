@@ -172,12 +172,13 @@ type Props = {
 };
 
 const QuestionFields = ({ name }: Props) => {
-  const { event, editingClosedOnLoad } = useEditSignupContext();
+  const { event, editingClosedOnLoad, admin } = useEditSignupContext();
+  const canEdit = !editingClosedOnLoad || admin;
   return (
     // TODO: add proper validation
     <>
       {event!.questions.map((question) => (
-        <QuestionField key={question.id} name={name} question={question} disabled={editingClosedOnLoad} />
+        <QuestionField key={question.id} name={name} question={question} disabled={!canEdit} />
       ))}
     </>
   );

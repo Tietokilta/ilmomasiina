@@ -23,6 +23,7 @@ import EditConflictModal from "./EditConflictModal";
 import EditorTabBody from "./EditorTabBody";
 import EditorTabHeader, { EditorTab } from "./EditorTabHeader";
 import EditorToolbar from "./EditorToolbar";
+import EditSignupModal from "./EditSignupModal";
 import EmailsTab from "./EmailsTab";
 import MoveToQueueWarning from "./MoveToQueueWarning";
 import PreviewTab from "./PreviewTab";
@@ -78,6 +79,7 @@ const EditFormBody = ({ form }: FormRenderProps<EditorEvent>) => {
         </BsForm>
         <MoveToQueueWarning onProceed={onMoveToQueueProceed} />
         <EditConflictModal onSave={onSave} />
+        <EditSignupModal />
       </>
     ),
     [onSave, onSaveToggleDraft, onMoveToQueueProceed, activeTab, setActiveTab],

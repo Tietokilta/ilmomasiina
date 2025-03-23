@@ -7,11 +7,12 @@ import { useActionDateTimeFormatter } from "@tietokilta/ilmomasiina-components/d
 import { stringifyAnswer } from "@tietokilta/ilmomasiina-components/dist/utils/signupUtils";
 import useEvent from "@tietokilta/ilmomasiina-components/dist/utils/useEvent";
 import { AdminEventResponse, SignupStatus } from "@tietokilta/ilmomasiina-models";
-import { deleteSignup, getEvent } from "../../../modules/editor/actions";
+import { deleteSignup, editNewSignup, editSignup, getEvent } from "../../../modules/editor/actions";
+import type { AdminSignupWithQuota } from "../../../modules/editor/types";
 import { useTypedDispatch, useTypedSelector } from "../../../store/reducers";
 import CSVLink, { CSVOptions } from "./CSVLink";
 import {
-  FormattedSignup,
+  getAnswersFromSignup,
   getSignupsByQuotaForAdminList,
   getSignupsForAdminList,
   useConvertSignupsToCSV,
@@ -21,7 +22,7 @@ import "../Editor.scss";
 
 type SignupProps = {
   position: number;
-  signup: FormattedSignup;
+  signup: AdminSignupWithQuota;
   showQuota: boolean;
 };
 
@@ -31,6 +32,9 @@ const SignupRow = ({ position, signup, showQuota }: SignupProps) => {
   const { t } = useTranslation();
   const actionDateFormat = useActionDateTimeFormatter();
 
+  const answersMap = useMemo(() => getAnswersFromSignup(event, signup), [event, signup]);
+
+  const onEdit = useEvent(() => dispatch(editSignup(signup)));
   const onDelete = useEvent(async () => {
     // eslint-disable-next-line no-alert
     const confirmation = window.confirm(t("editor.signups.action.delete.confirm"));
@@ -62,10 +66,13 @@ const SignupRow = ({ position, signup, showQuota }: SignupProps) => {
         <td key="quota">{signupStatus ? `${signup.quota.title} (${signupStatus})` : signup.quota.title}</td>
       )}
       {event.questions.map((question) => (
-        <td key={question.id}>{stringifyAnswer(signup.answers[question.id])}</td>
+        <td key={question.id}>{stringifyAnswer(answersMap[question.id])}</td>
       ))}
-      <td key="timestamp">{actionDateFormat.format(signup.createdAt)}</td>
-      <td key="delete">
+      <td key="timestamp">{actionDateFormat.format(new Date(signup.createdAt))}</td>
+      <td key="actions">
+        <Button type="button" variant="primary" size="sm" onClick={onEdit}>
+          {t("editor.signups.action.edit")}
+        </Button>
         <Button type="button" variant="danger" size="sm" onClick={onDelete}>
           {t("editor.signups.action.delete")}
         </Button>
@@ -76,7 +83,7 @@ const SignupRow = ({ position, signup, showQuota }: SignupProps) => {
 
 type TableProps = {
   event: AdminEventResponse;
-  signups: FormattedSignup[];
+  signups: AdminSignupWithQuota[];
   showQuota: boolean;
 };
 
@@ -98,7 +105,7 @@ const SignupTable = ({ event, signups, showQuota }: TableProps) => {
             <th key={q.id}>{q.question}</th>
           ))}
           <th key="timestamp">{t("editor.signups.column.time")}</th>
-          <th key="delete" aria-label={t("editor.signups.column.delete")} />
+          <th key="actions" aria-label={t("editor.signups.column.actions")} />
         </tr>
       </thead>
       <tbody>
@@ -114,6 +121,8 @@ const csvOptions: CSVOptions = { delimiter: "\t" };
 
 const SignupsTab = () => {
   const event = useTypedSelector((state) => state.editor.event);
+  const dispatch = useTypedDispatch();
+
   const signups = useMemo(() => event && getSignupsForAdminList(event), [event]);
   const signupsByQuota = useMemo(() => event && getSignupsByQuotaForAdminList(event), [event]);
   const csvSignups = useConvertSignupsToCSV(event, signups);
@@ -124,7 +133,12 @@ const SignupsTab = () => {
     [],
   );
 
-  const { t } = useTranslation();
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation();
+
+  const createSignup = useEvent(() => dispatch(editNewSignup({ language })));
 
   if (!event || !signups?.length || !signupsByQuota) {
     return <p>{t("editor.signups.noSignups")}</p>;
@@ -134,7 +148,7 @@ const SignupsTab = () => {
 
   return (
     <div>
-      <nav className="mb-3 d-flex align-items-center flex-wrap">
+      <nav className="mb-3 ilmo--title-nav">
         <Form.Check
           id="groupByQuota"
           label={t("editor.signups.groupByQuota")}
@@ -142,6 +156,9 @@ const SignupsTab = () => {
           onChange={onGroupedChange}
         />
         <div className="flex-grow-1" />
+        <Button variant="primary" onClick={createSignup}>
+          {t("editor.signups.action.create")}
+        </Button>
         <CSVLink
           data={csvSignups!}
           csvOptions={csvOptions}

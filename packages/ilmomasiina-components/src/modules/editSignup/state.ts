@@ -11,6 +11,7 @@ export type State = Partial<SignupForEditResponse> & {
   confirmableUntil?: number;
   editableUntil?: number;
   preview?: { setPreviewingForm: (form: boolean) => void };
+  admin?: boolean;
 };
 
 export const { Provider, useStateContext, createThunk } = createStateContext<State>();

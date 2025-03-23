@@ -2,8 +2,6 @@ import sumBy from "lodash-es/sumBy";
 
 import type {
   AdminEventResponse,
-  AdminSignupSchema,
-  PublicSignupSchema,
   QuotaID,
   QuotaWithSignupCount,
   UserEventResponse,
@@ -11,9 +9,8 @@ import type {
 import { SignupStatus } from "@tietokilta/ilmomasiina-models";
 
 export type AnyEventSchema = AdminEventResponse | UserEventResponse;
-export type AnySignupSchema = AdminSignupSchema | PublicSignupSchema;
 
-/** Grabs the signup type from {Admin,User}EventSchema and adds some extra information. */
+/** Grabs the signup type from {Admin,User}EventSchema and adds a reference to the quota. */
 export type SignupWithQuota<Ev extends AnyEventSchema = AnyEventSchema> = Ev["quotas"][number]["signups"][number] & {
   quota: Ev["quotas"][number];
 };
@@ -37,13 +34,16 @@ export function countOverflowSignups(quotas: QuotaWithSignupCount[], openQuotaSi
   };
 }
 
-export type QuotaSignups<S = SignupWithQuota> = {
+/** Expands the quota type from {Admin,User}EventSchema, makes quota properties nullable and adds references to quota. */
+export type QuotaSignups<Ev extends AnyEventSchema = AnyEventSchema> = Omit<
+  Ev["quotas"][number],
+  "id" | "title" | "size"
+> & {
   type: SignupStatus;
   id: QuotaID | null;
   title: string | null;
   size: number | null;
-  signups: S[];
-  signupCount: number;
+  signups: SignupWithQuota<Ev>[];
 };
 
 /** Gathers all signups of an event into their assigned quotas, the open quota, and the queue. */
