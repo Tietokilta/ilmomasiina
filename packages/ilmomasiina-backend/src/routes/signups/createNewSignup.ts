@@ -1,7 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 
-import { AuditEvent, type SignupCreateBody, type SignupCreateResponse } from "@tietokilta/ilmomasiina-models";
-import { getSequelize } from "../../models";
+import type { SignupCreateBody, SignupCreateResponse } from "@tietokilta/ilmomasiina-models";
 import { Event } from "../../models/event";
 import { Quota } from "../../models/quota";
 import { Signup } from "../../models/signup";
@@ -27,39 +26,32 @@ export default async function createSignup(
   request: FastifyRequest<{ Body: SignupCreateBody }>,
   response: FastifyReply,
 ): Promise<SignupCreateResponse> {
-  const { newSignup, event } = await getSequelize().transaction(async (transaction) => {
-    // Find the given quota and event.
-    const quota = await Quota.findByPk(request.body.quotaId, {
-      attributes: [],
-      include: [
-        {
-          model: Event.scope("user"),
-          attributes: ["id", "registrationStartDate", "registrationEndDate", "openQuotaSize"],
-        },
-      ],
-    });
-
-    // Do some validation.
-    if (!quota || !quota.event) {
-      throw new NoSuchQuota("Quota doesn't exist.");
-    }
-
-    if (!signupsAllowed(quota.event)) {
-      throw new SignupsClosed("Signups closed for this event.");
-    }
-
-    // Create the signup.
-    const signup = await Signup.create({ quotaId: request.body.quotaId });
-
-    // Create an audit log event
-    await request.logEvent(AuditEvent.CREATE_SIGNUP, { signup, transaction });
-
-    return { newSignup: signup, event: quota.event };
+  // Find the given quota and event.
+  const quota = await Quota.findByPk(request.body.quotaId, {
+    attributes: [],
+    include: [
+      {
+        model: Event.scope("user"),
+        attributes: ["id", "registrationStartDate", "registrationEndDate", "openQuotaSize"],
+      },
+    ],
   });
+
+  // Do some validation.
+  if (!quota || !quota.event) {
+    throw new NoSuchQuota("Quota doesn't exist.");
+  }
+
+  if (!signupsAllowed(quota.event)) {
+    throw new SignupsClosed("Signups closed for this event.");
+  }
+
+  // Create the signup.
+  const newSignup = await Signup.create({ quotaId: request.body.quotaId });
 
   // Refresh signup positions. Ignore errors, but wait for this to complete, so that the user
   // gets a status on their signup before it being returned.
-  await refreshSignupPositions(event).catch((error) => console.error(error));
+  await refreshSignupPositions(quota.event).catch((error) => console.error(error));
 
   const editToken = generateToken(newSignup.id);
 
