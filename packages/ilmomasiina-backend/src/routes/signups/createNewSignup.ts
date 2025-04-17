@@ -37,6 +37,7 @@ export default async function createSignup(
           attributes: ["id", "registrationStartDate", "registrationEndDate", "openQuotaSize"],
         },
       ],
+      transaction,
     });
 
     // Do some validation.
@@ -49,7 +50,7 @@ export default async function createSignup(
     }
 
     // Create the signup.
-    const signup = await Signup.create({ quotaId: request.body.quotaId });
+    const signup = await Signup.create({ quotaId: request.body.quotaId }, { transaction });
 
     // Create an audit log event
     await request.logEvent(AuditEvent.CREATE_SIGNUP, { signup, transaction });
