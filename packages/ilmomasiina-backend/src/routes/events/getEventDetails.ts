@@ -28,6 +28,11 @@ import { Signup } from "../../models/signup";
 import createCache from "../../util/cache";
 import { StringifyApi } from "../utils";
 
+/** Fetches event information that does not depend on signups.
+ *
+ * This only exists to provide a slightly longer cache time for the parts of an event that don't
+ * change without admin intervention.
+ */
 export const basicEventInfoCached = createCache({
   maxAgeMs: 5000,
   maxPendingAgeMs: 5000,
@@ -37,12 +42,10 @@ export const basicEventInfoCached = createCache({
     const event = await Event.scope("user").findOne({
       where: [{ slug: eventSlug }],
       attributes: eventGetEventAttrs,
-      include: [
-        {
-          model: Question,
-          attributes: eventGetQuestionAttrs,
-        },
-      ],
+      include: {
+        model: Question,
+        attributes: eventGetQuestionAttrs,
+      },
       order: [[Question, "order", "ASC"]],
     });
 
@@ -51,30 +54,30 @@ export const basicEventInfoCached = createCache({
       throw new NotFound("No event found with slug");
     }
 
-    // Only return answers to public questions
+    // The user API will only return answers to public questions - precalculate those
     const publicQuestions = event.questions!.filter((question) => question.public).map((question) => question.id);
 
     return {
       event: {
         ...event.get({ plain: true }),
-        effectiveEndDate: event.effectiveEndDate,
         questions: event.questions!.map((question) => question.get({ plain: true })),
       },
+      effectiveEndDate: event.effectiveEndDate,
       publicQuestions,
     };
   },
 });
 
+/** Fetches event information with public signups. */
 export const eventDetailsForUserCached = createCache({
   maxAgeMs: 1000,
   maxPendingAgeMs: 1000,
   logName: "eventDetailsForUserCached",
   async get(eventSlug: EventSlug) {
-    const { event, publicQuestions } = await basicEventInfoCached(eventSlug);
+    const { event, effectiveEndDate, publicQuestions } = await basicEventInfoCached(eventSlug);
 
     // If event ended or registration closed than a week ago, don't return signups or quotas
-    const effectiveEnd = event.effectiveEndDate;
-    const isOld = effectiveEnd != null && effectiveEnd < moment().subtract(7, "days").valueOf();
+    const isOld = effectiveEndDate != null && effectiveEndDate < moment().subtract(7, "days").valueOf();
 
     let quotas: Quota[] = [];
     if (!isOld) {
@@ -108,46 +111,40 @@ export const eventDetailsForUserCached = createCache({
     }
 
     return {
-      event: {
-        ...event,
-        quotas: quotas.map((quota) => ({
-          ...quota.get({ plain: true }),
-          signups: event.signupsPublic // Hide all signups from non-admins if answers are not public
-            ? // When signups are public:
-              quota.signups!.map((signup) => ({
-                ...signup.get({ plain: true }),
-                // Hide name if necessary
-                firstName: event.nameQuestion && signup.namePublic ? signup.firstName : null,
-                lastName: event.nameQuestion && signup.namePublic ? signup.lastName : null,
-                answers: signup.answers!,
-                status: signup.status,
-                confirmed: signup.confirmedAt !== null,
-              }))
-            : // When signups are not public:
-              [],
-          signupCount: quota.signups!.length,
-        })),
-      },
-      registrationStartDate: event.registrationStartDate && new Date(event.registrationStartDate),
-      registrationEndDate: event.registrationEndDate && new Date(event.registrationEndDate),
+      ...event,
+      quotas: quotas.map((quota) => ({
+        ...quota.get({ plain: true }),
+        signups: event.signupsPublic // Hide all signups from non-admins if answers are not public
+          ? // When signups are public:
+            quota.signups!.map((signup) => ({
+              ...signup.get({ plain: true }),
+              // Hide name if necessary
+              firstName: event.nameQuestion && signup.namePublic ? signup.firstName : null,
+              lastName: event.nameQuestion && signup.namePublic ? signup.lastName : null,
+              answers: signup.answers!,
+              status: signup.status,
+              confirmed: signup.confirmedAt !== null,
+            }))
+          : // When signups are not public:
+            [],
+        signupCount: quota.signups!.length,
+      })),
     };
   },
 });
 
 export async function eventDetailsForUser(eventSlug: EventSlug): Promise<UserEventResponse> {
-  const { event, registrationStartDate, registrationEndDate } = await eventDetailsForUserCached(eventSlug);
+  const event = await eventDetailsForUserCached(eventSlug);
 
   // Dynamic extra fields
   let registrationClosed = true;
   let millisTillOpening = null;
 
-  if (registrationStartDate !== null && registrationEndDate !== null) {
-    const startDate = new Date(registrationStartDate);
+  if (event.registrationStartDate !== null && event.registrationEndDate !== null) {
     const now = new Date();
-    millisTillOpening = Math.max(0, startDate.getTime() - now.getTime());
+    millisTillOpening = Math.max(0, event.registrationStartDate.getTime() - now.getTime());
 
-    const endDate = new Date(registrationEndDate);
-    registrationClosed = now > endDate;
+    registrationClosed = now > event.registrationEndDate;
   }
 
   const res = {
