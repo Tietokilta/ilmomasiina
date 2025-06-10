@@ -9,6 +9,7 @@ import { Question } from "../../../models/question";
 import { Quota } from "../../../models/quota";
 import { basicEventInfoCached, eventDetailsForAdmin, eventDetailsForUserCached } from "../../events/getEventDetails";
 import { eventsListForUserCached } from "../../events/getEventsList";
+import { eventDetailsForEditSignupCached } from "../../signups/getSignupForEdit";
 import { toDate } from "../../utils";
 
 export default async function createEvent(
@@ -61,6 +62,7 @@ export default async function createEvent(
   eventsListForUserCached.invalidate();
   basicEventInfoCached.invalidate();
   eventDetailsForUserCached.invalidate();
+  eventDetailsForEditSignupCached.invalidate();
 
   const eventDetails = await eventDetailsForAdmin(event.id);
 

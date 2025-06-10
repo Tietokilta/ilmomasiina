@@ -17,6 +17,7 @@ import { Quota } from "../../../models/quota";
 import { basicEventInfoCached, eventDetailsForAdmin, eventDetailsForUserCached } from "../../events/getEventDetails";
 import { eventsListForUserCached } from "../../events/getEventsList";
 import { refreshSignupPositions } from "../../signups/computeSignupPosition";
+import { eventDetailsForEditSignupCached } from "../../signups/getSignupForEdit";
 import { toDate } from "../../utils";
 import { EditConflict } from "./errors";
 
@@ -179,6 +180,7 @@ export default async function updateEvent(
   eventsListForUserCached.invalidate();
   basicEventInfoCached.invalidate();
   eventDetailsForUserCached.invalidate();
+  eventDetailsForEditSignupCached.invalidate();
 
   const updatedEvent = await eventDetailsForAdmin(request.params.id);
 

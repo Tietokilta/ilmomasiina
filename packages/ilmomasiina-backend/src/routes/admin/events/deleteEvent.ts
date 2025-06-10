@@ -6,6 +6,7 @@ import { getSequelize } from "../../../models";
 import { Event } from "../../../models/event";
 import { basicEventInfoCached, eventDetailsForUserCached } from "../../events/getEventDetails";
 import { eventsListForUserCached } from "../../events/getEventsList";
+import { eventDetailsForEditSignupCached } from "../../signups/getSignupForEdit";
 
 export default async function deleteEvent(
   request: FastifyRequest<{ Params: AdminEventPathParams }>,
@@ -29,6 +30,7 @@ export default async function deleteEvent(
   eventsListForUserCached.invalidate();
   basicEventInfoCached.invalidate();
   eventDetailsForUserCached.invalidate();
+  eventDetailsForEditSignupCached.invalidate();
 
   response.status(204);
 }
