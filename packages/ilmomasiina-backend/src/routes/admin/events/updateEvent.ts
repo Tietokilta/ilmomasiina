@@ -16,7 +16,7 @@ import { Question } from "../../../models/question";
 import { Quota } from "../../../models/quota";
 import { basicEventInfoCached, eventDetailsForAdmin, eventDetailsForUserCached } from "../../events/getEventDetails";
 import { eventsListForUserCached } from "../../events/getEventsList";
-import { refreshSignupPositions } from "../../signups/computeSignupPosition";
+import { refreshSignupPositionsInTransaction } from "../../signups/computeSignupPosition";
 import { eventDetailsForEditSignupCached } from "../../signups/getSignupForEdit";
 import { toDate } from "../../utils";
 import { EditConflict } from "./errors";
@@ -167,7 +167,7 @@ export default async function updateEvent(
     }
 
     // Refresh positions, but don't move signups to queue unless explicitly allowed
-    await refreshSignupPositions(event, transaction, request.body.moveSignupsToQueue);
+    await refreshSignupPositionsInTransaction(event, transaction, request.body.moveSignupsToQueue ?? false);
 
     const isPublic = !event.draft;
     let action: AuditEvent;
