@@ -1,5 +1,4 @@
 import debug from "debug";
-import _ from "lodash";
 import moment from "moment";
 import { Op } from "sequelize";
 
@@ -7,7 +6,7 @@ import config from "../config";
 import { Event } from "../models/event";
 import { Quota } from "../models/quota";
 import { Signup } from "../models/signup";
-import { refreshSignupPositions } from "../routes/signups/computeSignupPosition";
+import { signupRefresher } from "../routes/signups/computeSignupPosition";
 
 const debugLog = debug("app:cron:unconfirmed");
 
@@ -46,10 +45,7 @@ export default async function deleteUnconfirmedSignups() {
   }
 
   const signupIds = signups.map((signup) => signup.id);
-  const uniqueEvents = _.uniqBy(
-    signups.map((signup) => signup.quota!.event!),
-    "id",
-  );
+  const uniqueEvents = new Set(signups.map((signup) => signup.quota!.eventId));
 
   console.info(`Deleting unconfirmed signups: ${signupIds.join(", ")}`);
   try {
@@ -58,10 +54,10 @@ export default async function deleteUnconfirmedSignups() {
       // skip deletion grace period
       force: true,
     });
-    for (const event of uniqueEvents) {
+    for (const eventId of uniqueEvents) {
       // Avoid doing many simultaneous transactions with this loop.
       // eslint-disable-next-line no-await-in-loop
-      await refreshSignupPositions(event);
+      await signupRefresher(eventId).refresh();
     }
     debugLog("Unconfirmed signups deleted");
   } catch (error) {

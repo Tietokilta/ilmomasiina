@@ -1,3 +1,4 @@
+import debug from "debug";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { NotFound } from "http-errors";
 import moment from "moment";
@@ -28,6 +29,8 @@ import { Signup } from "../../models/signup";
 import createCache from "../../util/cache";
 import { StringifyApi } from "../utils";
 
+const perfLog = debug("app:perf:event");
+
 /** Fetches event information that does not depend on signups.
  *
  * This only exists to provide a slightly longer cache time for the parts of an event that don't
@@ -38,6 +41,8 @@ export const basicEventInfoCached = createCache({
   maxPendingAgeMs: 5000,
   logName: "basicEventInfoCached",
   async get(eventSlug: EventSlug) {
+    const startTime = performance.now();
+    perfLog(`Getting basic info for event ${eventSlug}`);
     // First query general event information
     const event = await Event.scope("user").findOne({
       where: [{ slug: eventSlug }],
@@ -57,7 +62,7 @@ export const basicEventInfoCached = createCache({
     // The user API will only return answers to public questions - precalculate those
     const publicQuestions = event.questions!.filter((question) => question.public).map((question) => question.id);
 
-    return {
+    const result = {
       event: {
         ...event.get({ plain: true }),
         questions: event.questions!.map((question) => question.get({ plain: true })),
@@ -65,6 +70,10 @@ export const basicEventInfoCached = createCache({
       effectiveEndDate: event.effectiveEndDate,
       publicQuestions,
     };
+
+    const duration = performance.now() - startTime;
+    perfLog(`Got basic info for event ${eventSlug} = ${result.event.id} in ${duration.toFixed(2)}ms`);
+    return result;
   },
 });
 
@@ -74,7 +83,10 @@ export const eventDetailsForUserCached = createCache({
   maxPendingAgeMs: 1000,
   logName: "eventDetailsForUserCached",
   async get(eventSlug: EventSlug) {
+    perfLog(`Getting full info for event ${eventSlug}`);
+    const startTime = performance.now();
     const { event, effectiveEndDate, publicQuestions } = await basicEventInfoCached(eventSlug);
+    perfLog(`Resuming get full info for event ${eventSlug}`);
 
     // If event ended or registration closed than a week ago, don't return signups or quotas
     const isOld = effectiveEndDate != null && effectiveEndDate < moment().subtract(7, "days").valueOf();
@@ -110,7 +122,7 @@ export const eventDetailsForUserCached = createCache({
       });
     }
 
-    return {
+    const result = {
       ...event,
       quotas: quotas.map((quota) => ({
         ...quota.get({ plain: true }),
@@ -130,6 +142,9 @@ export const eventDetailsForUserCached = createCache({
         signupCount: quota.signups!.length,
       })),
     };
+    const duration = performance.now() - startTime;
+    perfLog(`Got full info for event ${eventSlug} = ${result.id} in ${duration.toFixed(2)}ms`);
+    return result;
   },
 });
 

@@ -7,8 +7,7 @@ import { getSequelize } from "../../models";
 import { Event } from "../../models/event";
 import { Quota } from "../../models/quota";
 import { Signup } from "../../models/signup";
-import { refreshSignupPositions } from "./computeSignupPosition";
-import { signupEditable } from "./createNewSignup";
+import { signupEditable, signupRefresher } from "./computeSignupPosition";
 import { NoSuchSignup, SignupsClosed } from "./errors";
 
 /** Requires admin authentication OR editTokenVerification */
@@ -47,7 +46,9 @@ async function deleteSignup(id: string, auditLogger: AuditLogger, admin: boolean
 
   // Advance the queue and send emails to people that were accepted.
   // Do this outside the transaction, as this shouldn't affect the user deleting the signup.
-  refreshSignupPositions(event).catch((error) => console.error(error));
+  signupRefresher(event.id)
+    .refresh()
+    .catch((error) => console.error(error));
 }
 
 /** Requires admin authentication */

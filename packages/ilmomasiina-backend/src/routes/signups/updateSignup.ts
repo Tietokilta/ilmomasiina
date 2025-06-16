@@ -21,20 +21,17 @@ import { Question } from "../../models/question";
 import { Quota } from "../../models/quota";
 import { Signup } from "../../models/signup";
 import { formatSignupForAdmin } from "../events/getEventDetails";
-import { refreshSignupPositions } from "./computeSignupPosition";
-import { signupEditable } from "./createNewSignup";
+import { signupEditable, signupRefresher } from "./computeSignupPosition";
 import { NoSuchQuota, NoSuchSignup, SignupsClosed, SignupValidationError } from "./errors";
 
 async function getSignupAndEventForUpdate(id: SignupID, transaction: Transaction) {
-  // Retrieve event data and lock the row for editing
-  const signup = await Signup.scope("active").findByPk(id, {
-    transaction,
-    lock: Transaction.LOCK.UPDATE,
-  });
+  // Retrieve signup data
+  const signup = await Signup.scope("active").findByPk(id, { transaction });
   if (signup === null) {
     throw new NoSuchSignup("Signup expired or already deleted");
   }
 
+  // Retrieve event data
   const quota = await signup.getQuota({
     include: [
       {
@@ -285,7 +282,8 @@ export async function createSignupAsAdmin(
   request: FastifyRequest<{ Params: SignupPathParams; Body: AdminSignupCreateBody }>,
   reply: FastifyReply,
 ): Promise<AdminSignupSchema> {
-  const updatedSignup = await getSequelize().transaction(async (transaction) => {
+  // TODO: Migrate to use signupPositionComputer to insert to avoid race conditions.
+  const newSignup = await getSequelize().transaction(async (transaction) => {
     // Find the given quota and event.
     const quota = await Quota.findByPk(request.body.quotaId, {
       attributes: ["id"],
@@ -312,12 +310,12 @@ export async function createSignupAsAdmin(
     return signup;
   });
 
-  // Refresh signup positions. Ignore errors, but wait for this to complete, so that the user
-  // gets a status on their signup before it being returned.
-  await refreshSignupPositions(updatedSignup.quota!.event!).catch((error) => console.error(error));
+  // Refresh signup positions and wait to get ours updated.
+  const allSignups = await signupRefresher(newSignup.quota!.eventId).refresh();
+  const signupWithPosition = allSignups.find((signup) => signup.id === newSignup.id) ?? newSignup;
 
-  if (request.body.sendEmail ?? true) sendSignupConfirmationMail(updatedSignup, "signup", true);
+  if (request.body.sendEmail ?? true) sendSignupConfirmationMail(signupWithPosition, "signup", true);
 
   reply.status(200);
-  return formatSignupForAdmin(updatedSignup);
+  return formatSignupForAdmin(signupWithPosition);
 }
