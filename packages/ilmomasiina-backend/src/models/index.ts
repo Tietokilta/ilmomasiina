@@ -2,6 +2,7 @@ import debug from "debug";
 import { Sequelize } from "sequelize";
 import { SequelizeStorage, Umzug } from "umzug";
 
+import logger from "../logger";
 import setupAnswerModel, { Answer } from "./answer";
 import setupAuditLogModel from "./auditlog";
 import sequelizeConfig from "./config";
@@ -37,7 +38,7 @@ async function runMigrations() {
   const umzug = new Umzug({
     migrations,
     storage,
-    logger: console,
+    logger,
     context: sequelize,
   });
   await umzug.up();
@@ -54,7 +55,7 @@ export default async function setupDatabase() {
     debugLog(`Connected to ${cfg.host} as ${cfg.username}.`);
   } catch (err) {
     const cfg = (sequelize.connectionManager as any).config;
-    console.error(`Error connecting to ${cfg.host} as ${cfg.username}: ${err}`);
+    logger.error(`Error connecting to ${cfg.host} as ${cfg.username}: ${err}`);
     throw err;
   }
 

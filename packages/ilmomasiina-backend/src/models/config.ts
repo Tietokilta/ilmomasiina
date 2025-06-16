@@ -1,6 +1,7 @@
 import { Dialect, Options, Sequelize } from "sequelize";
 
 import appConfig from "../config";
+import logger from "../logger";
 
 const { clearDbUrl, dbDialect, dbHost, dbPort, dbSsl, dbDatabase, dbUser, dbPassword, debugDbLogging } = appConfig;
 
@@ -37,9 +38,10 @@ if (clearDbUrl) {
 }
 
 // Add extra options
-const sequelizeConfig = {
+const sequelizeConfig: Options = {
   ...auth,
-  logging: debugDbLogging,
+  logging: debugDbLogging && ((sql, duration) => logger.info({ msg: "executed query", sql, duration })),
+  benchmark: debugDbLogging,
 };
 
 export = {

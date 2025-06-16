@@ -16,6 +16,7 @@ import deleteOldAuditLogs from "./cron/deleteOldAuditLogs";
 import deleteUnconfirmedSignups from "./cron/deleteUnconfirmedSignups";
 import removeDeletedData from "./cron/removeDeletedData";
 import enforceHTTPS from "./enforceHTTPS";
+import logger from "./logger";
 import setupDatabase from "./models";
 import setupRoutes from "./routes";
 import { isInitialSetupDone } from "./routes/admin/users/createInitialUser";
@@ -44,7 +45,7 @@ export default async function initApp(): Promise<FastifyInstance> {
 
   const server = fastify({
     trustProxy: config.isAzure || config.trustProxy, // Get IPs from X-Forwarded-For
-    logger: !["test", "bench"].some((env) => env === config.nodeEnv), // Enable logger when not testing or benchmarking
+    logger,
   });
   server.setValidatorCompiler(({ httpPart, schema }) =>
     httpPart === "body" ? bodyCompiler.compile(schema) : defaultCompiler.compile(schema),

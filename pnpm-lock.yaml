@@ -149,6 +149,9 @@ importers:
       pg-hstore:
         specifier: ^2.3.4
         version: 2.3.4
+      pino:
+        specifier: ^9.7.0
+        version: 9.7.0
       sequelize:
         specifier: ^6.37.7
         version: 6.37.7(mysql2@3.14.1)(pg-hstore@2.3.4)(pg@8.16.0)
