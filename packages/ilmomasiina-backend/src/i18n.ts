@@ -18,6 +18,10 @@ i18n.init({
     fi,
     en,
   },
+
+  interpolation: {
+    escapeValue: false
+  }
 });
 
 export default i18n;
