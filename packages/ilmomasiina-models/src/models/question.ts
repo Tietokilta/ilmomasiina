@@ -7,6 +7,7 @@ export default interface QuestionAttributes {
   question: string;
   type: QuestionType;
   options: string[] | null;
+  prices: number[] | null;
   required: boolean;
   public: boolean;
   eventId: EventAttributes["id"];

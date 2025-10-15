@@ -3,12 +3,13 @@ import { NotFound } from "http-errors";
 import moment from "moment";
 import { Op } from "sequelize";
 
-import type {
+import {
   AdminEventPathParams,
   AdminEventResponse,
   AdminSignupSchema,
   EventID,
   EventSlug,
+  PaymentStatus,
   UserEventPathParams,
   UserEventResponse,
 } from "@tietokilta/ilmomasiina-models";
@@ -137,7 +138,6 @@ export const eventDetailsForUserCached = createCache({
 
 export async function eventDetailsForUser(eventSlug: EventSlug): Promise<UserEventResponse> {
   const { event, registrationStartDate, registrationEndDate } = await eventDetailsForUserCached(eventSlug);
-
   // Dynamic extra fields
   let registrationClosed = true;
   let millisTillOpening = null;
@@ -153,6 +153,9 @@ export async function eventDetailsForUser(eventSlug: EventSlug): Promise<UserEve
 
   const res = {
     ...event,
+    quotas: event.quotas.map((quota) => ({
+      ...quota,
+    })),
     millisTillOpening,
     registrationClosed,
   };
@@ -161,10 +164,16 @@ export async function eventDetailsForUser(eventSlug: EventSlug): Promise<UserEve
 
 /** Converts a signup with answers included to JSON for the admin API. */
 export function formatSignupForAdmin(signup: Signup): AdminSignupSchema {
+  const plain = signup.get({ plain: true });
   const result = {
-    ...signup.get({ plain: true }),
+    ...plain,
+    createdAt: signup.createdAt,
+    updatedAt: signup.updatedAt,
+    confirmedAt: signup.confirmedAt,
     status: signup.status,
+    paymentStatus: signup.paymentStatus ?? PaymentStatus.UNPAID,
     answers: signup.answers!.map((answer) => answer.get({ plain: true })),
+    price: signup.price,
     confirmed: Boolean(signup.confirmedAt),
   };
   return result as unknown as StringifyApi<typeof result>;
@@ -193,7 +202,7 @@ export async function eventDetailsForAdmin(eventID: EventID): Promise<AdminEvent
     throw new NotFound("No event found with id");
   }
 
-  const quotas = await Quota.findAll({
+  const quotas = (await Quota.findAll({
     where: { eventId: event.id },
     attributes: eventGetQuotaAttrs,
     // Include all signups for the quotas
@@ -217,15 +226,19 @@ export async function eventDetailsForAdmin(eventID: EventID): Promise<AdminEvent
       ["order", "ASC"],
       [Signup, "createdAt", "ASC"],
     ],
-  });
-
+  }));
   // Admins get a simple result with many columns
   const res = {
     ...event.get({ plain: true }),
-    questions: event.questions!.map((question) => question.get({ plain: true })),
+    createdAt: event.createdAt,
     updatedAt: event.updatedAt,
+    questions: event.questions!.map((question) => ({
+      ...question.get({ plain: true }),
+    })),
     quotas: quotas.map((quota) => ({
       ...quota.get({ plain: true }),
+      createdAt: quota.createdAt,
+      updatedAt: quota.updatedAt,
       signups: quota.signups!.map(formatSignupForAdmin),
       signupCount: quota.signups!.length,
     })),

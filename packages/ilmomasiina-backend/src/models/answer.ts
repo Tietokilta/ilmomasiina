@@ -19,6 +19,7 @@ export interface AnswerCreationAttributes extends Optional<AnswerAttributes, "id
 export class Answer extends Model<AnswerAttributes, AnswerCreationAttributes> implements AnswerAttributes {
   public id!: string;
   public answer!: string | string[];
+  public price!: number | number[];
 
   public questionId!: Question["id"];
   public question?: Question;
@@ -56,6 +57,11 @@ export default function setupAnswerModel(sequelize: Sequelize) {
         type: DataTypes.JSON,
         allowNull: false,
         get: jsonColumnGetter<string | string[]>("answer"),
+      },
+      price: {
+        type: DataTypes.JSON,
+        allowNull: false,
+        get: jsonColumnGetter<number | number[]>("price"),
       },
     },
     {

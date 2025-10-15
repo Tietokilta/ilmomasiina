@@ -26,7 +26,7 @@ import { generateRandomId, RANDOM_ID_LENGTH } from "./randomId";
 import { jsonColumnGetter } from "./util/json";
 
 export interface QuestionCreationAttributes
-  extends Optional<QuestionAttributes, "id" | "options" | "required" | "public"> {}
+  extends Optional<QuestionAttributes, "id" | "options" | "prices" | "required" | "public"> {}
 
 export class Question extends Model<QuestionAttributes, QuestionCreationAttributes> implements QuestionAttributes {
   public id!: string;
@@ -34,6 +34,7 @@ export class Question extends Model<QuestionAttributes, QuestionCreationAttribut
   public question!: string;
   public type!: QuestionType;
   public options!: string[] | null;
+  public prices!: number[] | null;
   public required!: boolean;
   public public!: boolean;
 
@@ -90,6 +91,11 @@ export default function setupQuestionModel(sequelize: Sequelize) {
         type: DataTypes.JSON,
         allowNull: true,
         get: jsonColumnGetter<string[]>("options"),
+      },
+      prices: {
+        type: DataTypes.JSON,
+        allowNull: true,
+        get: jsonColumnGetter<number[]>("prices"),
       },
       required: {
         type: DataTypes.BOOLEAN,

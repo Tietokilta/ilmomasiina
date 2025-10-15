@@ -5,6 +5,15 @@ export enum SignupStatus {
   IN_QUEUE = "in-queue",
 }
 
+/** Possible payment statuses. */
+export enum PaymentStatus {
+  PAID = "paid",
+  UNPAID = "unpaid",
+  CANCELED = "canceled",
+  DISABLED = "disabled",
+  PENDING = "pending",
+}
+
 /** Possible question types. */
 export enum QuestionType {
   TEXT = "text",

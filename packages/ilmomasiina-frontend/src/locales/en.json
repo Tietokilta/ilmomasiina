@@ -210,11 +210,14 @@
     "editor.quotas.quotaName.reorder": "You can reorder quotas by dragging from the handles on the left.",
     "editor.quotas.quotaSize": "Quota size",
     "editor.quotas.quotaSize.info": "If the quota size is unlimited, leave the field empty.",
+    "editor.quotas.price": "Price",
+    "editor.quotas.price.info": "If the event is free of charge, leave the field empty or enter 0.00",
     "editor.quotas.quotaSize.unlimited": "unlimited",
     "editor.quotas.openQuota": "Open quota",
     "editor.quotas.openQuota.check": "Include an additional open quota",
     "editor.quotas.openQuota.info": "Signups that did not fit in their own quota will be automatically placed in the open quota, in the order of signups.",
     "editor.quotas.openQuotaSize": "Open quota size",
+    "editor.quotas.openQuotaPrice": "Open quota price",
     "editor.questions.nameQuestion": "Name",
     "editor.questions.nameQuestion.check": "Collect names",
     "editor.questions.nameQuestion.infoOn": "Name will be a required question. Each participant can decide if their name is publicly visible.",
@@ -286,6 +289,7 @@
     "editor.editSignup.action.save": "Save",
     "editor.editSignup.error.NoSuchSignup.description": "The signup was not found. It might be already deleted..",
     "editor.editSignup.error.default.description": "Saving the signup failed.",
-    "editor.editSignup.success": "Signup saved."
+    "editor.editSignup.success": "Signup saved.",
+    "editor.editSignup.action.pay": "Pay {{price}}€"
   }
 }

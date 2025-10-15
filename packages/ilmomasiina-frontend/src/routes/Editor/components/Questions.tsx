@@ -9,6 +9,7 @@ import useShallowMemo from "@tietokilta/ilmomasiina-client/dist/utils/useShallow
 import { QuestionLanguage, QuestionType, questionUpdate } from "@tietokilta/ilmomasiina-models";
 import FieldRow from "../../../components/FieldRow";
 import { EditorQuestion } from "../../../modules/editor/types";
+import priceConfig from "../../../utils/priceConfig"
 import useEvent from "../../../utils/useEvent";
 import useEditorErrors from "./errors";
 import { useFieldValue } from "./hooks";
@@ -23,6 +24,7 @@ export const maxOptionsPerQuestion = questionUpdate.properties.options.maxItems 
 
 type OptionProps = {
   name: string;
+  parent: string;
   index: number;
   remove: (index: number) => void;
 };
@@ -32,30 +34,41 @@ type CheckboxRenderProps = { input: FormCheckProps };
 const renderCheck = ({ input, meta, ...props }: FieldRenderProps<boolean> & CheckboxRenderProps) => (
   <Form.Check {...input} {...props} />
 );
-
-const OptionRow = ({ name, index, remove }: OptionProps) => {
+const OptionRow = ({ name, parent, index, remove }: OptionProps) => {
   const { t } = useTranslation();
   const formatError = useEditorErrors();
 
   const removeThis = useEvent(() => remove(index));
 
   return (
-    <LocalizedFieldRow
-      name={name}
-      type="text"
-      label={t("editor.questions.questionOptions")}
-      required
-      formatError={formatError}
-    >
-      <InputGroup>
-        <LocalizedField name={name} required maxLength={255} defaultAsPlaceholder />
-        <InputGroup.Append>
-          <Button variant="outline-danger" onClick={removeThis}>
-            {t("editor.questions.questionOptions.delete")}
-          </Button>
-        </InputGroup.Append>
-      </InputGroup>
-    </LocalizedFieldRow>
+    <>
+      <LocalizedFieldRow
+        name={name}
+        type="text"
+        label={t("editor.questions.questionOptions")}
+        required
+        formatError={formatError}
+      >
+        <InputGroup>
+          <LocalizedField name={name} required maxLength={255} defaultAsPlaceholder />
+          <InputGroup.Append>
+            <Button variant="outline-danger" onClick={removeThis}>
+              {t("editor.questions.questionOptions.delete")}
+            </Button>
+          </InputGroup.Append>
+        </InputGroup>
+      </LocalizedFieldRow>
+      <FieldRow
+        name={`${parent}.prices[${index}]`}
+        label={t("editor.quotas.price")}
+        help={t("editor.quotas.price.info")}
+        type="text"
+        placeholder="0.00€"
+        defaultValue={0.00}
+        config={priceConfig}
+        formatError={formatError}
+      />
+    </>
   );
 };
 
@@ -106,7 +119,7 @@ const QuestionRow = ({ name, index, remove }: QuestionProps) => {
         {(type === QuestionType.SELECT || type === QuestionType.CHECKBOX) && (
           <>
             {optionFields.map((optName, i) => (
-              <OptionRow key={optName} name={optName} index={i} remove={optionMutators.remove} />
+              <OptionRow key={optName} parent={name} name={optName} index={i} remove={optionMutators.remove} />
             ))}
             {optionFields.length! < maxOptionsPerQuestion && (
               <Row>
@@ -163,6 +176,7 @@ const Questions = () => {
         question: "",
         type: QuestionType.TEXT,
         options: [""],
+        prices: [0]
       },
       {
         question: "",

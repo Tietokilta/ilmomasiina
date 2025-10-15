@@ -20,7 +20,7 @@ import {
   Sequelize,
 } from "sequelize";
 
-import { SignupStatus } from "@tietokilta/ilmomasiina-models";
+import { PaymentStatus, SignupStatus } from "@tietokilta/ilmomasiina-models";
 import type { SignupAttributes } from "@tietokilta/ilmomasiina-models/dist/models";
 import config from "../config";
 import type { Answer } from "./answer";
@@ -39,7 +39,9 @@ export interface SignupCreationAttributes
     | "language"
     | "status"
     | "position"
+    | "paymentStatus"
     | "createdAt"
+    | "price"
   > {}
 
 export class Signup extends Model<SignupAttributes, SignupCreationAttributes> implements SignupAttributes {
@@ -51,6 +53,8 @@ export class Signup extends Model<SignupAttributes, SignupCreationAttributes> im
   public language!: string | null;
   public confirmedAt!: Date | null;
   public status!: SignupStatus | null;
+  public paymentStatus!: PaymentStatus;
+  public price!: number;
   public position!: number | null;
 
   public quotaId!: Quota["id"];
@@ -144,6 +148,16 @@ export default function setupSignupModel(sequelize: Sequelize) {
         type: DataTypes.DATE(3),
         defaultValue: () => new Date(),
         allowNull: false,
+      },
+      price: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      paymentStatus: {
+        type: DataTypes.ENUM(...Object.values(PaymentStatus)),
+        allowNull: false,
+        defaultValue: PaymentStatus.UNPAID,
       },
     },
     {

@@ -1,15 +1,18 @@
 import { Static, Type } from "@sinclair/typebox";
 
-import { quotaID } from "../quota/attributes";
+import { quotaID } from "../quota";
 import { Nullable } from "../utils";
 import {
   dynamicSignupAttributes,
   editableSignupAttributes,
   editToken,
+  publicDynamicSignupAttributes,
   publicEditableSignupAttributes,
   signupID,
   signupIdentity,
 } from "./attributes";
+
+export { signupID } from "./attributes";
 
 /** Request body for creating a signup. */
 export const signupCreateBody = Type.Object({
@@ -52,7 +55,7 @@ export const adminSignupCreateBody = Type.Composite([
 export const signupUpdateResponse = signupIdentity;
 
 /** Schema for signups in event details from the public API. */
-export const publicSignupSchema = Type.Composite([publicEditableSignupAttributes, dynamicSignupAttributes]);
+export const publicSignupSchema = Type.Composite([publicEditableSignupAttributes, publicDynamicSignupAttributes]);
 
 /** Schema for signups in event details from the admin API. */
 export const adminSignupSchema = Type.Composite([signupIdentity, editableSignupAttributes, dynamicSignupAttributes]);

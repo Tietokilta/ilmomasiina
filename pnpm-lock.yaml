@@ -234,7 +234,7 @@ importers:
         version: 4.17.12
       '@types/react':
         specifier: ^17
-        version: 17.0.87
+        version: 17.0.90
       react:
         specifier: ^18.3.0
         version: 18.3.1
@@ -318,7 +318,7 @@ importers:
         version: 14.1.3(i18next@23.16.8)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       react-markdown:
         specifier: ^8.0.7
-        version: 8.0.7(@types/react@17.0.87)(react@17.0.2)
+        version: 8.0.7(@types/react@17.0.90)(react@17.0.2)
       react-redux:
         specifier: ^7.2.9
         version: 7.2.9(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
@@ -336,7 +336,7 @@ importers:
         version: 9.1.3(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       react-widgets:
         specifier: ^5.8.6
-        version: 5.8.6(@types/react@17.0.87)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+        version: 5.8.6(@types/react@17.0.90)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       redux:
         specifier: ^4.2.1
         version: 4.2.1
@@ -355,6 +355,9 @@ importers:
       sass:
         specifier: ^1.89.2
         version: 1.89.2
+      stripe:
+        specifier: ^19.1.0
+        version: 19.1.0(@types/node@20.19.0)
       zod:
         specifier: ^3.25.56
         version: 3.25.56
@@ -373,13 +376,13 @@ importers:
         version: 4.11.8
       '@types/react':
         specifier: ^17
-        version: 17.0.87
+        version: 17.0.90
       '@types/react-datepicker':
         specifier: ^4.19.6
         version: 4.19.6(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@types/react-dom':
         specifier: ^17.0.26
-        version: 17.0.26(@types/react@17.0.87)
+        version: 17.0.26(@types/react@17.0.90)
       '@types/react-redux':
         specifier: ^7.1.34
         version: 7.1.34
@@ -413,6 +416,9 @@ importers:
       '@sinclair/typebox':
         specifier: ^0.32.35
         version: 0.32.35
+      stripe:
+        specifier: ^19.1.0
+        version: 19.1.0(@types/node@20.19.0)
     devDependencies:
       rimraf:
         specifier: ^5.0.10
@@ -1375,8 +1381,8 @@ packages:
     peerDependencies:
       '@types/react': ^17
 
-  '@types/react@17.0.87':
-    resolution: {integrity: sha512-wpg9AbtJ6agjA+BKYmhG6dRWEU/2DHYwMzCaBzsz137ft6IyuqZ5fI4ic1DWL4DrI03Zy78IyVE6ucrXl0mu4g==}
+  '@types/react@17.0.90':
+    resolution: {integrity: sha512-P9beVR/x06U9rCJzSxtENnOr4BrbJ6VrsrDTc+73TtHv9XHhryXKbjGRB+6oooB2r0G/pQkD/S4dHo/7jUfwFw==}
 
   '@types/scheduler@0.16.8':
     resolution: {integrity: sha512-WZLiwShhwLRmeV6zH+GkbOFT6Z6VklCItrDioxUnv+u4Ll+8vKeFySoFyK/0ctcRpOmwAicELfmys1sDc/Rw+A==}
@@ -1776,6 +1782,7 @@ packages:
 
   boolean@3.2.0:
     resolution: {integrity: sha512-d0II/GO9uf9lfUHH2BQsjxzRJZBdsjgsBiW4BvhWk/3qoKwQFjIDVN19PfX8F2D/r9PCMTtLWjYVCFrpeYUzsw==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   bootstrap@4.6.2:
     resolution: {integrity: sha512-51Bbp/Uxr9aTuy6ca/8FbFloBUJZLHwnhTcnjIeRn2suQWsWzcuJhGjKDB5eppVte/8oCdOL3VuwxvZDUggwGQ==}
@@ -1918,7 +1925,7 @@ packages:
     engines: {node: '>= 12'}
 
   concat-map@0.0.1:
-    resolution: {integrity: sha1-2Klr13/Wjfd5OnMDajug1UBdR3s=}
+    resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
   confbox@0.1.8:
     resolution: {integrity: sha512-RMtmw0iFkeR4YV+fUOSucriAQNb9g8zFR52MWCtl+cCZOFRNL6zeB395vPzFhEjjn4fMxXudmELnl/KF/WrK6w==}
@@ -2144,6 +2151,9 @@ packages:
 
   csstype@3.1.3:
     resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
+
+  csstype@3.2.3:
+    resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
 
   csv-stringify@6.5.2:
     resolution: {integrity: sha512-RFPahj0sXcmUyjrObAK+DOWtMvMIFV328n4qZJhgX3x2RqkQgOTU2mCUmiFR0CzM6AzChlRSUErjiJeEt8BaQA==}
@@ -3234,7 +3244,7 @@ packages:
     resolution: {integrity: sha512-5dgndWOriYSm5cnYaJNhalLNDKOqFwyDB/rr1E9ZsGciGvKPs8R2xYGCacuf3z6K1YKDz182fd+fY3cn3pMqXQ==}
 
   jstransformer@1.0.0:
-    resolution: {integrity: sha1-7Yvwkh4vPx7U1cGkT2hwntJHIsM=}
+    resolution: {integrity: sha512-C9YK3Rf8q6VAPDCCU9fnqo3mAfOH6vUGnMcP4AQAYIEpWtfGLpwOTmZ+igtdK5y+VvI2n3CyYSzy4Qh34eq24A==}
 
   jsx-ast-utils@3.3.5:
     resolution: {integrity: sha512-ZZow9HBI5O6EPgSJLUb8n2NKgmVWTwCvHGwFuJlMjvLFqlGG6pjirPhtdsseaLZjSibD8eegzmYpUZwoIlj2cQ==}
@@ -3351,6 +3361,7 @@ packages:
 
   mailsplit@5.4.3:
     resolution: {integrity: sha512-PFV0BBh4Tv7Omui5FtXXVtN4ExAxIi8Yvmb9JgBz+J6Hnnrv/YYXLlKKudLhXwd3/qWEATOslRsnzVCWDeCnmQ==}
+    deprecated: This package has been renamed to @zone-eu/mailsplit. Please update your dependencies.
 
   make-dir@3.1.0:
     resolution: {integrity: sha512-g3FeP20LNwhALb/6Cz6Dd4F2ngze0jz7tbzrD2wAV+o9FeNHe4rL+yK2md0J/fiSf1sa1ADhXqi5+oVwOM/eGw==}
@@ -3417,7 +3428,7 @@ packages:
     resolution: {integrity: sha512-V4Zn/ncyN1QNSqSBxTrMOLpjr+IKdHl2v3KVLoWmDPscP4r9GcCi71gjgvUV1SFSKh92AjAG4peFuBl2/YgCJg==}
 
   media-typer@0.3.0:
-    resolution: {integrity: sha1-hxDXrwqmJvj/+hzgAWhUUmMlV0g=}
+    resolution: {integrity: sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==}
     engines: {node: '>= 0.6'}
 
   mensch@0.3.4:
@@ -4636,6 +4647,15 @@ packages:
   strip-literal@2.1.1:
     resolution: {integrity: sha512-631UJ6O00eNGfMiWG78ck80dfBab8X6IVFB51jZK5Icd7XAs60Z5y7QdSd/wGIklnWvRbUNloVzhOKKmutxQ6Q==}
 
+  stripe@19.1.0:
+    resolution: {integrity: sha512-FjgIiE98dMMTNssfdjMvFdD4eZyEzdWAOwPYqzhPRNZeg9ggFWlPXmX1iJKD5pPIwZBaPlC3SayQQkwsPo6/YQ==}
+    engines: {node: '>=16'}
+    peerDependencies:
+      '@types/node': '>=16'
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+
   style-to-object@0.4.4:
     resolution: {integrity: sha512-HYNoHZa2GorYNyqiCaBgsxvcJIn7OHq6inEga+E6Ke3m5JkoqpQbnFssk4jwe+K7AhGa2fcha4wSOf1Kn01dMg==}
 
@@ -4712,7 +4732,7 @@ packages:
     engines: {node: '>=0.6'}
 
   token-stream@1.0.0:
-    resolution: {integrity: sha1-zCAOqyYT9BZtJ/+a/HylbUnfbrQ=}
+    resolution: {integrity: sha512-VSsyNPPW74RpHwR8Fc21uubwHY7wMDeJLys2IX5zJNih+OnAnaifKHo+1LHT7DAdloQ7apeaaWg8l7qnf/TnEg==}
 
   toposort-class@1.0.1:
     resolution: {integrity: sha512-OsLcGGbYF3rMjPUf8oKktyvCiUxSbqMMS39m33MAjLTC1DVIH6x3WSt63/M77ihI09+Sdfk1AXvfhCEeUmC7mg==}
@@ -5912,7 +5932,7 @@ snapshots:
 
   '@types/hoist-non-react-statics@3.3.6':
     dependencies:
-      '@types/react': 17.0.87
+      '@types/react': 17.0.90
       hoist-non-react-statics: 3.3.2
 
   '@types/html-to-text@9.0.4': {}
@@ -5970,44 +5990,44 @@ snapshots:
   '@types/react-datepicker@4.19.6(react-dom@17.0.2(react@17.0.2))(react@17.0.2)':
     dependencies:
       '@popperjs/core': 2.11.8
-      '@types/react': 17.0.87
+      '@types/react': 17.0.90
       date-fns: 2.30.0
       react-popper: 2.3.0(@popperjs/core@2.11.8)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
     transitivePeerDependencies:
       - react
       - react-dom
 
-  '@types/react-dom@17.0.26(@types/react@17.0.87)':
+  '@types/react-dom@17.0.26(@types/react@17.0.90)':
     dependencies:
-      '@types/react': 17.0.87
+      '@types/react': 17.0.90
 
   '@types/react-redux@7.1.34':
     dependencies:
       '@types/hoist-non-react-statics': 3.3.6
-      '@types/react': 17.0.87
+      '@types/react': 17.0.90
       hoist-non-react-statics: 3.3.2
       redux: 4.2.1
 
   '@types/react-router-dom@5.3.3':
     dependencies:
       '@types/history': 4.7.11
-      '@types/react': 17.0.87
+      '@types/react': 17.0.90
       '@types/react-router': 5.1.20
 
   '@types/react-router@5.1.20':
     dependencies:
       '@types/history': 4.7.11
-      '@types/react': 17.0.87
+      '@types/react': 17.0.90
 
-  '@types/react-transition-group@4.4.12(@types/react@17.0.87)':
+  '@types/react-transition-group@4.4.12(@types/react@17.0.90)':
     dependencies:
-      '@types/react': 17.0.87
+      '@types/react': 17.0.90
 
-  '@types/react@17.0.87':
+  '@types/react@17.0.90':
     dependencies:
       '@types/prop-types': 15.7.15
       '@types/scheduler': 0.16.8
-      csstype: 3.1.3
+      csstype: 3.2.3
 
   '@types/scheduler@0.16.8': {}
 
@@ -6739,6 +6759,8 @@ snapshots:
   css-what@6.1.0: {}
 
   csstype@3.1.3: {}
+
+  csstype@3.2.3: {}
 
   csv-stringify@6.5.2: {}
 
@@ -9196,8 +9218,8 @@ snapshots:
       '@restart/hooks': 0.4.16(react@17.0.2)
       '@types/invariant': 2.2.37
       '@types/prop-types': 15.7.15
-      '@types/react': 17.0.87
-      '@types/react-transition-group': 4.4.12(@types/react@17.0.87)
+      '@types/react': 17.0.90
+      '@types/react-transition-group': 4.4.12(@types/react@17.0.90)
       '@types/warning': 3.0.3
       classnames: 2.5.1
       dom-helpers: 5.2.1
@@ -9268,11 +9290,11 @@ snapshots:
 
   react-lifecycles-compat@3.0.4: {}
 
-  react-markdown@8.0.7(@types/react@17.0.87)(react@17.0.2):
+  react-markdown@8.0.7(@types/react@17.0.90)(react@17.0.2):
     dependencies:
       '@types/hast': 2.3.10
       '@types/prop-types': 15.7.15
-      '@types/react': 17.0.87
+      '@types/react': 17.0.90
       '@types/unist': 2.0.11
       comma-separated-tokens: 2.0.3
       hast-util-whitespace: 2.0.1
@@ -9377,11 +9399,11 @@ snapshots:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
 
-  react-widgets@5.8.6(@types/react@17.0.87)(react-dom@17.0.2(react@17.0.2))(react@17.0.2):
+  react-widgets@5.8.6(@types/react@17.0.90)(react-dom@17.0.2(react@17.0.2))(react@17.0.2):
     dependencies:
       '@restart/hooks': 0.4.16(react@17.0.2)
       '@types/classnames': 2.3.4
-      '@types/react-transition-group': 4.4.12(@types/react@17.0.87)
+      '@types/react-transition-group': 4.4.12(@types/react@17.0.90)
       classnames: 2.5.1
       date-arithmetic: 4.1.0
       dom-helpers: 5.2.1
@@ -9873,6 +9895,12 @@ snapshots:
     dependencies:
       js-tokens: 9.0.1
 
+  stripe@19.1.0(@types/node@20.19.0):
+    dependencies:
+      qs: 6.14.0
+    optionalDependencies:
+      '@types/node': 20.19.0
+
   style-to-object@0.4.4:
     dependencies:
       inline-style-parser: 0.1.1
@@ -10104,7 +10132,7 @@ snapshots:
   uncontrollable@7.2.1(react@17.0.2):
     dependencies:
       '@babel/runtime': 7.27.6
-      '@types/react': 17.0.87
+      '@types/react': 17.0.90
       invariant: 2.2.4
       react: 17.0.2
       react-lifecycles-compat: 3.0.4

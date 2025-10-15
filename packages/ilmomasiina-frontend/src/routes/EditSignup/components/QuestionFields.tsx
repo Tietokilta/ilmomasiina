@@ -80,7 +80,7 @@ const QuestionField = ({ name, question, disabled }: QuestionFieldProps) => {
           type="checkbox"
           id={`question-${question.id}-option-${optIndex}`}
           value={option}
-          label={option}
+          label={`${option} (+${((question.prices?.[optIndex] ?? 0) / 100).toFixed(2) ?? 0}€)`}
           required={question.required && !currentAnswerArray.some((answer) => answer !== option)}
           disabled={disabled}
           checked={currentAnswerArray.includes(option)}
@@ -123,7 +123,7 @@ const QuestionField = ({ name, question, disabled }: QuestionFieldProps) => {
             {question.options?.map((option, optIndex) => (
               // eslint-disable-next-line react/no-array-index-key
               <option key={optIndex} value={option}>
-                {option}
+                {option} (+{((question.prices?.[optIndex] ?? 0) / 100).toFixed(2) ?? 0}€)
               </option>
             ))}
           </Form.Control>
@@ -137,7 +137,7 @@ const QuestionField = ({ name, question, disabled }: QuestionFieldProps) => {
             id={`question-${question.id}-option-${optIndex}`}
             inline
             value={option}
-            label={option}
+            label={`${option} (+${((question.prices?.[optIndex] ?? 0) / 100).toFixed(2) ?? 0}€)`}
             required={question.required}
             disabled={disabled}
             checked={currentAnswerString === option}

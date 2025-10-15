@@ -23,6 +23,7 @@ export default interface EventAttributes extends EventPerLanguageAttributes {
   registrationStartDate: Date | null;
   registrationEndDate: Date | null;
   openQuotaSize: number;
+  openQuotaPrice: number;
   category: string;
   draft: boolean;
   listed: boolean;

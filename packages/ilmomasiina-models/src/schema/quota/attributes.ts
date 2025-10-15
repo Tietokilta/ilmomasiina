@@ -32,4 +32,8 @@ export const quotaAttributes = Type.Object({
   size: Nullable(Type.Integer({ minimum: 1 }), {
     description: "Maximum number of signups in the quota. If null, the size is unlimited.",
   }),
+  price: Type.Integer({
+    description: "Price in cents for the quota. Must be zero or a positive integer.",
+    minimum: 0,
+  }),
 });

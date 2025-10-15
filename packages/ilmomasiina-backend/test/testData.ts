@@ -58,6 +58,7 @@ export function testEventAttributes({
     registrationStartDate: null,
     registrationEndDate: null,
     openQuotaSize: hasSignup ? faker.number.int({ min: 0, max: 50 }) : 0,
+    openQuotaPrice: 0,
     description: faker.lorem.paragraphs({ min: 1, max: 5 }),
     price: faker.finance.amount({ symbol: "€" }),
     location: faker.location.streetAddress(),
@@ -108,6 +109,10 @@ export function testQuestionOptions() {
   });
 }
 
+export function testQuestionPrices(optionCount: number) {
+  return range(optionCount).map(() => faker.number.int({ min: 0, max: 10000 }));
+}
+
 export function testQuestionAttributes() {
   const attribs: Omit<QuestionCreationAttributes, "eventId" | "order"> = {
     question: faker.lorem.words({ min: 1, max: 5 }),
@@ -117,6 +122,7 @@ export function testQuestionAttributes() {
   };
   if (attribs.type === QuestionType.SELECT || attribs.type === QuestionType.CHECKBOX) {
     attribs.options = testQuestionOptions();
+    attribs.prices = testQuestionPrices(attribs.options.length);
   }
   return attribs;
 }
@@ -125,6 +131,7 @@ export function testQuotaAttributes() {
   return {
     title: faker.lorem.words({ min: 1, max: 5 }),
     size: faker.helpers.maybe(() => faker.number.int({ min: 1, max: 50 }), { probability: 0.9 }) ?? null,
+    price: faker.number.int({ min: 0, max: 100000 }),
   };
 }
 
@@ -242,6 +249,7 @@ export async function testSignups(
           questionId: question.id,
           signupId: signup.id,
           answer: "",
+          price: 0,
         };
         // Generate answer value based on question type and other constraints
         if (question.type === QuestionType.TEXT) {
