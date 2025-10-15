@@ -47,11 +47,14 @@ export default async function setupDatabase() {
   if (sequelize) return sequelize;
 
   debugLog("Connecting to database");
-  sequelize = new Sequelize(sequelizeConfig.default);
+  sequelize = new Sequelize({
+    ...(sequelizeConfig.default as any),
+    port: Number(process.env.DB_PORT) || 5433,   // <- important
+  });
   try {
     await sequelize.authenticate();
     const cfg = (sequelize.connectionManager as any).config;
-    debugLog(`Connected to ${cfg.host} as ${cfg.username}.`);
+    debugLog(`Connected to ${cfg.host} ${cfg.port} as ${cfg.username}.`);
   } catch (err) {
     const cfg = (sequelize.connectionManager as any).config;
     console.error(`Error connecting to ${cfg.host} as ${cfg.username}: ${err}`);
