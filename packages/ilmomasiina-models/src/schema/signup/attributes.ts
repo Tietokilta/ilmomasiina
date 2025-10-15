@@ -24,6 +24,10 @@ export const editToken = Type.String({
   description: "Token required for editing or deleting the signup.",
 });
 
+export const paid = Type.Boolean({
+  description: "Whether the signup has been paid, when its price is over 1.",
+});
+
 /** Answer to a single signup question */
 export const signupAnswer = Type.Object({
   questionId: questionID,

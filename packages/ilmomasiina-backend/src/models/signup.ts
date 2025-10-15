@@ -37,6 +37,7 @@ export interface SignupCreationAttributes
     | "email"
     | "confirmedAt"
     | "language"
+    | "paid"
     | "status"
     | "position"
     | "createdAt"
@@ -49,6 +50,7 @@ export class Signup extends Model<SignupAttributes, SignupCreationAttributes> im
   public namePublic!: boolean;
   public email!: string | null;
   public language!: string | null;
+  public paid!: boolean;
   public confirmedAt!: Date | null;
   public status!: SignupStatus | null;
   public position!: number | null;
@@ -129,6 +131,10 @@ export default function setupSignupModel(sequelize: Sequelize) {
         validate: {
           notEmpty: true,
         },
+      },
+      paid: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
       },
       confirmedAt: {
         type: DataTypes.DATE(3),
