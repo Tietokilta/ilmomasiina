@@ -41,6 +41,7 @@ const tabForField: Record<keyof EditorEvent, EditorTab | null> = {
   category: EditorTab.BASIC_DETAILS,
   description: EditorTab.BASIC_DETAILS,
   price: EditorTab.BASIC_DETAILS,
+  numPrice: EditorTab.BASIC_DETAILS,
   location: EditorTab.BASIC_DETAILS,
   webpageUrl: EditorTab.BASIC_DETAILS,
   facebookUrl: EditorTab.BASIC_DETAILS,

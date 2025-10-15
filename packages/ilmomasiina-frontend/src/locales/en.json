@@ -194,6 +194,7 @@
     "editor.basic.facebook": "Facebook event",
     "editor.basic.location": "Location",
     "editor.basic.price": "Price",
+    "editor.basic.numPrice": "Price (number)",
     "editor.basic.description": "Description",
     "editor.basic.description.info": "Markdown can be used in the description.",
     "editor.basic.registrationStartDate": "Signup opens",

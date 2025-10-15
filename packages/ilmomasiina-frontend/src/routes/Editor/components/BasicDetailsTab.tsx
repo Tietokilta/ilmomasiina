@@ -229,6 +229,25 @@ const BasicDetailsTab = () => {
         maxLength={255}
         formatError={formatError}
       />
+      <FieldRow
+        name="numPrice"
+        label={t("editor.basic.numPrice")}
+        type="number"
+        min={0}
+        step="0.01"
+        // let user type freely, but store as number
+        parse={(value: string) => {
+          if (value === "" || value === null || value === undefined) return undefined;
+          // allow decimal comma too
+          const v = value.replace(",", ".");
+          const n = Number(v);
+          return Number.isNaN(n) ? undefined : n;
+        }}
+        // optional: keep the input showing what user typed (avoid 'undefined' showing)
+        format={(value: string) => (value ?? "")}
+        inputProps={{ inputMode: "decimal", pattern: "[0-9]*[.,]?[0-9]*" }}
+        formatError={formatError}
+      />
       <LocalizedFieldRow
         name="description"
         defaultAsPlaceholder

@@ -54,6 +54,7 @@ export async function testEvent(
     slug: faker.helpers.slugify(title),
     description: faker.lorem.paragraphs({ min: 1, max: 5 }),
     price: faker.finance.amount({ symbol: "€" }),
+    numPrice: faker.number.int({ min: 0, max: 200 }),
     location: faker.location.streetAddress(),
     facebookUrl: faker.internet.url(),
     webpageUrl: faker.internet.url(),

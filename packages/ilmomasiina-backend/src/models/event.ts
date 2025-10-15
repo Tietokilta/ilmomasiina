@@ -36,6 +36,7 @@ export interface EventCreationAttributes
     | "openQuotaPrice"
     | "description"
     | "price"
+    | "numPrice"
     | "location"
     | "facebookUrl"
     | "webpageUrl"
@@ -67,6 +68,7 @@ export class Event extends Model<EventManualAttributes, EventCreationAttributes>
   public openQuotaPrice!: number;
   public description!: string | null;
   public price!: string | null;
+  public numPrice!: number;
   public location!: string | null;
   public facebookUrl!: string | null;
   public webpageUrl!: string | null;
@@ -202,6 +204,12 @@ export default function setupEventModel(sequelize: Sequelize) {
       },
       price: {
         type: DataTypes.STRING,
+      },
+      numPrice: {
+        type: DataTypes.FLOAT,
+        validate: {
+          min: 0,
+        },
       },
       location: {
         type: DataTypes.STRING,
