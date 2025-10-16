@@ -39,7 +39,7 @@ const mailTransporter: Transporter = (() => {
   return nodemailer.createTransport({
     name: "debug mail service",
     version: "0",
-    send(mail, callback?) {
+    send(mail, callback) {
       const { message } = mail;
       const envelope = message.getEnvelope();
       const messageId = message.messageId();
