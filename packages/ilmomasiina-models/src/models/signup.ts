@@ -10,7 +10,6 @@ export default interface SignupAttributes {
   language: string | null;
   confirmedAt: Date | null;
   status: SignupStatus | null;
-  paid: boolean;
   position: number | null;
   createdAt: Date;
   quotaId: QuotaAttributes["id"];

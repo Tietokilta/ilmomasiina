@@ -9,15 +9,9 @@ export default defineMigration({
       allowNull: false,
       defaultValue: 0,
     });
-    await query.addColumn("signup", "paid", {
-      type: "BOOLEAN",
-      allowNull: false,
-      defaultValue: false,
-    });
   },
   async down({ context: { sequelize } }) {
     const query = sequelize.getQueryInterface();
     await query.removeColumn("event", "numPrice");
-    await query.removeColumn("signup", "paid");
   }
 });
