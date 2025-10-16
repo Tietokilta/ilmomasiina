@@ -1,6 +1,6 @@
 import { Static, Type } from "@sinclair/typebox";
 
-import { quotaID } from "../quota/attributes";
+import { quotaID } from "../quota";
 import { Nullable } from "../utils";
 import {
   dynamicSignupAttributes,
@@ -10,6 +10,8 @@ import {
   signupID,
   signupIdentity,
 } from "./attributes";
+
+export { signupID } from "./attributes";
 
 /** Request body for creating a signup. */
 export const signupCreateBody = Type.Object({

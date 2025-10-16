@@ -284,6 +284,7 @@
     "editor.editSignup.action.save": "Save",
     "editor.editSignup.error.NoSuchSignup.description": "The signup was not found. It might be already deleted..",
     "editor.editSignup.error.default.description": "Saving the signup failed.",
-    "editor.editSignup.success": "Signup saved."
+    "editor.editSignup.success": "Signup saved.",
+    "editor.editSignup.action.pay": "Pay {{price}}€"
   }
 }

@@ -284,6 +284,7 @@
     "editor.editSignup.action.save": "Tallenna",
     "editor.editSignup.error.NoSuchSignup.description": "Ilmoittautumista ei löytynyt. Se saattaa olla jo poistettu.",
     "editor.editSignup.error.default.description": "Ilmoittautumisen tallentaminen epäonnistui.",
-    "editor.editSignup.success": "Ilmoittautuminen tallennettu."
+    "editor.editSignup.success": "Ilmoittautuminen tallennettu.",
+    "editor.editSignup.action.pay": "Maksa {{price}}€"
   }
 }

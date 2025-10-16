@@ -89,6 +89,7 @@ const EditableUntil = () => {
 const EditFormSubmit = ({ disabled }: { disabled: boolean }) => {
   const { localizedEvent: event, editingClosedOnLoad, isNew, preview } = useEditSignupContext();
   const { t } = useTranslation();
+  const { id, editToken } = useParams<EditSignupProps>();
 
   return editingClosedOnLoad ? null : (
     <>
@@ -100,6 +101,11 @@ const EditFormSubmit = ({ disabled }: { disabled: boolean }) => {
         {!preview && !isNew && (
           <Button as={Link} variant="link" to={paths.eventDetails(event!.slug)}>
             {t("editSignup.action.cancel")}
+          </Button>
+        )}
+        {event && event.numPrice > 0 && (
+          <Button as={Link} variant="link" to={paths.checkPayment(id, editToken)}>
+            {t("editSignup.action.pay", { price: event.numPrice })}
           </Button>
         )}
         {!preview && (

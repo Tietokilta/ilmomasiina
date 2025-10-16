@@ -1,7 +1,7 @@
 import { Type } from "@sinclair/typebox";
 
 import { SignupStatus } from "../../enum";
-import { questionID } from "../question/attributes";
+import { questionID } from "../question";
 import { Nullable } from "../utils";
 
 export const signupID = Type.String({
