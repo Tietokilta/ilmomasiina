@@ -17,6 +17,7 @@ import AuditLog from "../routes/AuditLog";
 import Editor from "../routes/Editor";
 import EditSignup from "../routes/EditSignup";
 import EventList from "../routes/EventList";
+import CheckPayment from "../routes/CheckPayment";
 import InitialSetup from "../routes/InitialSetup";
 import Login from "../routes/Login";
 import SingleEvent from "../routes/SingleEvent";
@@ -45,6 +46,9 @@ const AppContainer = () => (
                 </Route>
                 <Route exact path={paths.editSignup(":id", ":editToken")}>
                   <EditSignup />
+                </Route>
+                <Route exact path={paths.checkPayment(":id", ":editToken")}>
+                  <CheckPayment />
                 </Route>
                 <Route exact path={paths.adminLogin}>
                   <Login />

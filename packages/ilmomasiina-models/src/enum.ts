@@ -11,6 +11,7 @@ export enum PaymentStatus {
   UNPAID = "unpaid",
   CANCELED = "canceled",
   DISABLED = "disabled",
+  PENDING = "pending",
 }
 
 /** Possible question types. */

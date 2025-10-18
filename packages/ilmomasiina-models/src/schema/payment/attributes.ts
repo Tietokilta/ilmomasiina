@@ -1,7 +1,7 @@
 import { Type } from "@sinclair/typebox";
 
 import { PaymentStatus } from "../../enum";
-import { signupID } from "../signup/attributes";
+import { signupID } from "../signup";
 import { Nullable } from "../utils";
 
 export const paymentID = Type.String({
@@ -10,6 +10,10 @@ export const paymentID = Type.String({
   minLength: 1,
   maxLength: 32,
   pattern: "^[a-z0-9]+$",
+});
+
+export const paymentToken = Type.String({
+  description: "Token required for altering payment status.",
 });
 
 export const paymentSignup = Type.Object({
