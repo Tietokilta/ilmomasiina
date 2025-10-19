@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.0-alpha43
+
+- Minor typing improvements
+
 ## 2.0.0-alpha42
 
 - **BREAKING:** Replaced the `@tietokilta/ilmomasiina-components` package with `ilmomasiina-client`, which gets rid of
