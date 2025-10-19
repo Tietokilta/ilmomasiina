@@ -49,17 +49,17 @@ export function getLocalizedEvent<E extends UserEventResponse | EventForEditSign
 }
 
 /** Overrides localized properties in the quota of the edited signup with localized versions. */
-export function getLocalizedQuotaForEditSignup(
-  { event, signup: { quota } }: SignupForEditResponse,
-  language: string,
-): SignupForEdit["quota"] {
+export function getLocalizedSignup({ event, signup }: SignupForEditResponse, language: string): SignupForEdit {
   const locale = event.languages?.[language];
   // Short circuit: don't attempt anything if we don't have the locale.
-  if (!locale) return quota;
+  if (!locale) return signup;
   // This is a bit unfortunate, but we have to find the quota manually.
-  const quotaIndex = event.quotas.findIndex((q) => q.id === quota.id);
+  const quotaIndex = event.quotas.findIndex((q) => q.id === signup.quota.id);
   return {
-    ...quota,
-    title: locale.quotas[quotaIndex]?.title ?? quota.title,
+    ...signup,
+    quota: {
+      ...signup.quota,
+      title: locale.quotas[quotaIndex]?.title ?? signup.quota.title,
+    },
   };
 }

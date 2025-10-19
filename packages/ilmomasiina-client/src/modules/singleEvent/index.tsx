@@ -29,9 +29,11 @@ export type { State as SingleEventState };
 export { Provider as SingleEventContextProvider };
 
 export function useSingleEventState({ slug, language }: SingleEventProps) {
-  const fetchEvent = useAbortablePromise((signal) => apiFetch<UserEventResponse>(`events/${slug}`, { signal }), [slug]);
-
-  const event = fetchEvent.result;
+  const {
+    result: event,
+    error,
+    pending,
+  } = useAbortablePromise((signal) => apiFetch<UserEventResponse>(`events/${slug}`, { signal }), [slug]);
 
   const localizedEvent = useMemo(
     () => (event && language ? getLocalizedEvent(event, language) : event),
@@ -44,8 +46,8 @@ export function useSingleEventState({ slug, language }: SingleEventProps) {
     event,
     localizedEvent,
     signupsByQuota,
-    pending: fetchEvent.pending,
-    error: fetchEvent.error as ApiError | undefined,
+    pending,
+    error: error as ApiError | undefined,
   });
 }
 

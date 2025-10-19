@@ -158,7 +158,7 @@ const EditFormBody = ({ handleSubmit, deleting, onDelete }: BodyProps) => {
 };
 
 const EditForm = () => {
-  const { localizedEvent: event, signup, isNew, preview } = useEditSignupContext();
+  const { localizedEvent: event, localizedSignup: signup, isNew, preview } = useEditSignupContext();
   const updateSignup = useUpdateSignup();
   const deleteSignup = useDeleteSignup();
   const [deleting, setDeleting] = useState(false);

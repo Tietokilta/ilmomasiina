@@ -8,7 +8,7 @@ import FieldRow from "../../../components/FieldRow";
 import useFieldErrors from "./fieldError";
 
 const CommonFields = () => {
-  const { localizedEvent: event, signup, editingClosedOnLoad, admin } = useEditSignupContext();
+  const { localizedEvent: event, localizedSignup: signup, editingClosedOnLoad, admin } = useEditSignupContext();
   const isNew = !signup!.confirmed;
   const { t } = useTranslation();
   const formatError = useFieldErrors();

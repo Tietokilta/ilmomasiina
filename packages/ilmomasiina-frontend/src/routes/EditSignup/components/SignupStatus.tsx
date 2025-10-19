@@ -6,7 +6,7 @@ import { useEditSignupContext } from "@tietokilta/ilmomasiina-client";
 import { SignupStatus as SignupStatusEnum } from "@tietokilta/ilmomasiina-models";
 
 const SignupStatus = () => {
-  const { localizedEvent: event, signup } = useEditSignupContext();
+  const { localizedEvent: event, localizedSignup: signup } = useEditSignupContext();
   const { status, position, quota } = signup!;
   const { openQuotaSize } = event!;
   const { t } = useTranslation();

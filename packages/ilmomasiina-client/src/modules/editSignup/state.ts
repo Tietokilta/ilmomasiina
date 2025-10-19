@@ -4,6 +4,7 @@ import { createStateContext } from "../../utils/stateContext";
 
 export type State = Partial<SignupForEditResponse> & {
   localizedEvent?: SignupForEditResponse["event"];
+  localizedSignup?: SignupForEditResponse["signup"];
   isNew?: boolean;
   pending: boolean;
   error?: ApiError;

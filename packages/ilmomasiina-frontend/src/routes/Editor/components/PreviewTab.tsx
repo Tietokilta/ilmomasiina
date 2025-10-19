@@ -31,6 +31,7 @@ const PreviewTab = () => {
   const [singleEventCtx, editSignupCtx] = useMemo((): [SingleEventState, EditSignupState] => {
     const convertedEvent = editorEventToUserEvent(values);
     const localizedEvent = getLocalizedEvent(convertedEvent, selectedLanguage);
+    const signup = previewDummySignup(convertedEvent);
     return [
       {
         pending: false,
@@ -44,7 +45,8 @@ const PreviewTab = () => {
         isNew: true,
         event: convertedEvent,
         localizedEvent,
-        signup: previewDummySignup(convertedEvent),
+        signup,
+        localizedSignup: signup, // No need for quota name localization
         editingClosedOnLoad: false,
         confirmableUntil: Date.now() + 30 * 60 * 60 * 1000,
         editableUntil: Date.now() + 30 * 60 * 60 * 1000,

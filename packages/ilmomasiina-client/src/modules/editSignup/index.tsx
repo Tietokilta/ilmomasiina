@@ -4,7 +4,7 @@ import type { SignupForEditResponse } from "@tietokilta/ilmomasiina-models";
 import { EDIT_TOKEN_HEADER } from "@tietokilta/ilmomasiina-models";
 import { ApiError, apiFetch } from "../../api";
 import { useAbortablePromise } from "../../utils/abortable";
-import { getLocalizedEvent } from "../../utils/localizedEvent";
+import { getLocalizedEvent, getLocalizedSignup } from "../../utils/localizedEvent";
 import useShallowMemo from "../../utils/useShallowMemo";
 import { Provider, State } from "./state";
 
@@ -19,7 +19,7 @@ export type { State as EditSignupState } from "./state";
 export { useDeleteSignup, useUpdateSignup } from "./actions";
 
 export function useEditSignupState({ id, editToken, language }: EditSignupProps) {
-  const fetchSignup = useAbortablePromise(
+  const { result, error, pending } = useAbortablePromise(
     async (signal) => {
       const response = await apiFetch<SignupForEditResponse>(`signups/${id}`, {
         signal,
@@ -45,20 +45,23 @@ export function useEditSignupState({ id, editToken, language }: EditSignupProps)
     [id, editToken],
   );
 
-  const event = fetchSignup.result?.event;
-
   const localizedEvent = useMemo(
-    () => (event && language ? getLocalizedEvent(event, language) : event),
-    [event, language],
+    () => (result && language ? getLocalizedEvent(result.event, language) : result?.event),
+    [result, language],
+  );
+  const localizedSignup = useMemo(
+    () => (result && language ? getLocalizedSignup(result, language) : result?.signup),
+    [result, language],
   );
 
   return useShallowMemo<State>({
     editToken,
-    pending: fetchSignup.pending,
-    error: fetchSignup.error as ApiError | undefined,
-    ...fetchSignup.result,
+    pending,
+    error: error as ApiError | undefined,
+    ...result,
     localizedEvent,
-    isNew: fetchSignup.result && !fetchSignup.result.signup.confirmed,
+    localizedSignup,
+    isNew: result && !result.signup.confirmed,
   });
 }
 
