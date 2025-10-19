@@ -51,6 +51,24 @@ export default defineConfig(({ mode }) => ({
     sourcemap: true,
   },
 
+  css: {
+    preprocessorOptions: {
+      scss: {
+        // Silence deprecation warning spam from Bootstrap for now.
+        // We will get rid of Bootstrap eventually.
+        silenceDeprecations: [
+          "mixed-decls",
+          "slash-div",
+          "abs-percent",
+          "import",
+          "legacy-js-api",
+          "color-functions",
+          "global-builtin",
+        ],
+      },
+    },
+  },
+
   define: quoteValues({
     DEV: mode === "development",
     PROD: mode === "production",
