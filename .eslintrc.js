@@ -19,6 +19,7 @@ module.exports = {
     "jest.config.js",
     "*.svg",
     "*.png",
+    "*.md",
     "*.scss",
     "*.json"
   ],
