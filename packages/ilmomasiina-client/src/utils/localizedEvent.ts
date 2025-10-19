@@ -9,7 +9,7 @@ type EventForEditSignup = SignupForEditResponse["event"];
 
 /** Overrides localized properties in the event and quotas with localized versions. */
 export function getLocalizedEventListItem(event: UserEventListItem, language: string): UserEventListItem {
-  const locale = event.languages[language] ?? event;
+  const locale = event.languages?.[language] ?? event;
   return {
     ...event,
     title: locale.title || event.title,
@@ -27,7 +27,7 @@ export function getLocalizedEventListItem(event: UserEventListItem, language: st
 
 /** Overrides localized properties in the event, quotas and questions with localized versions. */
 export function getLocalizedEvent<E extends UserEventResponse | EventForEditSignup>(event: E, language: string): E {
-  const locale = event.languages[language] ?? event;
+  const locale = event.languages?.[language] ?? event;
   return {
     ...event,
     title: locale.title || event.title,
@@ -53,7 +53,7 @@ export function getLocalizedQuotaForEditSignup(
   { event, signup: { quota } }: SignupForEditResponse,
   language: string,
 ): SignupForEdit["quota"] {
-  const locale = event.languages[language];
+  const locale = event.languages?.[language];
   // Short circuit: don't attempt anything if we don't have the locale.
   if (!locale) return quota;
   // This is a bit unfortunate, but we have to find the quota manually.
