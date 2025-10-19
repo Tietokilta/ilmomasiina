@@ -6,29 +6,29 @@
     "url": "git+https://github.com/Tietokilta/ilmomasiina.git"
   },
   "license": "MIT",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "types": "dist/esm/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "node": "./dist/index.js",
-      "import": "./dist/index.js"
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "node": "./dist/cjs/index.js"
     },
     "./dist/*": {
-      "types": "./dist/*.d.ts",
-      "import": "./dist/*.js",
-      "node": "./dist/*.js"
+      "types": "./dist/esm/*.d.ts",
+      "import": "./dist/esm/*.js",
+      "node": "./dist/cjs/*.js"
     },
     "./src/*": "./src/*.ts"
   },
   "scripts": {
-    "build": "tsc --build",
+    "build": "tsc --build && tsc --build tsconfig.cjs.json",
     "clean": "rimraf dist",
     "typecheck": "tsc --build"
   },
   "devDependencies": {
     "rimraf": "^5.0.10",
-    "typescript": "~5.2.2"
+    "typescript": "~5.9.3"
   },
   "dependencies": {
     "@sinclair/typebox": "^0.32.35"
