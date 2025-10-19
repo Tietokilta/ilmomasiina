@@ -1,6 +1,6 @@
 {
   "name": "@tietokilta/ilmomasiina-client",
-  "version": "2.0.0-alpha44",
+  "version": "2.0.0-alpha45",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Tietokilta/ilmomasiina.git"
