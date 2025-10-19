@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.0-alpha44
+
+- Also build ESM versions of public packages
+
 ## 2.0.0-alpha43
 
 - Minor typing improvements
