@@ -118,7 +118,7 @@ async function refreshSignupPositionsInternal(
   // If a signup was just promoted from the queue, send an email about it asynchronously.
   await Promise.all(
     result.map(async ({ signup, status }) => {
-      if (signup.status === "in-queue" && status !== "in-queue") {
+      if (signup.status === SignupStatus.IN_QUEUE && status !== SignupStatus.IN_QUEUE) {
         sendPromotedFromQueueMail(signup, event.id);
 
         await internalAuditLogger(AuditEvent.PROMOTE_SIGNUP, {

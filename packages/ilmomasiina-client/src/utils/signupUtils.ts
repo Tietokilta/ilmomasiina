@@ -38,7 +38,7 @@ export function countOverflowSignups(quotas: QuotaWithSignupCount[], openQuotaSi
 /** Expands the quota type from {Admin,User}EventSchema, makes quota properties nullable and adds references to quota. */
 export type QuotaSignups<Ev extends AnyEventSchema = AnyEventSchema> = Omit<
   Ev["quotas"][number],
-  "id" | "title" | "size"
+  "id" | "title" | "size" | "signups"
 > & {
   type: SignupStatus;
   id: QuotaID | null;
@@ -57,7 +57,9 @@ export function getSignupsByQuota(event: AnyEventSchema): QuotaSignups[] {
       // If the event does not have signups, only show quotas that somehow still have signups within.
       .filter((quota) => !signupsDisabled || quota.signupCount > 0)
       .map((quota): QuotaSignups => {
-        const quotaSignups = signups.filter((signup) => signup.quota.id === quota.id && signup.status === "in-quota");
+        const quotaSignups = signups.filter(
+          (signup) => signup.quota.id === quota.id && signup.status === SignupStatus.IN_QUOTA,
+        );
         return {
           ...quota,
           type: SignupStatus.IN_QUOTA,
@@ -70,7 +72,7 @@ export function getSignupsByQuota(event: AnyEventSchema): QuotaSignups[] {
 
   const { openQuotaCount, queueCount } = countOverflowSignups(event.quotas, event.openQuotaSize);
 
-  const openSignups = signups.filter((signup) => signup.status === "in-open");
+  const openSignups = signups.filter((signup) => signup.status === SignupStatus.IN_OPEN_QUOTA);
   // Open quota is shown if the event has one, or if signups have been assigned there nevertheless.
   const openQuota: QuotaSignups[] =
     openSignups.length > 0 || (!signupsDisabled && event.openQuotaSize > 0)
@@ -87,7 +89,7 @@ export function getSignupsByQuota(event: AnyEventSchema): QuotaSignups[] {
         ]
       : [];
 
-  const queueSignups = signups.filter((signup) => signup.status === "in-queue");
+  const queueSignups = signups.filter((signup) => signup.status === SignupStatus.IN_QUEUE);
   // Queue is shown if signups have been assigned there.
   const queue: QuotaSignups[] =
     queueSignups.length > 0
