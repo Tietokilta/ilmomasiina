@@ -39,6 +39,16 @@ const questionPricesSchema: ZodType<EditorEvent["questions"][number]["prices"]> 
     }
   });
 
+const numberFromString = z.preprocess((val) => {
+  if (val === "" || val == null) return 0;
+  if (typeof val === "number") return val;
+  if (typeof val === "string") {
+    const n = Number(val.replace(",", "."));
+    return Number.isFinite(n) ? n : 0;
+  }
+  return 0;
+}, z.number({ invalid_type_error: "Must be a number" }).min(0, "Must be ≥ 0"));
+
 const editorSchema: ZodType<EditorEvent, z.ZodTypeDef, unknown> = z
   .object({
     title: z.string().min(1).max(255),
@@ -58,17 +68,7 @@ const editorSchema: ZodType<EditorEvent, z.ZodTypeDef, unknown> = z
     category: z.string().max(255),
     description: z.nullable(z.string()),
     price: z.nullable(z.string().max(255)),
-    numPrice: z.preprocess((val) => {
-        if (val === "" || val == null) return 0;
-        if (typeof val === "number") return val;
-        if (typeof val === "string") {
-          const n = Number(val.replace(",", "."));
-          return Number.isFinite(n) ? n : 0;
-        }
-        return 0;
-      }, z.number({ invalid_type_error: "Must be a number" })
-        .min(0, "Must be ≥ 0")
-    ).default(0),
+    numPrice: numberFromString.default(0),
     location: z.nullable(z.string().max(255)),
     webpageUrl: z.nullable(z.string().max(255)),
     facebookUrl: z.nullable(z.string().max(255)),
@@ -83,6 +83,7 @@ const editorSchema: ZodType<EditorEvent, z.ZodTypeDef, unknown> = z
         title: z.string().max(255),
         description: z.nullable(z.string()),
         price: z.nullable(z.string().max(255)),
+        numPrice: numberFromString.default(0),
         location: z.nullable(z.string().max(255)),
         webpageUrl: z.nullable(z.string().max(255)),
         facebookUrl: z.nullable(z.string().max(255)),

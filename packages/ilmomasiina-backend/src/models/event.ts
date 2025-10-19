@@ -210,6 +210,7 @@ export default function setupEventModel(sequelize: Sequelize) {
         validate: {
           min: 0,
         },
+        defaultValue: 0,
       },
       location: {
         type: DataTypes.STRING,

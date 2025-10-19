@@ -28,7 +28,7 @@
     "i18next": "^23.16.8",
     "i18next-browser-languagedetector": "^7.2.2",
     "lodash-es": "^4.17.21",
-    "react": "^17.0.2",
+    "react": "^18.3.1",
     "react-bootstrap": "^1.6.8",
     "react-countdown": "^2.3.6",
     "react-datepicker": "^4.25.0",
