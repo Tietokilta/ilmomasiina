@@ -49,7 +49,7 @@ export default async function setupDatabase() {
   debugLog("Connecting to database");
   sequelize = new Sequelize({
     ...(sequelizeConfig.default as any),
-    port: Number(process.env.DB_PORT) || 5433,   // <- important
+    port: Number(process.env.DB_PORT) || 5433, // <- important
   });
   try {
     await sequelize.authenticate();
