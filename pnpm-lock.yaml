@@ -158,6 +158,9 @@ importers:
       sequelize:
         specifier: ^6.37.7
         version: 6.37.7(mysql2@3.14.1)(pg-hstore@2.3.4)(pg@8.16.0)
+      stripe:
+        specifier: ^19.1.0
+        version: 19.1.0(@types/node@20.19.0)
       umzug:
         specifier: ^3.8.2
         version: 3.8.2(@types/node@20.19.0)

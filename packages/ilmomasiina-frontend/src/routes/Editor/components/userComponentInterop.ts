@@ -11,6 +11,8 @@ export const editorEventToUserEvent = (form: EditorEvent): UserEventResponse => 
       ...quota,
       id: quota.id ?? `preview${Math.random()}`,
       signupCount: 0,
+      price: quota.price ?? 0,
+      priceId: quota.priceId ?? "",
       signups: [],
     })),
     questions: serverEvent.questions.map((question) => ({
@@ -27,6 +29,8 @@ export const previewDummyQuota = (event?: UserEventResponse): SignupForEdit["quo
     id: `preview${Math.random()}`,
     title: "\u2013",
     size: 0,
+    price: 0,
+    priceId: ""
   };
 
 export const previewDummySignup = (event: UserEventResponse): SignupForEdit => ({

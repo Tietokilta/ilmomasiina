@@ -33,9 +33,10 @@ export interface EventCreationAttributes
     EventManualAttributes,
     | "id"
     | "openQuotaSize"
+    | "openQuotaPrice"
+    | "openQuotaPriceId"
     | "description"
     | "price"
-    | "numPrice"
     | "location"
     | "facebookUrl"
     | "webpageUrl"
@@ -64,9 +65,10 @@ export class Event extends Model<EventManualAttributes, EventCreationAttributes>
   public registrationStartDate!: Date | null;
   public registrationEndDate!: Date | null;
   public openQuotaSize!: number;
+  public openQuotaPrice!: number;
+  public openQuotaPriceId!: string;
   public description!: string | null;
   public price!: string | null;
-  public numPrice!: number;
   public location!: string | null;
   public facebookUrl!: string | null;
   public webpageUrl!: string | null;
@@ -190,18 +192,22 @@ export default function setupEventModel(sequelize: Sequelize) {
         },
         defaultValue: 0,
       },
+      openQuotaPrice: {
+        type: DataTypes.INTEGER,
+        validate: {
+          min: 0,
+        },
+        defaultValue: 0,
+      },
+      openQuotaPriceId: {
+        type: DataTypes.STRING,
+        defaultValue: "",
+      },
       description: {
         type: DataTypes.TEXT,
       },
       price: {
         type: DataTypes.STRING,
-      },
-      numPrice: {
-        type: DataTypes.FLOAT,
-        validate: {
-          min: 0,
-        },
-        defaultValue: 0,
       },
       location: {
         type: DataTypes.STRING,

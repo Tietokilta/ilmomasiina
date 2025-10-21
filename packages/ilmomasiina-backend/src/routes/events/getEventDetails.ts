@@ -3,7 +3,7 @@ import { NotFound } from "http-errors";
 import moment from "moment";
 import { Op } from "sequelize";
 
-import type {
+import  {
   AdminEventPathParams,
   AdminEventResponse,
   AdminSignupSchema,
@@ -27,6 +27,7 @@ import { Question } from "../../models/question";
 import { Quota } from "../../models/quota";
 import { Signup } from "../../models/signup";
 import createCache from "../../util/cache";
+import { createPrice, getPrice, updatePrice } from "../payments/prices";
 import { StringifyApi } from "../utils";
 
 export const basicEventInfoCached = createCache({
@@ -137,7 +138,6 @@ export const eventDetailsForUserCached = createCache({
 
 export async function eventDetailsForUser(eventSlug: EventSlug): Promise<UserEventResponse> {
   const { event, registrationStartDate, registrationEndDate } = await eventDetailsForUserCached(eventSlug);
-
   // Dynamic extra fields
   let registrationClosed = true;
   let millisTillOpening = null;
@@ -153,6 +153,10 @@ export async function eventDetailsForUser(eventSlug: EventSlug): Promise<UserEve
 
   const res = {
     ...event,
+    quotas: event.quotas.map((quota) => ({
+      ...quota,
+      price: quota.price / 100,
+    })),
     millisTillOpening,
     registrationClosed,
   };
@@ -193,7 +197,7 @@ export async function eventDetailsForAdmin(eventID: EventID): Promise<AdminEvent
     throw new NotFound("No event found with id");
   }
 
-  const quotas = await Quota.findAll({
+  const quotas = (await Quota.findAll({
     where: { eventId: event.id },
     attributes: eventGetQuotaAttrs,
     // Include all signups for the quotas
@@ -217,8 +221,31 @@ export async function eventDetailsForAdmin(eventID: EventID): Promise<AdminEvent
       ["order", "ASC"],
       [Signup, "createdAt", "ASC"],
     ],
-  });
-
+  }));
+  await Promise.all(
+    quotas.map(async (quota) => {
+      let priceId;
+      if (quota.price <= 0 || !quota.id) {
+        priceId = "";
+      } else if (quota.priceId !== "") {
+        const price = await getPrice(quota.priceId);
+        if (price.unit_amount !== quota.price) {
+          const stripePrice = await updatePrice(quota.priceId, quota.price, quota.id, event.title, quota.title);
+          priceId = stripePrice.id;
+        } else {
+          priceId = price.id;
+        }
+      } else {
+        const stripePrice = await createPrice(quota.price, quota.id, event.title, quota.title);
+        priceId = stripePrice.id
+      }
+      const quotaAttribs = {
+        ...quota,
+        priceId,
+      };
+      await quota.update(quotaAttribs);
+    })
+  )
   // Admins get a simple result with many columns
   const res = {
     ...event.get({ plain: true }),
@@ -226,6 +253,7 @@ export async function eventDetailsForAdmin(eventID: EventID): Promise<AdminEvent
     updatedAt: event.updatedAt,
     quotas: quotas.map((quota) => ({
       ...quota.get({ plain: true }),
+      price: quota.get('price') / 100,
       signups: quota.signups!.map(formatSignupForAdmin),
       signupCount: quota.signups!.length,
     })),

@@ -16,6 +16,7 @@ import { Question } from "../../../models/question";
 import { Quota } from "../../../models/quota";
 import { basicEventInfoCached, eventDetailsForAdmin, eventDetailsForUserCached } from "../../events/getEventDetails";
 import { eventsListForUserCached } from "../../events/getEventsList";
+import { deletePrice } from "../../payments/prices";
 import { refreshSignupPositions } from "../../signups/computeSignupPosition";
 import { toDate } from "../../utils";
 import { EditConflict } from "./errors";
@@ -30,7 +31,7 @@ export default async function updateEvent(
   await getSequelize().transaction(async (transaction) => {
     // Get the event with all relevant information for the update
     const event = await Event.findByPk(request.params.id, {
-      attributes: ["id", "openQuotaSize", "draft", "updatedAt"],
+      attributes: ["id", "openQuotaSize", "openQuotaPrice", "openQuotaPriceId", "draft", "updatedAt"],
       transaction,
       lock: Transaction.LOCK.UPDATE,
     });
@@ -130,7 +131,21 @@ export default async function updateEvent(
 
     if (updatedQuotas !== undefined) {
       const reuseQuotaIds = updatedQuotas.map((quota) => quota.id).filter((quotaId) => quotaId) as Quota["id"][];
-
+      const quotasToDelete = await Quota.findAll({
+        where: {
+          eventId: event.id,
+          id: {
+            [Op.notIn]: reuseQuotaIds,
+          },
+        },
+        transaction,
+      });
+      const priceIdsToDelete = quotasToDelete.map((quota) => quota.priceId).filter((priceId) => priceId);
+      await Promise.all(priceIdsToDelete.map(
+          async (priceId) => {
+            await deletePrice(priceId!);
+          }
+      ));
       // Remove previous Quotas not present in request
       await Quota.destroy({
         where: {
@@ -164,7 +179,6 @@ export default async function updateEvent(
         }),
       );
     }
-
     // Refresh positions, but don't move signups to queue unless explicitly allowed
     await refreshSignupPositions(event, transaction, request.body.moveSignupsToQueue);
 

@@ -34,7 +34,7 @@ export default async function createSignup(
       include: [
         {
           model: Event.scope("user"),
-          attributes: ["id", "registrationStartDate", "registrationEndDate", "openQuotaSize"],
+          attributes: ["id", "registrationStartDate", "registrationEndDate", "openQuotaSize", "openQuotaPrice", "openQuotaPriceId"],
         },
       ],
       transaction,

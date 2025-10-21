@@ -8,7 +8,7 @@ const paths = {
   eventsList: `${urlPrefix}/`,
   eventDetails: (slug: EventSlug) => `${urlPrefix}/events/${slug}`,
   editSignup: (id: SignupID, editToken: SignupEditToken) => `${urlPrefix}/signup/${id}/${editToken}`,
-  checkPayment: (id: SignupID, editToken: SignupEditToken) => `${urlPrefix}/check-payment/${id}/${editToken}`,
+  checkPayment: (id: SignupID, editToken: SignupEditToken) => `${urlPrefix}/payment/${id}/${editToken}`,
 
   adminLogin: `${urlPrefix}/login`,
   adminInitialSetup: `${urlPrefix}/setup`,

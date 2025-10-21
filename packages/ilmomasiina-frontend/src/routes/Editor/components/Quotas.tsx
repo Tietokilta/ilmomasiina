@@ -62,6 +62,18 @@ const QuotaRow = ({ name, index, isOnly, remove }: QuotaRowProps) => {
           config={numberConfig}
           formatError={formatError}
         />
+        <FieldRow
+          name={`${name}.price`}
+          label={t("editor.quotas.price")}
+          help={t("editor.quotas.price.info")}
+          type="number"
+          min={0.00}
+          step={0.01}
+          placeholder="0.00"
+          defaultValue={0.00}
+          config={numberConfig}
+          formatError={formatError}
+        />
       </Col>
       {index > 0 && (
         <Col xs="12" sm="2" className="no-focus">
@@ -86,6 +98,8 @@ const Quotas = () => {
         key: `new-${Math.random()}`,
         title: "",
         size: null,
+        price: 0,
+        priceId: ""
       },
       {
         title: "",

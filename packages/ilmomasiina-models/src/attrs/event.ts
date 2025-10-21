@@ -16,9 +16,10 @@ export const eventGetEventAttrs: (keyof EventAttributes)[] = [
   "registrationStartDate",
   "registrationEndDate",
   "openQuotaSize",
+  "openQuotaPrice",
+  "openQuotaPriceId",
   "description",
   "price",
-  "numPrice",
   "location",
   "webpageUrl",
   "facebookUrl",
@@ -50,7 +51,7 @@ export const eventGetQuestionAttrs: (keyof QuestionAttributes)[] = [
 ];
 
 /** Attributes included in results for Quota instances. */
-export const eventGetQuotaAttrs: (keyof QuotaAttributes)[] = ["id", "title", "size"];
+export const eventGetQuotaAttrs: (keyof QuotaAttributes)[] = ["id", "title", "size", "price", "priceId"];
 
 /** Attributes included in GET /api/events/slug for Signup instances. */
 export const eventGetSignupAttrs: (keyof SignupAttributes)[] = [
@@ -79,9 +80,10 @@ export const eventListEventAttrs: (keyof EventAttributes)[] = [
   "registrationStartDate",
   "registrationEndDate",
   "openQuotaSize",
+  "openQuotaPrice",
+  "openQuotaPriceId",
   "description",
   "price",
-  "numPrice",
   "location",
   "webpageUrl",
   "facebookUrl",
@@ -94,7 +96,7 @@ export const eventListEventAttrs: (keyof EventAttributes)[] = [
 ];
 
 /** Attributes included in GET /api/events for Quota instances. */
-export const eventListQuotaAttrs: (keyof QuotaAttributes)[] = ["id", "title", "size"];
+export const eventListQuotaAttrs: (keyof QuotaAttributes)[] = ["id", "title", "size", "price", "priceId"];
 
 /** Attributes included in GET /api/admin/events for Event instances. */
 export const adminEventListEventAttrs: (keyof EventAttributes)[] = [...eventListEventAttrs, "draft", "listed"];

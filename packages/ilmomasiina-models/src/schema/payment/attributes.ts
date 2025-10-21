@@ -23,12 +23,12 @@ export const paymentSignup = Type.Object({
     minimum: 0,
   }),
 })
+export const paymentStatus = Nullable(Type.Enum(PaymentStatus), {
+  title: "Payment status",
+  description: "Status of the payment.",
+});
 
 export const dynamicPaymentAttributes = Type.Object({
   startedAt: Type.String({ format: "date-time" }),
   completedAt: Type.String({ format: "date-time" }),
-  status: Nullable(Type.Enum(PaymentStatus), {
-    title: "Payment status",
-    description: "Status of the payment.",
-  }),
 });

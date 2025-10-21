@@ -21,6 +21,7 @@ import { adminLogin, renewAdminToken, requireAdmin } from "./authentication/admi
 import { getEventDetailsForAdmin, getEventDetailsForUser } from "./events/getEventDetails";
 import { getEventsListForAdmin, getEventsListForUser } from "./events/getEventsList";
 import { sendICalFeed } from "./ical";
+import startPayment from "./payments/startPayment";
 import createSignup from "./signups/createNewSignup";
 import { deleteSignupAsAdmin, deleteSignupAsUser } from "./signups/deleteSignup";
 import { requireValidEditToken } from "./signups/editTokens";
@@ -345,6 +346,20 @@ async function setupPublicRoutes(fastifyInstance: FastifyInstance, opts: RouteOp
       preHandler: requireValidEditToken,
     },
     deleteSignupAsUser,
+  );
+  server.get<{ Params: schema.PaymentPathParams }>(
+    "/payments/:id",
+    {
+      schema: {
+        params: schema.paymentPathParams,
+        response: {
+          ...errorResponses,
+          200: schema.paymentSuccessResponse,
+        },
+      },
+      preHandler: requireValidEditToken,
+    },
+    startPayment,
   );
 
   // Admin session management routes

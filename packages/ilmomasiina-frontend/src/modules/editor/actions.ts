@@ -51,7 +51,6 @@ export const defaultEvent = (): EditorEvent => ({
   location: "",
   description: "",
   price: "",
-  numPrice: 0,
   signupsPublic: false,
   languages: {},
   defaultLanguage: DEFAULT_LANGUAGE,
@@ -60,8 +59,11 @@ export const defaultEvent = (): EditorEvent => ({
   registrationEndDate: null,
 
   openQuotaSize: 0,
+  openQuotaPrice: 0,
+  openQuotaPriceId: "",
   useOpenQuota: false,
   quotas: [],
+
 
   nameQuestion: true,
   emailQuestion: true,
@@ -235,6 +237,8 @@ export const editorEventToServer = (form: EditorEvent): ConvertedEditorEvent => 
     form.eventType === EditorEventType.ONLY_EVENT ? null : (form.registrationEndDate?.toISOString() ?? null),
   quotas: form.quotas,
   openQuotaSize: form.useOpenQuota && form.openQuotaSize ? form.openQuotaSize : 0,
+  openQuotaPrice: form.useOpenQuota && form.openQuotaPrice ? form.openQuotaPrice : 0,
+  openQuotaPriceId: "",
   questions: form.questions.map((question) => ({
     ...question,
     options: question.type === "select" || question.type === "checkbox" ? question.options : null,
@@ -307,6 +311,12 @@ export const publishEventUpdate =
 
     const body = editorEventToServer(data);
     const { accessToken } = getState().auth;
+    const toCents = (v: unknown) => Math.round(Number(v ?? 0) * 100);
+
+    body.quotas = body.quotas.map((q) => ({
+        ...q,
+        price: toCents(q.price),
+    }));
 
     try {
       const response = await adminApiFetch<AdminEventResponse>(

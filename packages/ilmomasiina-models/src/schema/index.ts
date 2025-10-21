@@ -5,6 +5,7 @@ export * from "./event";
 export * from "./eventList";
 export * from "./headers";
 export * from "./login";
+export * from "./payment";
 export * from "./question";
 export * from "./quota";
 export * from "./quotaWithSignups";

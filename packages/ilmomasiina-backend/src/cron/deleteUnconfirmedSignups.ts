@@ -31,7 +31,7 @@ export default async function deleteUnconfirmedSignups() {
         include: [
           {
             model: Event,
-            attributes: ["id", "openQuotaSize"],
+            attributes: ["id", "openQuotaSize", "openQuotaPrice", "openQuotaPriceId"],
           },
         ],
       },

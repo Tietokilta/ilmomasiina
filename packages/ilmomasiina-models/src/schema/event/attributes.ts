@@ -52,6 +52,13 @@ export const publicEventAttributes = Type.Object({
     description: "The size of the open quota, which will be filled with signups overflowing their dedicated quota.",
     minimum: 0,
   }),
+  openQuotaPrice: Type.Integer({
+    description: "The price for the open quota. Zero indicates free entry.",
+    minimum: 0,
+  }),
+  openQuotaPriceId: Type.String({
+    description: "PriceId for stripe"
+  }),
   // Not per language as it's used for filtering events.
   category: Type.String({
     description: "Category tag for the event. Can be used for filtering.",
@@ -91,10 +98,6 @@ export const publicCommonAttributes = Type.Object({
   }),
   price: Nullable(Type.String({ maxLength: 255 }), {
     description: "Free-form pricing information for the event.",
-  }),
-  numPrice: Type.Number({
-    minimum: 0,
-    description: "Numeric price for the event, if applicable for payment integration.",
   }),
   location: Nullable(Type.String({ maxLength: 255 }), {
     description: "Free-form location information for the event.",

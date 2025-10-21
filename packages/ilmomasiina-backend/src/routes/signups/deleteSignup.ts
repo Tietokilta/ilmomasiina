@@ -22,7 +22,7 @@ async function deleteSignup(id: string, auditLogger: AuditLogger, admin: boolean
           include: [
             {
               model: Event,
-              attributes: ["id", "title", "registrationStartDate", "registrationEndDate", "openQuotaSize"],
+              attributes: ["id", "title", "registrationStartDate", "registrationEndDate", "openQuotaSize", "openQuotaPrice",  "openQuotaPriceId"],
             },
           ],
         },

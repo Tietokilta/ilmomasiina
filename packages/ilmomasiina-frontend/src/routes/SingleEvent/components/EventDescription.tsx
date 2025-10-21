@@ -55,11 +55,6 @@ const EventDescription = () => {
             <strong>{t("singleEvent.info.price")}</strong> {event.price}
           </p>
         )}
-        {event.numPrice > 0 && (
-          <p>
-            <strong>{t("singleEvent.info.numPrice")}</strong> {event.numPrice} €
-          </p>
-        )}
         {event.webpageUrl && (
           <p>
             <strong>{t("singleEvent.info.website")}</strong>{" "}

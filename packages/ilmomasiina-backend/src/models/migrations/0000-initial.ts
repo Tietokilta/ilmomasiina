@@ -38,6 +38,14 @@ export default defineMigration({
           type: DataTypes.INTEGER,
           defaultValue: 0,
         },
+        openQuotaPrice: {
+          type: DataTypes.INTEGER,
+          defaultValue: 0,
+        },
+        openQuotaPriceId: {
+          type: DataTypes.STRING,
+          defaultValue: "",
+        },
         description: {
           type: DataTypes.TEXT,
         },

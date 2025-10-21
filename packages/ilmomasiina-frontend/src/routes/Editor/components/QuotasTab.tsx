@@ -33,16 +33,29 @@ const QuotasTab = () => {
         formatError={formatError}
       />
       {useOpenQuota && (
-        <FieldRow
-          name="openQuotaSize"
-          label={t("editor.quotas.openQuotaSize")}
-          type="number"
-          config={numberConfig}
-          min="0"
-          placeholder="0" // if this is left empty, it's set to null and disabled
-          required
-          formatError={formatError}
-        />
+        <div>
+          <FieldRow
+            name="openQuotaSize"
+            label={t("editor.quotas.openQuotaSize")}
+            type="number"
+            config={numberConfig}
+            min="0"
+            placeholder="0" // if this is left empty, it's set to null and disabled
+            required
+            formatError={formatError}
+          />
+          <FieldRow
+            name="openQuotaPrice"
+            label={t("editor.quotas.openQuotaPrice")}
+            type="number"
+            config={numberConfig}
+            min="0.00"
+            step="0.01"
+            placeholder="0.00" // if this is left empty, it's set to null and disabled
+            required
+            formatError={formatError}
+          />
+        </div>
       )}
     </div>
   );

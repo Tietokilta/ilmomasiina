@@ -64,9 +64,10 @@ export interface EditorEvent
       | "registrationStartDate"
       | "registrationEndDate"
       | "openQuotaSize"
+      | "openQuotaPrice"
+      | "openQuotaPriceId"
       // Omit fields we want to keep optional
       | "moveSignupsToQueue"
-      | "numPrice"
     >,
     // Add optional fields
     Pick<EventUpdateBody, "moveSignupsToQueue"> {
@@ -82,7 +83,8 @@ export interface EditorEvent
   quotas: EditorQuota[];
   useOpenQuota: boolean;
   openQuotaSize: number | null;
-  numPrice: number;
+  openQuotaPrice: number;
+  openQuotaPriceId: string;
 }
 
 /** Stricter version of EventUpdateBody with fields we guarantee to return from `editorEventToServer`. */

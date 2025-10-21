@@ -49,6 +49,8 @@ export function getSignupsByQuotaForAdminList(event: AdminEventResponse): AdminQ
           id: null,
           title: null,
           size: null,
+          price: 0.00,
+          priceId: "",
           signups: queueSignups,
           signupCount: queueSignups.length,
         },
