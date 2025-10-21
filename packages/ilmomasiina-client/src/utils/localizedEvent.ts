@@ -7,7 +7,10 @@ import type {
 
 type EventForEditSignup = SignupForEditResponse["event"];
 
-/** Overrides localized properties in the event and quotas with localized versions. */
+/** Overrides localized properties in the event and quotas with localized versions.
+ *
+ * If the language version is not found (including invalid languages), falls back to the default language.
+ */
 export function getLocalizedEventListItem(event: UserEventListItem, language: string): UserEventListItem {
   const locale = event.languages?.[language] ?? event;
   return {
@@ -25,7 +28,10 @@ export function getLocalizedEventListItem(event: UserEventListItem, language: st
   };
 }
 
-/** Overrides localized properties in the event, quotas and questions with localized versions. */
+/** Overrides localized properties in the event, quotas and questions with localized versions.
+ *
+ * If the language version is not found (including invalid languages), falls back to the default language.
+ */
 export function getLocalizedEvent<E extends UserEventResponse | EventForEditSignup>(event: E, language: string): E {
   const locale = event.languages?.[language] ?? event;
   return {
@@ -41,14 +47,19 @@ export function getLocalizedEvent<E extends UserEventResponse | EventForEditSign
       question: locale.questions[index]?.question || question.question,
       options: locale.questions[index]?.options || question.options,
     })),
-    quotas: event.quotas.map((quota, index) => ({
-      ...quota,
-      title: locale.quotas[index]?.title || quota.title,
-    })),
+    quotas:
+      // Servers prior to 2.0.0-alpha42 do not return quotas in EventForEditSignup.
+      event.quotas?.map((quota, index) => ({
+        ...quota,
+        title: locale.quotas[index]?.title || quota.title,
+      })) ?? [],
   };
 }
 
-/** Overrides localized properties in the quota of the edited signup with localized versions. */
+/** Overrides localized properties in the quota of the edited signup with localized versions.
+ *
+ * If the language version is not found (including invalid languages), falls back to the default language.
+ */
 export function getLocalizedSignup({ event, signup }: SignupForEditResponse, language: string): SignupForEdit {
   const locale = event.languages?.[language];
   // Short circuit: don't attempt anything if we don't have the locale.

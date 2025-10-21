@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.0-alpha46
+
+- Avoid another error for older servers in `getLocalizedEvent`
+
 ## 2.0.0-alpha45
 
 - **Breaking (ilmomasiina-client):** Replaced `getLocalizedQuotaForEditSignup` with `getLocalizedSignup`
