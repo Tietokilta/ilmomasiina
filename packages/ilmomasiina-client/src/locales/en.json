@@ -101,7 +101,6 @@
     "singleEvent.info.facebookEvent": "Facebook event:",
     "singleEvent.info.location": "Location:",
     "singleEvent.info.price": "Price:",
-    "singleEvent.info.numPrice": "Price:",
     "singleEvent.info.startDate": "Starts:",
     "singleEvent.info.website": "Website:",
     "singleEvent.loadError.404.title": "Event not found",

@@ -194,7 +194,6 @@
     "editor.basic.facebook": "Facebook-tapahtuma",
     "editor.basic.location": "Paikka",
     "editor.basic.price": "Hinta",
-    "editor.basic.numPrice": "Hinta (numero)",
     "editor.basic.description": "Kuvaus",
     "editor.basic.description.info": "Kuvauksessa voi käyttää Markdownia.",
     "editor.basic.registrationStartDate": "Ilmo alkaa",
