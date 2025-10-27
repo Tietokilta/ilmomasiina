@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.0-alpha47
+
+- Include event info in signup creation audit logs
+
 ## 2.0.0-alpha46
 
 - Avoid another error for older servers in `getLocalizedEvent`
