@@ -104,9 +104,9 @@ const EditFormSubmit = ({ disabled }: { disabled: boolean }) => {
             {t("editSignup.action.cancel")}
           </Button>
         )}
-        {signup && !isNew && signup.quota.price > 0 && (
+        {signup && !isNew && signup.price > 0 && (
           <Button as={Link} className="ilmo--pay-button" to={paths.checkPayment(id, editToken)}>
-            {t("editSignup.action.pay", { price: signup.quota.price })}
+            {t("editSignup.action.pay", { price: signup.price / 100})}
           </Button>
         )}
         {!preview && (

@@ -36,7 +36,4 @@ export const quotaAttributes = Type.Object({
     description: "Price in cents for the quota. Must be zero or a positive integer.",
     minimum: 0,
   }),
-  priceId: Type.String({
-    description: "PriceId for stripe",
-  })
 });

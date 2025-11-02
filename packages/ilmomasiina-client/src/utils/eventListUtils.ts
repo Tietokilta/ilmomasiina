@@ -34,7 +34,6 @@ export type QuotaRow = {
   signupCount: number;
   quotaSize: number | null;
   price: number;
-  priceId: string;
 };
 export type TableRow = EventRow | QuotaRow;
 
@@ -50,7 +49,6 @@ export function eventToRows(event: UserEventListItem, { compact }: EventTableOpt
     quotas,
     openQuotaSize,
     openQuotaPrice,
-    openQuotaPriceId,
   } = event;
   const state = signupState(registrationStartDate, registrationEndDate);
 
@@ -83,7 +81,6 @@ export function eventToRows(event: UserEventListItem, { compact }: EventTableOpt
         signupCount: quota.size ? Math.min(quota.signupCount, quota.size) : quota.signupCount,
         quotaSize: quota.size,
         price: quota.price,
-        priceId: quota.priceId,
       }),
     );
   }
@@ -98,7 +95,6 @@ export function eventToRows(event: UserEventListItem, { compact }: EventTableOpt
       signupCount: Math.min(overflow, openQuotaSize),
       quotaSize: openQuotaSize,
       price: openQuotaPrice,
-      priceId: openQuotaPriceId,
     });
   }
 
@@ -110,7 +106,6 @@ export function eventToRows(event: UserEventListItem, { compact }: EventTableOpt
       signupCount: overflow - openQuotaSize,
       quotaSize: null,
       price: openQuotaPrice,
-      priceId: openQuotaPriceId,
     });
   }
 

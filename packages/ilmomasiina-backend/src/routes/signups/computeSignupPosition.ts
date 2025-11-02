@@ -49,7 +49,7 @@ async function refreshSignupPositionsInternal(
 
   // Lock event to prevent simultaneous changes
   const event = await Event.findByPk(eventRef.id, {
-    attributes: ["id", "title", "openQuotaSize", "openQuotaPrice", "openQuotaPriceId"],
+    attributes: ["id", "title", "openQuotaSize", "openQuotaPrice"],
     transaction,
     lock: Transaction.LOCK.UPDATE,
   });

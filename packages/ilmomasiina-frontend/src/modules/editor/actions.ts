@@ -60,7 +60,6 @@ export const defaultEvent = (): EditorEvent => ({
 
   openQuotaSize: 0,
   openQuotaPrice: 0,
-  openQuotaPriceId: "",
   useOpenQuota: false,
   quotas: [],
 
@@ -224,6 +223,7 @@ export const serverEventToEditor = (event: AdminEventResponse): EditorEvent => (
     ...question,
     key: question.id,
     options: question.options || [""],
+    prices: question.prices || [0],
   })),
 });
 
@@ -238,7 +238,6 @@ export const editorEventToServer = (form: EditorEvent): ConvertedEditorEvent => 
   quotas: form.quotas,
   openQuotaSize: form.useOpenQuota && form.openQuotaSize ? form.openQuotaSize : 0,
   openQuotaPrice: form.useOpenQuota && form.openQuotaPrice ? form.openQuotaPrice : 0,
-  openQuotaPriceId: "",
   questions: form.questions.map((question) => ({
     ...question,
     options: question.type === "select" || question.type === "checkbox" ? question.options : null,
@@ -311,11 +310,12 @@ export const publishEventUpdate =
 
     const body = editorEventToServer(data);
     const { accessToken } = getState().auth;
-    const toCents = (v: unknown) => Math.round(Number(v ?? 0) * 100);
 
     body.quotas = body.quotas.map((q) => ({
         ...q,
-        price: toCents(q.price),
+    }));
+    body.questions = body.questions.map((q) => ({
+        ...q,
     }));
 
     try {

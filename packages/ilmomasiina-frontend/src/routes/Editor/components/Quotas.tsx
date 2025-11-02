@@ -9,6 +9,7 @@ import useShallowMemo from "@tietokilta/ilmomasiina-client/dist/utils/useShallow
 import { QuotaLanguage } from "@tietokilta/ilmomasiina-models";
 import FieldRow from "../../../components/FieldRow";
 import { EditorQuota } from "../../../modules/editor/types";
+import priceConfig from "../../../utils/priceConfig"
 import useEvent from "../../../utils/useEvent";
 import useEditorErrors from "./errors";
 import { useFieldValue } from "./hooks";
@@ -66,12 +67,9 @@ const QuotaRow = ({ name, index, isOnly, remove }: QuotaRowProps) => {
           name={`${name}.price`}
           label={t("editor.quotas.price")}
           help={t("editor.quotas.price.info")}
-          type="number"
-          min={0.00}
-          step={0.01}
-          placeholder="0.00"
-          defaultValue={0.00}
-          config={numberConfig}
+          type="text"
+          placeholder="0.00€"
+          config={priceConfig}
           formatError={formatError}
         />
       </Col>
@@ -99,7 +97,6 @@ const Quotas = () => {
         title: "",
         size: null,
         price: 0,
-        priceId: ""
       },
       {
         title: "",

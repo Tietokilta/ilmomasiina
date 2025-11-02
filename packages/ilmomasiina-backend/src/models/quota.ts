@@ -31,7 +31,6 @@ export class Quota extends Model<QuotaAttributes, QuotaCreationAttributes> imple
   public title!: string;
   public size!: number | null;
   public price!: number;
-  public priceId!: string;
 
   public eventId!: Event["id"];
   public event?: Event;
@@ -95,9 +94,6 @@ export default function setupQuotaModel(sequelize: Sequelize) {
         validate: {
           min: 0,
         },
-      },
-      priceId: {
-        type: DataTypes.STRING,
       },
     },
     {

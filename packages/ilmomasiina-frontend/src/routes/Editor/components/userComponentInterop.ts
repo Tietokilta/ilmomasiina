@@ -12,11 +12,11 @@ export const editorEventToUserEvent = (form: EditorEvent): UserEventResponse => 
       id: quota.id ?? `preview${Math.random()}`,
       signupCount: 0,
       price: quota.price ?? 0,
-      priceId: quota.priceId ?? "",
       signups: [],
     })),
     questions: serverEvent.questions.map((question) => ({
       ...question,
+      prices: question.prices ?? [],
       id: question.id ?? `preview${Math.random()}`,
     })),
     registrationClosed: false,
@@ -30,7 +30,6 @@ export const previewDummyQuota = (event?: UserEventResponse): SignupForEdit["quo
     title: "\u2013",
     size: 0,
     price: 0,
-    priceId: ""
   };
 
 export const previewDummySignup = (event: UserEventResponse): SignupForEdit => ({
@@ -47,4 +46,5 @@ export const previewDummySignup = (event: UserEventResponse): SignupForEdit => (
   position: 1,
   confirmableForMillis: 30 * 60 * 60 * 1000,
   editableForMillis: 30 * 60 * 60 * 1000,
+  price: event.quotas[0]?.price ?? 0,
 });

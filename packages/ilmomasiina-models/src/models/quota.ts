@@ -8,5 +8,4 @@ export default interface QuotaAttributes {
   eventId: EventAttributes["id"];
   signupCount?: number;
   price: number;
-  priceId: string;
 }

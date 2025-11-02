@@ -24,6 +24,16 @@ const questionOptions = Nullable(
   },
 );
 
+const questionPrices = Nullable(
+  Type.Array(
+    Type.Number({ minimum: 0 }),
+    { maxItems: 64 },
+  ),
+  {
+    description: "For select or checkbox questions, the prices associated with each option.",
+  },
+)
+
 /** Editable attributes of a question language version. */
 export const questionLanguageAttributes = Type.Object({
   // No minLength to allow for fallback.
@@ -46,6 +56,7 @@ export const questionAttributes = Type.Object({
     description: "The type of answer expected.",
   }),
   options: questionOptions,
+  prices: questionPrices,
   required: Type.Boolean({
     description: "Whether to require an answer to this question from all attendees.",
   }),

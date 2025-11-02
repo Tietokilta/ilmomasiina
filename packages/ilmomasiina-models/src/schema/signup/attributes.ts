@@ -78,7 +78,7 @@ export const publicEditableSignupAttributes = Type.Object({
 });
 
 /** Non-editable, automatically updated signup attributes. */
-export const dynamicSignupAttributes = Type.Object({
+export const publicDynamicSignupAttributes = Type.Object({
   status: Nullable(Type.Enum(SignupStatus, { title: "SignupStatus" }), {
     description: "Status of the signup. If null, the status has not been computed yet.",
   }),
@@ -92,4 +92,11 @@ export const dynamicSignupAttributes = Type.Object({
   confirmed: Type.Boolean({
     description: "Whether the signup has been confirmed (saved).",
   }),
+});
+export const dynamicSignupAttributes = Type.Object({
+  ...publicDynamicSignupAttributes.properties,
+  price: Type.Number({
+    description: "Total price of the signup.",
+    minimum: 0,
+  })
 });

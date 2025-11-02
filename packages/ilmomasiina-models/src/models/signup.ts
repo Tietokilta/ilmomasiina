@@ -12,5 +12,6 @@ export default interface SignupAttributes {
   status: SignupStatus | null;
   position: number | null;
   createdAt: Date;
+  price: number;
   quotaId: QuotaAttributes["id"];
 }

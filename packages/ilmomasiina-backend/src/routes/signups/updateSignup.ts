@@ -144,15 +144,20 @@ export async function updateSignupAsUser(
     const newAnswers = questions.map((question) => {
       // Fetch the answer to this question from the request body
       let answer = request.body.answers?.find((a) => a.questionId === question.id)?.answer;
+
+      let price: number = 0;
+
       let error: SignupFieldError | undefined;
 
       if (!answer || !answer.length) {
+
         // Disallow empty answers to required questions
         if (question.required) {
           error = SignupFieldError.MISSING;
         }
         // Normalize empty answers to "" or [], depending on question type
         answer = question.type === "checkbox" ? [] : "";
+        price = 0;
       } else if (question.type === "checkbox") {
         // Ensure checkbox answers are arrays
         if (!Array.isArray(answer)) {
@@ -197,10 +202,20 @@ export async function updateSignupAsUser(
         errors.answers ??= {};
         errors.answers[question.id] = error;
       }
-
+      if (question.options && question.prices) {
+        const optionToPriceCents = Object.fromEntries(
+          question.options.map((opt, i) => [opt, question.prices![i] ?? 0])
+          ) as Record<string, number>;
+        if (question.type === "checkbox" && Array.isArray(answer)) {
+          price += answer.reduce((sum, option) => sum + (optionToPriceCents[option] ?? 0), 0);
+        } else if (question.type === "select" && typeof answer === "string") {
+          price += optionToPriceCents[answer] ?? 0;
+        }
+      }
       return {
         questionId: question.id,
         answer,
+        price,
         signupId: signup.id,
       };
     });
@@ -208,14 +223,18 @@ export async function updateSignupAsUser(
     if (Object.keys(errors).length > 0) {
       throw new SignupValidationError("Errors validating signup", errors);
     }
-
+    let totPrice = newAnswers.reduce((sum, ans) => sum + ans.price, 0)
+    if (signup.quota) {
+      totPrice += signup.quota.price
+    }
+    fields.price = totPrice;
     await updateExistingSignup(signup, fields, newAnswers, transaction);
     await request.logEvent(AuditEvent.EDIT_SIGNUP, { signup, event, transaction });
     return { updatedSignup: signup, edited: !notConfirmedYet };
   });
 
   // Send the confirmation email
-  sendSignupConfirmationMail(updatedSignup, edited ? "edit" : "signup", false);
+  await sendSignupConfirmationMail(updatedSignup, edited ? "edit" : "signup", false);
 
   reply.status(200);
   return {
@@ -253,9 +272,22 @@ async function updateExistingSignupAsAdmin(
       // Forcibly convert non-checkbox answers to string
       answer = Array.isArray(answer) ? answer.join(", ") : answer;
     }
+
+    let priceCents = 0;
+    if (question.options && question.prices) {
+      const optionToPrice: Record<string, number> = Object.fromEntries(
+        question.options.map((opt, i) => [opt, question.prices![i] ?? 0]),
+      );
+      if (question.type === "checkbox" && Array.isArray(answer)) {
+        priceCents = answer.reduce((sum: number, opt: string) => sum + (optionToPrice[opt] ?? 0), 0);
+      } else if (question.type === "select" && typeof answer === "string") {
+        priceCents = optionToPrice[answer] ?? 0;
+      }
+    }
     return {
       questionId: question.id,
       answer,
+      price: priceCents,
       signupId: signup.id,
     };
   });

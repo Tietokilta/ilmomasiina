@@ -34,7 +34,6 @@ export interface EventCreationAttributes
     | "id"
     | "openQuotaSize"
     | "openQuotaPrice"
-    | "openQuotaPriceId"
     | "description"
     | "price"
     | "location"
@@ -66,7 +65,6 @@ export class Event extends Model<EventManualAttributes, EventCreationAttributes>
   public registrationEndDate!: Date | null;
   public openQuotaSize!: number;
   public openQuotaPrice!: number;
-  public openQuotaPriceId!: string;
   public description!: string | null;
   public price!: string | null;
   public location!: string | null;
@@ -198,10 +196,6 @@ export default function setupEventModel(sequelize: Sequelize) {
           min: 0,
         },
         defaultValue: 0,
-      },
-      openQuotaPriceId: {
-        type: DataTypes.STRING,
-        defaultValue: "",
       },
       description: {
         type: DataTypes.TEXT,

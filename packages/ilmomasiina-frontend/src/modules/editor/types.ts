@@ -45,6 +45,7 @@ export interface EditorState {
 export interface EditorQuestion extends Omit<QuestionUpdate, "options"> {
   key: QuestionID;
   options: string[];
+  prices: number[];
 }
 
 /** Quota type for event editor */
@@ -65,7 +66,6 @@ export interface EditorEvent
       | "registrationEndDate"
       | "openQuotaSize"
       | "openQuotaPrice"
-      | "openQuotaPriceId"
       // Omit fields we want to keep optional
       | "moveSignupsToQueue"
     >,
@@ -84,7 +84,6 @@ export interface EditorEvent
   useOpenQuota: boolean;
   openQuotaSize: number | null;
   openQuotaPrice: number;
-  openQuotaPriceId: string;
 }
 
 /** Stricter version of EventUpdateBody with fields we guarantee to return from `editorEventToServer`. */

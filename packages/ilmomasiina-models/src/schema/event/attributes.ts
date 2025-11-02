@@ -56,9 +56,6 @@ export const publicEventAttributes = Type.Object({
     description: "The price for the open quota. Zero indicates free entry.",
     minimum: 0,
   }),
-  openQuotaPriceId: Type.String({
-    description: "PriceId for stripe"
-  }),
   // Not per language as it's used for filtering events.
   category: Type.String({
     description: "Category tag for the event. Can be used for filtering.",

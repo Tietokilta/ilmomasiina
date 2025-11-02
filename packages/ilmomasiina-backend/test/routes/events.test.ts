@@ -35,7 +35,6 @@ describe("getEventDetails", () => {
       registrationEndDate: event.registrationEndDate?.toISOString() ?? null,
       openQuotaSize: event.openQuotaSize,
       openQuotaPrice: event.openQuotaPrice,
-      openQuotaPriceId: event.openQuotaPriceId,
       description: event.description,
       price: event.price,
       location: event.location,
@@ -69,7 +68,6 @@ describe("getEventDetails", () => {
       title: firstQuota.title,
       size: firstQuota.size,
       price: firstQuota.price,
-      priceId: firstQuota.priceId,
       signupCount: 0,
       signups: [],
     });
@@ -256,7 +254,6 @@ describe("getEventList", () => {
       registrationEndDate: event.registrationEndDate?.toISOString() ?? null,
       openQuotaSize: event.openQuotaSize,
       openQuotaPrice: event.openQuotaPrice,
-      openQuotaPriceId: event.openQuotaPriceId,
       description: event.description,
       price: event.price,
       location: event.location,

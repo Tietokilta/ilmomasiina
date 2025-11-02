@@ -34,6 +34,7 @@ export class Question extends Model<QuestionAttributes, QuestionCreationAttribut
   public question!: string;
   public type!: QuestionType;
   public options!: string[] | null;
+  public prices!: number[] | null;
   public required!: boolean;
   public public!: boolean;
 
@@ -90,6 +91,11 @@ export default function setupQuestionModel(sequelize: Sequelize) {
         type: DataTypes.JSON,
         allowNull: true,
         get: jsonColumnGetter<string[]>("options"),
+      },
+      prices: {
+        type: DataTypes.JSON,
+        allowNull: true,
+        get: jsonColumnGetter<string[]>("prices"),
       },
       required: {
         type: DataTypes.BOOLEAN,

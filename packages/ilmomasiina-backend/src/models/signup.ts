@@ -40,6 +40,7 @@ export interface SignupCreationAttributes
     | "status"
     | "position"
     | "createdAt"
+    | "price"
   > {}
 
 export class Signup extends Model<SignupAttributes, SignupCreationAttributes> implements SignupAttributes {
@@ -51,6 +52,7 @@ export class Signup extends Model<SignupAttributes, SignupCreationAttributes> im
   public language!: string | null;
   public confirmedAt!: Date | null;
   public status!: SignupStatus | null;
+  public price!: number;
   public position!: number | null;
 
   public quotaId!: Quota["id"];
@@ -144,6 +146,11 @@ export default function setupSignupModel(sequelize: Sequelize) {
         type: DataTypes.DATE(3),
         defaultValue: () => new Date(),
         allowNull: false,
+      },
+      price: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
       },
     },
     {

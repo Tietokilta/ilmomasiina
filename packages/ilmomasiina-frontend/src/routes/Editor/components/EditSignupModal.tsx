@@ -98,6 +98,7 @@ const EditSignupModal = () => {
   const editSignupCtx = useMemo((): EditSignupState | null => {
     if (!editedSignup) return null;
     const convertedEvent = editorEventToUserEvent(values);
+    const quota = previewDummyQuota(convertedEvent);
     return {
       pending: false,
       editToken: "",
@@ -114,7 +115,8 @@ const EditSignupModal = () => {
         // Override with values from signup if this is an existing signup.
         ...editedSignup,
         id: editedSignup.id ?? "new",
-        quota: previewDummyQuota(convertedEvent),
+        quota,
+        price: quota.price
       },
       editingClosedOnLoad: false,
       confirmableUntil: Infinity,

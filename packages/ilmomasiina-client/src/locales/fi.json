@@ -112,7 +112,7 @@
     "singleEvent.quotaCounts.unlimited": "Rajaton",
     "singleEvent.returnToEvents": "Takaisin",
     "singleEvent.signupButton.singleQuota": "Ilmoittaudu nyt",
-    "singleEvent.signupButton": "Ilmoittaudu: {{quota}}  {{price}}€",
+    "singleEvent.signupButton": "Ilmoittaudu: {{quota}} {{price}}€",
     "singleEvent.signupButton.preview": "Esikatsele ilmolomaketta",
     "singleEvent.signupButtons.title": "Ilmoittautuminen",
     "singleEvent.signups.emptyQuota": "Ei ilmoittautumisia.",

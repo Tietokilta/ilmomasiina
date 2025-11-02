@@ -6,6 +6,7 @@ import {
   dynamicSignupAttributes,
   editableSignupAttributes,
   editToken,
+  publicDynamicSignupAttributes,
   publicEditableSignupAttributes,
   signupID,
   signupIdentity,
@@ -54,7 +55,7 @@ export const adminSignupCreateBody = Type.Composite([
 export const signupUpdateResponse = signupIdentity;
 
 /** Schema for signups in event details from the public API. */
-export const publicSignupSchema = Type.Composite([publicEditableSignupAttributes, dynamicSignupAttributes]);
+export const publicSignupSchema = Type.Composite([publicEditableSignupAttributes, publicDynamicSignupAttributes]);
 
 /** Schema for signups in event details from the admin API. */
 export const adminSignupSchema = Type.Composite([signupIdentity, editableSignupAttributes, dynamicSignupAttributes]);

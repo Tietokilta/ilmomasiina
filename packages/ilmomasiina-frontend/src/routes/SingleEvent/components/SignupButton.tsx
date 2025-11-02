@@ -83,7 +83,7 @@ const SignupButton = ({ isOpen, isClosed, seconds, total }: SignupButtonProps) =
             >
               {isOnly
                 ? t("singleEvent.signupButton.singleQuota")
-                : t("singleEvent.signupButton", { quota: quota.title, price: quota.price })}
+                : t("singleEvent.signupButton", { quota: quota.title, price: (quota.price / 100).toFixed(2) })}
             </Button>
           ))
         )

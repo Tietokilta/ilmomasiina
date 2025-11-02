@@ -38,7 +38,6 @@ const tabForField: Record<keyof EditorEvent, EditorTab | null> = {
   useOpenQuota: EditorTab.QUOTAS,
   openQuotaSize: EditorTab.QUOTAS,
   openQuotaPrice: EditorTab.QUOTAS,
-  openQuotaPriceId: EditorTab.QUOTAS,
   category: EditorTab.BASIC_DETAILS,
   description: EditorTab.BASIC_DETAILS,
   price: EditorTab.BASIC_DETAILS,

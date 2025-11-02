@@ -24,6 +24,20 @@ const questionOptionsSchema: ZodType<EditorEvent["questions"][number]["options"]
       });
     }
   });
+const questionPricesSchema: ZodType<EditorEvent["questions"][number]["prices"]> = z
+  .array(z.number())
+  .max(maxOptionsPerQuestion)
+  // Validate that all the prices are non-negative
+  .superRefine((value, ctx) => {
+    for (let i = 0; i < value.length; i += 1) {
+      if (value[i] < 0) {
+        ctx.addIssue({
+          code: ZodIssueCode.custom,
+          message: "editor.errors.negativePrice",
+          });
+      }
+    }
+  });
 
 const editorSchema: ZodType<EditorEvent, z.ZodTypeDef, unknown> = z
   .object({
@@ -41,7 +55,6 @@ const editorSchema: ZodType<EditorEvent, z.ZodTypeDef, unknown> = z
     useOpenQuota: z.boolean(),
     openQuotaSize: z.nullable(z.number().min(0)),
     openQuotaPrice: z.number().min(0).default(0),
-    openQuotaPriceId: z.string(),
     category: z.string().max(255),
     description: z.nullable(z.string()),
     price: z.nullable(z.string().max(255)),
@@ -72,6 +85,7 @@ const editorSchema: ZodType<EditorEvent, z.ZodTypeDef, unknown> = z
           z.object({
             question: z.string().max(255),
             options: questionOptionsSchema,
+            prices: questionPricesSchema,
           }),
         ),
       }),
@@ -84,7 +98,6 @@ const editorSchema: ZodType<EditorEvent, z.ZodTypeDef, unknown> = z
         title: z.string().min(1).max(255),
         size: z.nullable(z.number().min(1)),
         price: z.number().min(0).default(0),
-        priceId: z.string()
       }),
     ),
     questions: z.array(
@@ -96,6 +109,7 @@ const editorSchema: ZodType<EditorEvent, z.ZodTypeDef, unknown> = z
         required: z.boolean(),
         public: z.boolean(),
         options: questionOptionsSchema,
+        prices: questionPricesSchema,
       }),
     ),
     moveSignupsToQueue: z.optional(z.boolean()),
