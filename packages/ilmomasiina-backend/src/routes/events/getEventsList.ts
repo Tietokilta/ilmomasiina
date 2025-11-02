@@ -132,7 +132,6 @@ export async function getEventsListForAdmin(
     ...event.get({ plain: true }),
     quotas: event.quotas!.map((quota) => ({
       ...quota.get({ plain: true }),
-      price: quota.get('price') / 100,
       signupCount: Number(quota.signupCount!),
     })),
   }));
