@@ -51,7 +51,6 @@ export const defaultEvent = (): EditorEvent => ({
   location: "",
   description: "",
   price: "",
-  numPrice: 0,
   signupsPublic: false,
   languages: {},
   defaultLanguage: DEFAULT_LANGUAGE,

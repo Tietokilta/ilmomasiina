@@ -96,10 +96,6 @@ export const publicCommonAttributes = Type.Object({
   price: Nullable(Type.String({ maxLength: 255 }), {
     description: "Free-form pricing information for the event.",
   }),
-  numPrice: Type.Number({
-    minimum: 0,
-    description: "Numeric price for the event, if applicable for payment integration.",
-  }),
   location: Nullable(Type.String({ maxLength: 255 }), {
     description: "Free-form location information for the event.",
   }),

@@ -4,7 +4,6 @@ interface EventPerLanguageAttributes {
   title: string;
   description: string | null;
   price: string | null;
-  numPrice: number;
   location: string | null;
   webpageUrl: string | null;
   facebookUrl: string | null;

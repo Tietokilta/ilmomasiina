@@ -101,7 +101,6 @@
     "singleEvent.info.facebookEvent": "Facebook-tapahtuma:",
     "singleEvent.info.location": "Sijainti:",
     "singleEvent.info.price": "Hinta:",
-    "singleEvent.info.numPrice": "Hinta:",
     "singleEvent.info.startDate": "Alkaa:",
     "singleEvent.info.website": "Kotisivut:",
     "singleEvent.loadError.404.title": "Tapahtumaa ei löytynyt",
