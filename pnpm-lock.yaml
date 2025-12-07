@@ -422,6 +422,9 @@ importers:
       '@sinclair/typebox':
         specifier: ^0.32.35
         version: 0.32.35
+      stripe:
+        specifier: ^19.1.0
+        version: 19.1.0(@types/node@20.19.0)
     devDependencies:
       rimraf:
         specifier: ^5.0.10

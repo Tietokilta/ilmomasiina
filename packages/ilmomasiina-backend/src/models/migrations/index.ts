@@ -12,6 +12,7 @@ import _0007_add_languages from "./0007-add-languages";
 import _0008_add_price_to_quota from "./0008-add-price-to-quota";
 import _0009_add_price_to_question_options from "./0009-add-price-to-question-options";
 import _0010_add_price_to_signup from "./0010-add-price-to-signup";
+import _0011_add_payment_table from "./0011-add-payment-table";
 
 const migrations: RunnableMigration<Sequelize>[] = [
   _0000_initial,
@@ -25,6 +26,7 @@ const migrations: RunnableMigration<Sequelize>[] = [
   _0008_add_price_to_quota,
   _0009_add_price_to_question_options,
   _0010_add_price_to_signup,
+  _0011_add_payment_table,
 ];
 
 export default migrations;

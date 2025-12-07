@@ -1,7 +1,10 @@
 import { Static, Type } from "@sinclair/typebox";
+import Stripe from "stripe";
 
+import { userEventForSignup } from "../event";
 import { signupID } from "../signup";
 import { editToken } from "../signup/attributes";
+import { signupForEdit } from "../signupForEdit";
 import { paymentID, paymentStatus } from "./attributes";
 
 /** Request body for creating a payment. */
@@ -28,4 +31,10 @@ export const paymentSuccessResponse = Type.Object({
 
 export type PaymentCreateParams = Static<typeof paymentCreateParams>;
 export type PaymentPathParams = Static<typeof paymentPathParams>;
-export type PaymentSuccessResponse = Static<typeof paymentSuccessResponse>;
+export type PaymentResponse = Stripe.Checkout.Session
+
+export interface SignupPaymentResponse {
+  signup: Static<typeof signupForEdit>,
+  event: Static<typeof userEventForSignup>,
+  payment: PaymentResponse
+}

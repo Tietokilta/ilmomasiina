@@ -1,45 +1,47 @@
 import { FastifyReply, FastifyRequest } from "fastify";
+import Stripe from "stripe";
 
-// import Stripe from 'stripe';
-import { PaymentPathParams, PaymentStatus, PaymentSuccessResponse } from "@tietokilta/ilmomasiina-models";
-import { Answer } from "../../models/answer";
-import { Event } from "../../models/event";
-import { Quota } from "../../models/quota";
-import { Signup } from "../../models/signup";
-import { NoSuchSignup } from "../signups/errors";
-import { StringifyApi } from "../utils";
+import { PaymentPathParams, SignupPaymentResponse } from "@tietokilta/ilmomasiina-models";
+import { getSignupDetails } from "../utils";
 
 export default async function startPayment(
   request: FastifyRequest<{ Params: PaymentPathParams }>,
   reply: FastifyReply,
-): Promise<PaymentSuccessResponse> {
+): Promise<SignupPaymentResponse> {
 
-  const signup = await Signup.scope("active").findByPk(request.params.id, {
-    include: [
+  const { signup, event } = await getSignupDetails(request.params.id);
+
+
+  const stripe = new Stripe(process.env.STRIPE_KEY ?? "");
+  const amount = (signup.quota!.price + signup.price);
+  const session = await stripe.checkout.sessions.create(
+    {
+    line_items: [
       {
-        model: Answer,
-        required: false,
-      },
-      {
-        model: Quota,
-        include: [{ model: Event }],
+        price_data: {
+          currency: "EUR",
+          product_data: {
+            name: `${signup.firstName} ${signup.lastName} `,
+            description: `${event?.title}\n
+            ${signup.firstName} ${signup.lastName}\n
+            ${signup.quota?.price}\n
+            ${signup.email}`,
+          },
+          unit_amount: amount,
+        },
       },
     ],
-  });
-  if (signup === null) {
-    // Event not found with id, probably deleted
-    throw new NoSuchSignup("No signup found with given id");
+    mode: "payment",
+    success_url: "https://www.tietokilta.fi/fi"
+  }).then((ses) => ses as unknown as Stripe.Checkout.Session);
+
+  const response = {
+    signup,
+    event,
+    payment: session,
   }
 
-  const amount = signup.quota!.price;
-  const response = {
-    success: true,
-    paymentID: "testi-payment-id",
-    signupID: signup.id,
-    amount,
-    paymentStatus: PaymentStatus.DISABLED,
-  };
   reply.status(200);
-  return response as unknown as StringifyApi<typeof response>;
+  return response;
 
 }
