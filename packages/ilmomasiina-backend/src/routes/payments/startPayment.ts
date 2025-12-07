@@ -11,9 +11,8 @@ export default async function startPayment(
 
   const { signup, event } = await getSignupDetails(request.params.id);
 
-
-  const stripe = new Stripe(process.env.STRIPE_KEY ?? "");
-  const amount = (signup.quota!.price + signup.price);
+  const stripe = new Stripe(process.env.STRIPE_API_KEY ?? "");
+  const amount = signup.quota!.price;
   const session = await stripe.checkout.sessions.create(
     {
     line_items: [
@@ -29,17 +28,20 @@ export default async function startPayment(
           },
           unit_amount: amount,
         },
+        quantity: 1,
       },
     ],
     mode: "payment",
-    success_url: "https://www.tietokilta.fi/fi"
-  }).then((ses) => ses as unknown as Stripe.Checkout.Session);
+    success_url: "https://www.tietokilta.fi/fi",
+    cancel_url: "https://www.tietokilta.fi/en",
+  });
 
-  const response = {
+  const response: SignupPaymentResponse = {
     signup,
     event,
     payment: session,
   }
+  console.log("Requested")
 
   reply.status(200);
   return response;

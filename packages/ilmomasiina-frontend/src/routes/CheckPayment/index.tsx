@@ -1,129 +1,72 @@
 import React from "react";
 
+import { Spinner } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 
-import { EditSignupProps, EditSignupProvider, useEditSignupContext } from "@tietokilta/ilmomasiina-client";
-import { PaymentStatus, PaymentSuccessResponse } from "@tietokilta/ilmomasiina-models";
+import { PaymentProps, PaymentProvider, usePaymentContext }
+  from "@tietokilta/ilmomasiina-client";
+import NarrowContainer from "../EditSignup/components/NarrowContainer";
+
+const PaymentForm = () => {
+  const { localizedEvent: event, signup, payment } = usePaymentContext();
+  return (
+    <div>
+      <p>{event?.title}</p>
+      <p>{`${signup?.id}->${signup?.price}`}</p>
+      <ul>
+        <li>{payment?.id}</li>
+        <li>{(payment?.amount_total ?? 0) / 100}€</li>
+        <li>{payment?.currency}</li>
+        <li>{payment?.payment_status}</li>
+        <li>
+          <button
+            type="button"
+            onClick={
+            () => payment?.url ? window.location.assign(payment?.url) : console.log(payment)
+          }>Pay up</button>
+        </li>
+      </ul>
+    </div>
+  )
+}
 
 // import { useTranslation } from "react-i18next";
+const PaymentView = () => {
+  const { error, pending } = usePaymentContext();
+
+  if (error) {
+    return (
+      <NarrowContainer className="ilmo--status-container">
+        <h1>Error</h1>
+        <p>error</p>
+      </NarrowContainer>
+    );
+  }
+
+  if (pending) {
+    return (
+      <div className="ilmo--loading-container">
+        <Spinner animation="border" />
+      </div>
+    );
+  }
+
+  return <PaymentForm />;
+}
+
 
 const CheckPayment = () => {
   // const { t } = useTranslation();
-  const [data, setData] = React.useState<PaymentSuccessResponse | null>(null);
-  const [loading, setLoading] = React.useState<boolean>(true);
-  const [error, setError] = React.useState<string | null>(null);
-  const { localizedEvent: event, signup } = useEditSignupContext();
-  const { id, editToken } = useParams<EditSignupProps>();
+  const { id, editToken } = useParams<PaymentProps>();
   const {
     i18n: { language },
   } = useTranslation();
 
-  // TODO: PaymentProvider
-
-  React.useEffect(() => {
-    let cancelled = false;
-
-    const fetchStatus = async () => {
-      if (!id || !editToken) {
-        setError("Missing signupId or editToken in URL path");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null);
-
-        const res = await fetch(`/api/payments/${id}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Edit-Token": editToken,
-          },
-        });
-
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`);
-        }
-
-        const json = (await res.json()) as PaymentSuccessResponse | null;
-        if (cancelled) return;
-
-        if (!json) {
-          throw new Error("Empty response");
-        }
-
-        setData(json);
-
-        const status = json.paymentStatus;
-
-        if (status === PaymentStatus.PAID) {
-          localStorage.setItem("paymentStatus", "paid");
-        } else if (status === PaymentStatus.PENDING) {
-          localStorage.setItem("paymentStatus", "pending");
-        } else if (status === PaymentStatus.UNPAID) {
-          localStorage.setItem("paymentStatus", "unpaid");
-        } else if (status === PaymentStatus.DISABLED) {
-          localStorage.setItem("paymentStatus", "disabled");
-        } else if (status === PaymentStatus.CANCELED) {
-          localStorage.setItem("paymentStatus", "canceled");
-        } else {
-          localStorage.setItem("paymentStatus", "error");
-        }
-      } catch (e: unknown) {
-        if (!cancelled) {
-          setError(e instanceof Error ? e.message : "Unknown error");
-          const base = `/payment/${id}/${editToken}`;
-          window.location.replace(`${base}?payment=error`);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    fetchStatus();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [id, editToken]);
-
   return (
-    <EditSignupProvider id={id} editToken={editToken} language={language}>
-      <div>
-        <h1>Check Payment for {event && event.title}</h1>
-        <p>Please wait while we verify your payment status…</p>
-
-        <div>
-          <p>
-            <span>Signup ID:</span> {id || "(missing)"}
-          </p>
-          <p>
-            <span>Edit Token:</span> {editToken}
-          </p>
-          <p>
-            <span>Price:</span> {signup?.quota?.price ?? "none"}
-          </p>
-        </div>
-
-        {loading && <p>Loading…</p>}
-        {error && (
-          <p role="alert">
-            {error}
-          </p>
-        )}
-        {data && (
-          <ul>
-            <li>success: {(data as any).success?.toString?.() ?? "n/a"}</li>
-            <li>paymentID: {(data as any).paymentID ?? "n/a"}</li>
-            <li>signupID: {(data as any).signupID ?? "n/a"}</li>
-            <li>amount: {(data as any).amount ?? "n/a"}</li>
-            <li>paymentStatus: {String(data.paymentStatus ?? "n/a")}</li>
-          </ul>
-        )}
-      </div>
-    </EditSignupProvider>
+    <PaymentProvider id={id} editToken={editToken} language={language}>
+      <PaymentView />
+    </PaymentProvider>
   );
 };
 

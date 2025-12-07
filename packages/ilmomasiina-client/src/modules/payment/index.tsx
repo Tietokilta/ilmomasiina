@@ -5,8 +5,7 @@ import { ApiError, apiFetch } from "../../api";
 import { useAbortablePromise } from "../../utils/abortable";
 import { getLocalizedEvent, getLocalizedSignup } from "../../utils/localizedEvent";
 import useShallowMemo from "../../utils/useShallowMemo";
-import { EditSignupProps } from "../editSignup";
-import { Provider, State } from "../editSignup/state";
+import { Provider, State } from "./state";
 
 export interface PaymentProps {
   id: string;
@@ -20,7 +19,7 @@ export type { State as PaymentState } from "./state";
 export function usePaymentState({ id, editToken, language }: PaymentProps) {
   const { result, error, pending } = useAbortablePromise(
     async (signal) => {
-      const response = await apiFetch<SignupPaymentResponse>(`payment/${id}`, {
+      const response = await apiFetch<SignupPaymentResponse>(`payments/${id}`, {
         signal,
         headers: {
           [EDIT_TOKEN_HEADER]: editToken,
@@ -64,7 +63,7 @@ export function usePaymentState({ id, editToken, language }: PaymentProps) {
   });
 }
 
-export function PaymentProvider({ id, editToken, language, children }: PropsWithChildren<EditSignupProps>) {
+export function PaymentProvider({ id, editToken, language, children }: PropsWithChildren<PaymentProps>) {
   const state = usePaymentState({ id, editToken, language });
   return <Provider value={state}>{children}</Provider>;
 }

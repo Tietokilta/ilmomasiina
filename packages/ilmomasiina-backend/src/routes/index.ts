@@ -354,7 +354,7 @@ async function setupPublicRoutes(fastifyInstance: FastifyInstance, opts: RouteOp
         params: schema.paymentPathParams,
         response: {
           ...errorResponses,
-          200: schema.paymentSuccessResponse,
+          200: schema.signupPaymentResponse,
         },
       },
       preHandler: requireValidEditToken,
