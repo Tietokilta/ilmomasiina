@@ -1,4 +1,4 @@
-import type { SignupStatus } from "../enum";
+import type { PaymentStatus,SignupStatus  } from "../enum";
 import type QuotaAttributes from "./quota";
 
 export default interface SignupAttributes {
@@ -14,4 +14,5 @@ export default interface SignupAttributes {
   createdAt: Date;
   price: number;
   quotaId: QuotaAttributes["id"];
+  paymentStatus: PaymentStatus | null;
 }

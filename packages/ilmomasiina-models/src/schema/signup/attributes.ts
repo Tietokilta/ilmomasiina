@@ -98,5 +98,8 @@ export const dynamicSignupAttributes = Type.Object({
   price: Type.Number({
     description: "Total price of the signup.",
     minimum: 0,
-  })
+  }),
+  paymentStatus: Nullable(Type.Enum(SignupStatus), {
+    description: "Payment status"
+  }),
 });

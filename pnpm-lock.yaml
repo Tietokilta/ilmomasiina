@@ -364,6 +364,9 @@ importers:
       sass:
         specifier: ^1.89.2
         version: 1.89.2
+      stripe:
+        specifier: ^19.1.0
+        version: 19.1.0(@types/node@20.19.0)
       zod:
         specifier: ^3.25.56
         version: 3.25.56

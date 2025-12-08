@@ -20,6 +20,7 @@ import EditSignup from "../routes/EditSignup";
 import EventList from "../routes/EventList";
 import InitialSetup from "../routes/InitialSetup";
 import Login from "../routes/Login";
+import PaymentSuccess from "../routes/PaymentSuccess";
 import SingleEvent from "../routes/SingleEvent";
 import configureStore, { history } from "../store/configureStore";
 import { AuthProvider } from "./AuthProvider";
@@ -49,6 +50,9 @@ const AppContainer = () => (
                 </Route>
                 <Route exact path={paths.checkPayment(":id", ":editToken")}>
                   <CheckPayment />
+                </Route>
+                <Route exact path={paths.successPayment(":id", ":editToken")}>
+                  <PaymentSuccess />
                 </Route>
                 <Route exact path={paths.adminLogin}>
                   <Login />

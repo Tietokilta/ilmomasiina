@@ -49,6 +49,7 @@
     "remark-gfm": "^3.0.1",
     "reselect": "^4.1.8",
     "sass": "^1.89.2",
+    "stripe": "^19.1.0",
     "zod": "^3.25.56"
   },
   "devDependencies": {
