@@ -1,6 +1,6 @@
 import { Type } from "@sinclair/typebox";
 
-import { SignupStatus } from "../../enum";
+import { PaymentStatus, SignupStatus } from "../../enum";
 import { questionID } from "../question";
 import { Nullable } from "../utils";
 
@@ -99,7 +99,7 @@ export const dynamicSignupAttributes = Type.Object({
     description: "Total price of the signup.",
     minimum: 0,
   }),
-  paymentStatus: Nullable(Type.Enum(SignupStatus), {
+  paymentStatus: Nullable(Type.Enum(PaymentStatus), {
     description: "Payment status"
   }),
 });

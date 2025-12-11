@@ -1,4 +1,4 @@
-import { SignupForEdit, SignupStatus, UserEventResponse } from "@tietokilta/ilmomasiina-models";
+import { PaymentStatus, SignupForEdit, SignupStatus, UserEventResponse } from "@tietokilta/ilmomasiina-models";
 import { editorEventToServer } from "../../../modules/editor/actions";
 import type { EditorEvent } from "../../../modules/editor/types";
 
@@ -43,6 +43,7 @@ export const previewDummySignup = (event: UserEventResponse): SignupForEdit => (
   namePublic: false,
   quota: previewDummyQuota(event),
   status: SignupStatus.IN_QUOTA,
+  paymentStatus: PaymentStatus.UNPAID,
   position: 1,
   confirmableForMillis: 30 * 60 * 60 * 1000,
   editableForMillis: 30 * 60 * 60 * 1000,

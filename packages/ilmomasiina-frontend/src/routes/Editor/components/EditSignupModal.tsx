@@ -12,7 +12,7 @@ import {
   errorDesc,
   getLocalizedEvent,
 } from "@tietokilta/ilmomasiina-client";
-import type { QuotaID } from "@tietokilta/ilmomasiina-models";
+import { PaymentStatus, QuotaID } from "@tietokilta/ilmomasiina-models";
 import FieldRow from "../../../components/FieldRow";
 import type { TKey } from "../../../i18n";
 import { saveSignup, signupEditCanceled } from "../../../modules/editor/actions";
@@ -110,13 +110,14 @@ const EditSignupModal = () => {
         status: null,
         position: null,
         confirmed: false,
+        paymentStatus: quota.price <= 0 ? PaymentStatus.DISABLED : PaymentStatus.UNPAID,
         editableForMillis: Infinity,
         confirmableForMillis: Infinity,
         // Override with values from signup if this is an existing signup.
         ...editedSignup,
         id: editedSignup.id ?? "new",
         quota,
-        price: quota.price
+        price: quota.price,
       },
       editingClosedOnLoad: false,
       confirmableUntil: Infinity,

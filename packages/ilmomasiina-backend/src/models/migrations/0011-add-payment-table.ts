@@ -7,7 +7,7 @@ export default defineMigration({
   name: "0011-add-payment-table",
   async up({ context: { sequelize, transaction } }) {
     const query = sequelize.getQueryInterface();
-    await query.createTable("payments",
+    await query.createTable("payment",
       {
         stripeId: {
           type: DataTypes.STRING,
@@ -26,7 +26,7 @@ export default defineMigration({
           type: DataTypes.INTEGER,
           allowNull: false,
         },
-        startedAt: {
+        createdAt: {
           type: DataTypes.DATE,
           allowNull: false,
         },
@@ -43,32 +43,20 @@ export default defineMigration({
           allowNull: true,
         },
         status: {
-          type: DataTypes.ENUM(
-            "paid",
-            "unpaid",
-            "canceled",
-            "disabled",
-            "pending",
-          ),
+          type: DataTypes.ENUM(...Object.values(PaymentStatus)),
           allowNull: true,
         }
       },
       {transaction})
-    await query.addColumn("signups", "paymentStatus", {
-      type: DataTypes.ENUM(
-        PaymentStatus.PAID,
-        PaymentStatus.UNPAID,
-        PaymentStatus.CANCELED,
-        PaymentStatus.DISABLED,
-        PaymentStatus.PENDING,
-      ),
+    await query.addColumn("signup", "paymentStatus", {
+      type: DataTypes.ENUM(...Object.values(PaymentStatus)),
       allowNull: true,
       defaultValue: PaymentStatus.UNPAID,
     }, {transaction})
   },
   async down({ context: { sequelize, transaction } }) {
     const query = sequelize.getQueryInterface();
-    await query.dropTable("payments", {transaction});
-    await query.removeColumn("signups", "paymentStatus", {transaction})
+    await query.dropTable("payment", {transaction});
+    await query.removeColumn("signup", "paymentStatus", {transaction})
   }
 });

@@ -5,7 +5,7 @@ export default interface PaymentAttributes {
   signupId: string;
   editToken: string;
   amount: number;
-  startedAt: Date;
+  createdAt: Date;
   updatedAt: Date;
   expiresAt: Date;
   completedAt: Date | null;

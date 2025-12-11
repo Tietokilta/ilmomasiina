@@ -15,7 +15,7 @@ export interface PaymentCreateAttributes
     | "editToken"
     | "amount"
     | "status"
-    | "startedAt"
+    | "createdAt"
     | "expiresAt">{}
 
 export class Payment extends Model<PaymentManualAttributes, PaymentCreateAttributes> implements PaymentAttributes {
@@ -25,7 +25,7 @@ export class Payment extends Model<PaymentManualAttributes, PaymentCreateAttribu
   public amount!: number;
   public status!: PaymentStatus | null;
 
-  public readonly startedAt!: Date;
+  public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
   public readonly expiresAt!: Date;
   public readonly completedAt!: Date | null;
@@ -57,7 +57,7 @@ export default function setupPaymentModel(sequelize: Sequelize) {
         type: DataTypes.ENUM(...Object.values(PaymentStatus)),
         allowNull: false,
       },
-      startedAt: {
+      createdAt: {
         type: DataTypes.DATE(3),
         defaultValue: () => new Date(),
         allowNull: false,
@@ -70,12 +70,12 @@ export default function setupPaymentModel(sequelize: Sequelize) {
       sequelize,
       modelName: "payment",
       freezeTableName: true,
-      paranoid: true,
+      paranoid: false,
       scopes: {
         active: () => ({
           where: {
             [Op.or]: {
-              startedAt: {
+              createdAt: {
                 [Op.gt]: moment().subtract(config.signupConfirmMins, "minutes").toDate(),
               },
             },

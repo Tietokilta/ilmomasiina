@@ -41,7 +41,9 @@ export default async function startPayment(
     signupId: signup.id,
     editToken: editToken ?? "",
     status: PaymentStatus.PENDING,
-    expiresAt: new Date(session.expires_at),
+    amount,
+    createdAt: new Date(),
+    expiresAt: new Date(session.expires_at * 1000),
   });
 
   const response: SignupPaymentResponse = {

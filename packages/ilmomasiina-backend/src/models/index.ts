@@ -7,6 +7,7 @@ import setupAuditLogModel from "./auditlog";
 import sequelizeConfig from "./config";
 import setupEventModel, { Event } from "./event";
 import migrations from "./migrations";
+import setupPaymentModel, { Payment } from "./payment";
 import setupQuestionModel, { Question } from "./question";
 import setupQuotaModel, { Quota } from "./quota";
 import setupSignupModel, { Signup } from "./signup";
@@ -62,6 +63,7 @@ export default async function setupDatabase() {
   }
 
   setupEventModel(sequelize);
+  setupPaymentModel(sequelize);
   setupQuotaModel(sequelize);
   setupSignupModel(sequelize);
   setupQuestionModel(sequelize);
@@ -100,6 +102,7 @@ export default async function setupDatabase() {
     onDelete: "CASCADE",
   });
   Answer.belongsTo(Signup);
+  Payment.belongsTo(Signup);
 
   Question.hasMany(Answer, {
     foreignKey: {

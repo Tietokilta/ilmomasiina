@@ -9,6 +9,7 @@ import {
   AdminSignupSchema,
   EventID,
   EventSlug,
+  PaymentStatus,
   UserEventPathParams,
   UserEventResponse,
 } from "@tietokilta/ilmomasiina-models";
@@ -170,6 +171,7 @@ export function formatSignupForAdmin(signup: Signup): AdminSignupSchema {
     updatedAt: signup.updatedAt,
     confirmedAt: signup.confirmedAt,
     status: signup.status,
+    paymentStatus: signup.paymentStatus ?? PaymentStatus.UNPAID,
     answers: signup.answers!.map((answer) => answer.get({ plain: true })),
     price: 0,
     confirmed: Boolean(signup.confirmedAt),
