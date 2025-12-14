@@ -103,6 +103,12 @@ export default async function setupDatabase() {
   });
   Answer.belongsTo(Signup);
   Payment.belongsTo(Signup);
+  Signup.hasMany(Payment, {
+    foreignKey: {
+      allowNull: false,
+    },
+    onDelete: "CASCADE",
+  });
 
   Question.hasMany(Answer, {
     foreignKey: {
