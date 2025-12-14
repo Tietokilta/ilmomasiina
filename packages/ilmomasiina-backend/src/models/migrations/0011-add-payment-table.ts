@@ -53,7 +53,7 @@ export default defineMigration({
           allowNull: true,
         }
       },
-      {transaction})
+      { transaction })
     await query.addColumn("signup", "paymentStatus", {
       type: DataTypes.ENUM(...Object.values(PaymentStatus)),
       allowNull: false,
