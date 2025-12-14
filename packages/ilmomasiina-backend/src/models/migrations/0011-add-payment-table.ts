@@ -62,7 +62,7 @@ export default defineMigration({
   },
   async down({ context: { sequelize, transaction } }) {
     const query = sequelize.getQueryInterface();
-    await query.dropTable("payment", {transaction});
-    await query.removeColumn("signup", "paymentStatus", {transaction})
+    await query.dropTable("payment", { transaction });
+    await query.removeColumn("signup", "paymentStatus", { transaction })
   }
 });
