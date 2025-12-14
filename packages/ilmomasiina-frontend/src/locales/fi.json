@@ -210,11 +210,14 @@
     "editor.quotas.quotaName.reorder": "Voit järjestellä kiintiöitä raahaamalla niitä vasemmalta.",
     "editor.quotas.quotaSize": "Kiintiön koko",
     "editor.quotas.quotaSize.info": "Jos kiintiön kokoa ei ole rajoitettu, jätä kenttä tyhjäksi.",
+    "editor.quotas.price": "Hinta",
+    "editor.quotas.price.info": "Jos kiintiö on maksuton, jätä kenttä tyhjäksi.",
     "editor.quotas.quotaSize.unlimited": "rajaton",
     "editor.quotas.openQuota": "Avoin kiintiö",
     "editor.quotas.openQuota.check": "Käytä lisäksi yhteistä kiintiötä",
     "editor.quotas.openQuota.info": "Avoimeen kiintiöön sijoitetaan automaattisesti ilmoittautumisjärjestyksessä ensimmäiset ilmoittautujat, jotka eivät mahdu valitsemaansa kiintiöön.",
     "editor.quotas.openQuotaSize": "Avoimen kiintiön koko",
+    "editor.quotas.openQuotaPrice": "Avoimen kiintiön hinta",
     "editor.questions.nameQuestion": "Nimi",
     "editor.questions.nameQuestion.check": "Kerää nimet",
     "editor.questions.nameQuestion.infoOn": "Nimi on pakollinen kysymys. Osallistuja saa päättää, näkyykö nimi julkisesti.",
@@ -286,6 +289,7 @@
     "editor.editSignup.action.save": "Tallenna",
     "editor.editSignup.error.NoSuchSignup.description": "Ilmoittautumista ei löytynyt. Se saattaa olla jo poistettu.",
     "editor.editSignup.error.default.description": "Ilmoittautumisen tallentaminen epäonnistui.",
-    "editor.editSignup.success": "Ilmoittautuminen tallennettu."
+    "editor.editSignup.success": "Ilmoittautuminen tallennettu.",
+    "editor.editSignup.action.pay": "Maksa {{price}}€"
   }
 }

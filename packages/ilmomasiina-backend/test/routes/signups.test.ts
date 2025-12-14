@@ -1,7 +1,7 @@
 import { testEvent, testSignups } from "test/testData";
 import { describe, expect, test } from "vitest";
 
-import { EDIT_TOKEN_HEADER, SignupForEditResponse } from "@tietokilta/ilmomasiina-models";
+import { EDIT_TOKEN_HEADER, PaymentStatus, SignupForEditResponse } from "@tietokilta/ilmomasiina-models";
 import { Signup } from "../../src/models/signup";
 import { refreshSignupPositionsAndGet } from "../../src/routes/signups/computeSignupPosition";
 import { generateToken } from "../../src/routes/signups/editTokens";
@@ -45,11 +45,14 @@ describe("getSignupForEdit", () => {
           id: quota.id,
           title: quota.title,
           size: quota.size,
+          price: quota.price,
         },
         position: null,
         status: null,
+        paymentStatus: PaymentStatus.UNPAID,
         confirmableForMillis: 0,
         editableForMillis: expect.any(Number),
+        price: expect.any(Number),
       },
     });
   });

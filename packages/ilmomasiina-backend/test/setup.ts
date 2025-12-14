@@ -23,12 +23,12 @@ beforeAll(async (suite) => {
   }
 });
 afterAll(async () => {
-  if (sequelize) {
+  if (global.sequelize) {
     await closeDatabase();
     global.sequelize = undefined as any;
   }
-  if (server) {
-    await server.close();
+  if (global.server) {
+    await global.server.close();
     global.server = undefined as any;
   }
 });

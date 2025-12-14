@@ -16,7 +16,14 @@ import { Event } from "../../src/models/event";
 import { Question } from "../../src/models/question";
 import { Quota } from "../../src/models/quota";
 import { toDate } from "../../src/routes/utils";
-import { fetchSignups, testEvent, testEventAttributes, testQuestionOptions, testSignups } from "../testData";
+import {
+  fetchSignups,
+  testEvent,
+  testEventAttributes,
+  testQuestionOptions,
+  testQuestionPrices,
+  testSignups,
+} from "../testData";
 
 async function fetchAdminEventList() {
   const response = await server.inject({
@@ -83,6 +90,7 @@ describe("GET /api/admin/events/:id", () => {
       registrationStartDate: event.registrationStartDate?.toISOString() ?? null,
       registrationEndDate: event.registrationEndDate?.toISOString() ?? null,
       openQuotaSize: event.openQuotaSize,
+      openQuotaPrice: event.openQuotaPrice,
       description: event.description,
       price: event.price,
       location: event.location,
@@ -106,6 +114,7 @@ describe("GET /api/admin/events/:id", () => {
       question: firstQuestion.question,
       type: firstQuestion.type,
       options: firstQuestion.options,
+      prices: firstQuestion.prices,
       required: firstQuestion.required,
       public: firstQuestion.public,
     });
@@ -115,6 +124,7 @@ describe("GET /api/admin/events/:id", () => {
       id: firstQuota.id,
       title: firstQuota.title,
       size: firstQuota.size,
+      price: firstQuota.price,
       signupCount: 0,
       signups: [],
     });
@@ -196,6 +206,8 @@ describe("GET /api/admin/events/:id", () => {
         namePublic: firstSignup.namePublic,
         createdAt: firstSignup.createdAt.toISOString(),
         answers: expect.any(Array),
+        price: firstSignup.price,
+        paymentStatus: firstSignup.paymentStatus,
         status: null,
         position: null,
       });
@@ -231,6 +243,7 @@ describe("GET /api/admin/events", () => {
       registrationStartDate: event.registrationStartDate?.toISOString() ?? null,
       registrationEndDate: event.registrationEndDate?.toISOString() ?? null,
       openQuotaSize: event.openQuotaSize,
+      openQuotaPrice: event.openQuotaPrice,
       description: event.description,
       price: event.price,
       location: event.location,
@@ -249,6 +262,7 @@ describe("GET /api/admin/events", () => {
       id: firstQuota.id,
       title: firstQuota.title,
       size: firstQuota.size,
+      price: firstQuota.price,
       signupCount: 0,
     });
   });
@@ -305,6 +319,7 @@ function eventBody(): EventCreateBody {
 
 describe("POST /api/admin/events", () => {
   test("creates events", async () => {
+    const options = [testQuestionOptions(), testQuestionOptions()];
     const postBody: EventCreateBody = {
       ...eventBody(),
       questions: [
@@ -314,6 +329,7 @@ describe("POST /api/admin/events", () => {
           required: true,
           public: false,
           options: null,
+          prices: null,
         },
         {
           type: QuestionType.TEXT_AREA,
@@ -321,6 +337,7 @@ describe("POST /api/admin/events", () => {
           required: true,
           public: true,
           options: null,
+          prices: null,
         },
         {
           type: QuestionType.NUMBER,
@@ -328,26 +345,30 @@ describe("POST /api/admin/events", () => {
           required: false,
           public: true,
           options: null,
+          prices: null,
         },
         {
           type: QuestionType.SELECT,
           question: faker.lorem.words({ min: 1, max: 5 }),
           required: false,
           public: false,
-          options: testQuestionOptions(),
+          options: options[0],
+          prices: testQuestionPrices(options[0].length),
         },
         {
           type: QuestionType.CHECKBOX,
           question: faker.lorem.words({ min: 1, max: 5 }),
           required: true,
           public: true,
-          options: testQuestionOptions(),
+          options: options[1],
+          prices: testQuestionPrices(options[1].length),
         },
       ],
       quotas: faker.helpers.multiple(
         () => ({
           title: faker.lorem.words({ min: 1, max: 3 }),
           size: faker.number.int({ min: 10, max: 50 }),
+          price: faker.number.int({ min: 0, max: 10000 }),
         }),
         { count: 2 },
       ),
@@ -367,6 +388,7 @@ describe("POST /api/admin/events", () => {
     expect(event!.registrationStartDate).toStrictEqual(toDate(postBody.registrationStartDate));
     expect(event!.registrationEndDate).toStrictEqual(toDate(postBody.registrationEndDate));
     expect(event!.openQuotaSize).toBe(postBody.openQuotaSize);
+    expect(event!.openQuotaPrice).toBe(postBody.openQuotaPrice);
     expect(event!.description).toBe(postBody.description);
     expect(event!.price).toBe(postBody.price);
     expect(event!.location).toBe(postBody.location);
@@ -386,6 +408,7 @@ describe("POST /api/admin/events", () => {
       expect(found).toBeTruthy();
       expect(found!.size).toBe(postQuota.size);
       expect(found!.order).toBe(index);
+      expect(found!.price).toBe(postQuota.price);
     });
 
     expect(event!.questions!.length).toBe(createBody.questions.length);
@@ -397,6 +420,7 @@ describe("POST /api/admin/events", () => {
       expect(found!.required).toBe(postQuestion.required);
       expect(found!.public).toBe(postQuestion.public);
       expect(found!.options).toEqual(postQuestion.options);
+      expect(found!.prices).toEqual(postQuestion.prices);
       expect(found!.order).toBe(index);
     });
 
@@ -526,6 +550,7 @@ describe("POST /api/admin/events", () => {
           required: true,
           public: false,
           options,
+          prices: testQuestionPrices(options.length),
         },
         {
           type: QuestionType.SELECT,
@@ -533,6 +558,7 @@ describe("POST /api/admin/events", () => {
           required: true,
           public: false,
           options,
+          prices: testQuestionPrices(options.length),
         },
       ],
       languages: {

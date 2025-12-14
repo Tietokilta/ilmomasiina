@@ -26,6 +26,7 @@ export const defaultEvent = (): EditorEvent => ({
 
   openQuotaSize: 0,
   useOpenQuota: false,
+  openQuotaPrice: 0,
   quotas: [],
 
   nameQuestion: true,
@@ -66,6 +67,7 @@ export const serverEventToEditor = (event: AdminEventResponse): EditorEvent => (
     ...question,
     key: question.id,
     options: question.options || [""],
+    prices: question.prices || [0],
   })),
   languages: Object.fromEntries(
     Object.entries(event.languages).map(([language, locale]) => [

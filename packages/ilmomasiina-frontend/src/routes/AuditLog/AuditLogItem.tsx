@@ -44,11 +44,11 @@ function useItemDescription(item: AuditLogItemSchema) {
     case AuditEvent.DELETE_EVENT:
       return (
         <Trans t={t} i18nKey={ACTION_STRINGS[item.action]}>
-          created event
+          created event{" "}
           {item.eventId ? (
-            <Link to={paths.adminEditEvent(item.eventId as any)}>{{ event: item.eventName ?? "" }}</Link>
+            <Link to={paths.adminEditEvent(item.eventId as any)}>{item.eventName ?? ""}</Link>
           ) : (
-            { event: item.eventName ?? "" }
+            item.eventName ?? ""
           )}
         </Trans>
       );
@@ -58,13 +58,11 @@ function useItemDescription(item: AuditLogItemSchema) {
     case AuditEvent.PROMOTE_SIGNUP:
       return (
         <Trans t={t} i18nKey={ACTION_STRINGS[item.action]}>
-          edited signup
-          {{ signup: `${item.signupId} (${item.signupName})` }}
-          in event
+          edited signup {`${item.signupId} (${item.signupName})`} in event{" "}
           {item.eventId ? (
-            <Link to={paths.adminEditEvent(item.eventId)}>{{ event: item.eventName ?? "" }}</Link>
+            <Link to={paths.adminEditEvent(item.eventId)}>{item.eventName ?? ""}</Link>
           ) : (
-            { event: item.eventName ?? "" }
+            item.eventName ?? ""
           )}
         </Trans>
       );

@@ -114,13 +114,14 @@ const EditForm = () => {
 
   const onSubmit = useEvent(async (data: EditorEvent, form: FormApi<EditorEvent>) => {
     try {
+      const parsed = editorSchema.parse(data);
       let saved;
       if (isNew) {
-        saved = await dispatch(publishNewEvent(data));
+        saved = await dispatch(publishNewEvent(parsed));
         history.push(paths.adminEditEvent(saved.id));
         toast.success(t("editor.status.createSuccess"), { autoClose: 2000 });
       } else {
-        saved = await dispatch(publishEventUpdate(eventId!, data));
+        saved = await dispatch(publishEventUpdate(eventId!, parsed));
         if (saved) {
           toast.success(t("editor.status.saveSuccess"), { autoClose: 2000 });
         }

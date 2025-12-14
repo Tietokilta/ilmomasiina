@@ -34,6 +34,7 @@ describe("GET /api/events/:id", () => {
       registrationStartDate: event.registrationStartDate?.toISOString() ?? null,
       registrationEndDate: event.registrationEndDate?.toISOString() ?? null,
       openQuotaSize: event.openQuotaSize,
+      openQuotaPrice: event.openQuotaPrice,
       description: event.description,
       price: event.price,
       location: event.location,
@@ -57,6 +58,7 @@ describe("GET /api/events/:id", () => {
       question: firstQuestion.question,
       type: firstQuestion.type,
       options: firstQuestion.options,
+      prices: firstQuestion.prices,
       required: firstQuestion.required,
       public: firstQuestion.public,
     });
@@ -66,6 +68,7 @@ describe("GET /api/events/:id", () => {
       id: firstQuota.id,
       title: firstQuota.title,
       size: firstQuota.size,
+      price: firstQuota.price,
       signupCount: 0,
       signups: [],
     });
@@ -259,6 +262,7 @@ describe("GET /api/events", () => {
       registrationStartDate: event.registrationStartDate?.toISOString() ?? null,
       registrationEndDate: event.registrationEndDate?.toISOString() ?? null,
       openQuotaSize: event.openQuotaSize,
+      openQuotaPrice: event.openQuotaPrice,
       description: event.description,
       price: event.price,
       location: event.location,
@@ -278,6 +282,7 @@ describe("GET /api/events", () => {
       id: firstQuota.id,
       title: firstQuota.title,
       size: firstQuota.size,
+      price: firstQuota.price,
       signupCount: 0,
     });
   });

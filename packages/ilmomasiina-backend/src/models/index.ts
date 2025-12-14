@@ -7,6 +7,7 @@ import setupAuditLogModel from "./auditlog";
 import sequelizeConfig from "./config";
 import setupEventModel, { Event } from "./event";
 import migrations from "./migrations";
+import setupPaymentModel, { Payment } from "./payment";
 import setupQuestionModel, { Question } from "./question";
 import setupQuotaModel, { Quota } from "./quota";
 import setupSignupModel, { Signup } from "./signup";
@@ -47,11 +48,13 @@ export default async function setupDatabase() {
   if (sequelize) return sequelize;
 
   debugLog("Connecting to database");
-  sequelize = new Sequelize(sequelizeConfig.default);
+  sequelize = new Sequelize({
+    ...(sequelizeConfig.default as any),
+  });
   try {
     await sequelize.authenticate();
     const cfg = (sequelize.connectionManager as any).config;
-    debugLog(`Connected to ${cfg.host} as ${cfg.username}.`);
+    debugLog(`Connected to ${cfg.host} ${cfg.port} as ${cfg.username}.`);
   } catch (err) {
     const cfg = (sequelize.connectionManager as any).config;
     console.error(`Error connecting to ${cfg.host} as ${cfg.username}: ${err}`);
@@ -59,6 +62,7 @@ export default async function setupDatabase() {
   }
 
   setupEventModel(sequelize);
+  setupPaymentModel(sequelize);
   setupQuotaModel(sequelize);
   setupSignupModel(sequelize);
   setupQuestionModel(sequelize);
@@ -97,6 +101,13 @@ export default async function setupDatabase() {
     onDelete: "CASCADE",
   });
   Answer.belongsTo(Signup);
+  Payment.belongsTo(Signup);
+  Signup.hasMany(Payment, {
+    foreignKey: {
+      allowNull: false,
+    },
+    onDelete: "CASCADE",
+  });
 
   Question.hasMany(Answer, {
     foreignKey: {
