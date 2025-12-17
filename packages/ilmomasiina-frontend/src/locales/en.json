@@ -217,7 +217,6 @@
     "editor.quotas.openQuota.check": "Include an additional open quota",
     "editor.quotas.openQuota.info": "Signups that did not fit in their own quota will be automatically placed in the open quota, in the order of signups.",
     "editor.quotas.openQuotaSize": "Open quota size",
-    "editor.quotas.openQuotaPrice": "Open quota price",
     "editor.questions.nameQuestion": "Name",
     "editor.questions.nameQuestion.check": "Collect names",
     "editor.questions.nameQuestion.infoOn": "Name will be a required question. Each participant can decide if their name is publicly visible.",

@@ -58,7 +58,6 @@ export function testEventAttributes({
     registrationStartDate: null,
     registrationEndDate: null,
     openQuotaSize: hasSignup ? faker.number.int({ min: 0, max: 50 }) : 0,
-    openQuotaPrice: 0,
     description: faker.lorem.paragraphs({ min: 1, max: 5 }),
     price: faker.finance.amount({ symbol: "€" }),
     location: faker.location.streetAddress(),

@@ -90,7 +90,6 @@ describe("GET /api/admin/events/:id", () => {
       registrationStartDate: event.registrationStartDate?.toISOString() ?? null,
       registrationEndDate: event.registrationEndDate?.toISOString() ?? null,
       openQuotaSize: event.openQuotaSize,
-      openQuotaPrice: event.openQuotaPrice,
       description: event.description,
       price: event.price,
       location: event.location,
@@ -243,7 +242,6 @@ describe("GET /api/admin/events", () => {
       registrationStartDate: event.registrationStartDate?.toISOString() ?? null,
       registrationEndDate: event.registrationEndDate?.toISOString() ?? null,
       openQuotaSize: event.openQuotaSize,
-      openQuotaPrice: event.openQuotaPrice,
       description: event.description,
       price: event.price,
       location: event.location,
@@ -388,7 +386,6 @@ describe("POST /api/admin/events", () => {
     expect(event!.registrationStartDate).toStrictEqual(toDate(postBody.registrationStartDate));
     expect(event!.registrationEndDate).toStrictEqual(toDate(postBody.registrationEndDate));
     expect(event!.openQuotaSize).toBe(postBody.openQuotaSize);
-    expect(event!.openQuotaPrice).toBe(postBody.openQuotaPrice);
     expect(event!.description).toBe(postBody.description);
     expect(event!.price).toBe(postBody.price);
     expect(event!.location).toBe(postBody.location);

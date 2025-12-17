@@ -38,12 +38,13 @@ export function countOverflowSignups(quotas: QuotaWithSignupCount[], openQuotaSi
 /** Expands the quota type from {Admin,User}EventSchema, makes quota properties nullable and adds references to quota. */
 export type QuotaSignups<Ev extends AnyEventSchema = AnyEventSchema> = Omit<
   Ev["quotas"][number],
-  "id" | "title" | "size" | "signups"
+  "id" | "title" | "size" | "price" | "signups"
 > & {
   type: SignupStatus;
   id: QuotaID | null;
   title: string | null;
   size: number | null;
+  price: number | null;
   signups: SignupWithQuota<Ev>[];
 };
 
@@ -82,7 +83,7 @@ export function getSignupsByQuota(event: AnyEventSchema): QuotaSignups[] {
             id: null,
             title: null,
             size: event.openQuotaSize,
-            price: event.openQuotaPrice,
+            price: null,
             signups: openSignups,
             signupCount: Math.max(openQuotaCount, openSignups.length),
           },
@@ -99,7 +100,7 @@ export function getSignupsByQuota(event: AnyEventSchema): QuotaSignups[] {
             id: null,
             title: null,
             size: null,
-            price: 0,
+            price: null,
             signups: queueSignups,
             signupCount: Math.max(queueCount, queueSignups.length),
           },

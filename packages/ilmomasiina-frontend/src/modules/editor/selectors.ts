@@ -26,7 +26,6 @@ export const defaultEvent = (): EditorEvent => ({
 
   openQuotaSize: 0,
   useOpenQuota: false,
-  openQuotaPrice: 0,
   quotas: [],
 
   nameQuestion: true,

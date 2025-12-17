@@ -217,7 +217,6 @@
     "editor.quotas.openQuota.check": "Käytä lisäksi yhteistä kiintiötä",
     "editor.quotas.openQuota.info": "Avoimeen kiintiöön sijoitetaan automaattisesti ilmoittautumisjärjestyksessä ensimmäiset ilmoittautujat, jotka eivät mahdu valitsemaansa kiintiöön.",
     "editor.quotas.openQuotaSize": "Avoimen kiintiön koko",
-    "editor.quotas.openQuotaPrice": "Avoimen kiintiön hinta",
     "editor.questions.nameQuestion": "Nimi",
     "editor.questions.nameQuestion.check": "Kerää nimet",
     "editor.questions.nameQuestion.infoOn": "Nimi on pakollinen kysymys. Osallistuja saa päättää, näkyykö nimi julkisesti.",
