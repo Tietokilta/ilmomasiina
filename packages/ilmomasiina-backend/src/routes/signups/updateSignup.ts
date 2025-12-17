@@ -219,7 +219,7 @@ export async function updateSignupAsUser(
           errors.answers[question.id] = SignupFieldError.WRONG_TYPE;
         } else {
           const optionToPriceCents = Object.fromEntries(
-            question.options.map((opt, i) => [opt, question.prices![i] ?? 0])
+            question.options.map((opt, i) => [opt, question.prices![i] ?? 0]),
           ) as Record<string, number>;
           if (question.type === "checkbox" && Array.isArray(answer)) {
             price += answer.reduce((sum, option) => sum + (optionToPriceCents[option] ?? 0), 0);

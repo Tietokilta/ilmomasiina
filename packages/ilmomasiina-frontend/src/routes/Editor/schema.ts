@@ -33,7 +33,7 @@ const questionPricesSchema: ZodType<EditorEvent["questions"][number]["prices"]> 
         ctx.addIssue({
           code: ZodIssueCode.custom,
           message: "editor.errors.negativePrice",
-          });
+        });
       }
     }
   });

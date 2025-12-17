@@ -99,6 +99,6 @@ export const dynamicSignupAttributes = Type.Object({
     minimum: 0,
   }),
   paymentStatus: Nullable(Type.Enum(PaymentStatus), {
-    description: "Payment status"
+    description: "Payment status",
   }),
 });

@@ -202,7 +202,7 @@ export async function eventDetailsForAdmin(eventID: EventID): Promise<AdminEvent
     throw new NotFound("No event found with id");
   }
 
-  const quotas = (await Quota.findAll({
+  const quotas = await Quota.findAll({
     where: { eventId: event.id },
     attributes: eventGetQuotaAttrs,
     // Include all signups for the quotas
@@ -226,7 +226,7 @@ export async function eventDetailsForAdmin(eventID: EventID): Promise<AdminEvent
       ["order", "ASC"],
       [Signup, "createdAt", "ASC"],
     ],
-  }));
+  });
   // Admins get a simple result with many columns
   const res = {
     ...event.get({ plain: true }),

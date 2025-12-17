@@ -8,7 +8,6 @@ export default async function getSignupForEdit(
   request: FastifyRequest<{ Params: SignupPathParams }>,
   reply: FastifyReply,
 ): Promise<SignupForEditResponse> {
-
   const response = await getSignupDetails(request.params.id);
 
   reply.status(200);

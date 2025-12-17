@@ -49,7 +49,7 @@ export function getSignupsByQuotaForAdminList(event: AdminEventResponse): AdminQ
           id: null,
           title: null,
           size: null,
-          price: 0.00,
+          price: 0.0,
           signups: queueSignups,
           signupCount: queueSignups.length,
         },

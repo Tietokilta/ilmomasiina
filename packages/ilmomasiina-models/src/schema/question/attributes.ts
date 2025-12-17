@@ -24,15 +24,9 @@ const questionOptions = Nullable(
   },
 );
 
-const questionPrices = Nullable(
-  Type.Array(
-    Type.Number({ minimum: 0 }),
-    { maxItems: 64 },
-  ),
-  {
-    description: "For select or checkbox questions, the prices associated with each option.",
-  },
-);
+const questionPrices = Nullable(Type.Array(Type.Number({ minimum: 0 }), { maxItems: 64 }), {
+  description: "For select or checkbox questions, the prices associated with each option.",
+});
 
 /** Editable attributes of a question language version. */
 export const questionLanguageAttributes = Type.Object({

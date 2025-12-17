@@ -22,7 +22,7 @@ export const paymentSignup = Type.Object({
     description: "Amount paid in the payment, in cents.",
     minimum: 0,
   }),
-})
+});
 export const paymentStatus = Nullable(Type.Enum(PaymentStatus), {
   title: "Payment status",
   description: "Status of the payment.",

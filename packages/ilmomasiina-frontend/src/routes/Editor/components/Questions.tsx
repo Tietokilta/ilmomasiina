@@ -9,7 +9,7 @@ import useShallowMemo from "@tietokilta/ilmomasiina-client/dist/utils/useShallow
 import { QuestionLanguage, QuestionType, questionUpdate } from "@tietokilta/ilmomasiina-models";
 import FieldRow from "../../../components/FieldRow";
 import { EditorQuestion } from "../../../modules/editor/types";
-import priceConfig from "../../../utils/priceConfig"
+import priceConfig from "../../../utils/priceConfig";
 import useEvent from "../../../utils/useEvent";
 import useEditorErrors from "./errors";
 import { useFieldValue } from "./hooks";
@@ -64,7 +64,7 @@ const OptionRow = ({ name, parent, index, remove }: OptionProps) => {
         help={t("editor.quotas.price.info")}
         type="text"
         placeholder="0.00€"
-        defaultValue={0.00}
+        defaultValue={0.0}
         config={priceConfig}
         formatError={formatError}
       />
@@ -176,7 +176,7 @@ const Questions = () => {
         question: "",
         type: QuestionType.TEXT,
         options: [""],
-        prices: [0]
+        prices: [0],
       },
       {
         question: "",

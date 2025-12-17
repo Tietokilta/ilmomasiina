@@ -48,7 +48,7 @@ function useItemDescription(item: AuditLogItemSchema) {
           {item.eventId ? (
             <Link to={paths.adminEditEvent(item.eventId as any)}>{item.eventName ?? ""}</Link>
           ) : (
-            item.eventName ?? ""
+            (item.eventName ?? "")
           )}
         </Trans>
       );
@@ -62,7 +62,7 @@ function useItemDescription(item: AuditLogItemSchema) {
           {item.eventId ? (
             <Link to={paths.adminEditEvent(item.eventId)}>{item.eventName ?? ""}</Link>
           ) : (
-            item.eventName ?? ""
+            (item.eventName ?? "")
           )}
         </Trans>
       );

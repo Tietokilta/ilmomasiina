@@ -13,12 +13,11 @@ export const paymentCreateParams = Type.Object({
 });
 export const paymentPathParams = Type.Object({
   id: signupID,
-})
-
+});
 
 export type PaymentCreateParams = Static<typeof paymentCreateParams>;
 export type PaymentPathParams = Static<typeof paymentPathParams>;
-export type PaymentResponse = Stripe.Checkout.Session
+export type PaymentResponse = Stripe.Checkout.Session;
 
 export const signupPaymentResponse = Type.Object({
   signup: signupForEdit,
@@ -27,7 +26,7 @@ export const signupPaymentResponse = Type.Object({
 });
 
 export interface SignupPaymentResponse {
-  signup: Static<typeof signupForEdit>,
-  event: Static<typeof userEventForSignup>,
-  payment: PaymentResponse
+  signup: Static<typeof signupForEdit>;
+  event: Static<typeof userEventForSignup>;
+  payment: PaymentResponse;
 }

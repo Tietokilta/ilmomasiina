@@ -245,8 +245,8 @@ export const publishEventUpdate =
     const toCents = (v: unknown) => Math.round(Number(v ?? 0) * 100);
 
     body.quotas = body.quotas.map((q) => ({
-        ...q,
-        price: toCents(q.price),
+      ...q,
+      price: toCents(q.price),
     }));
 
     try {
