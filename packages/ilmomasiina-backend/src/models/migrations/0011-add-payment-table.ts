@@ -51,7 +51,7 @@ export default defineMigration({
         },
         status: {
           type: DataTypes.ENUM(...Object.values(PaymentStatus)),
-          allowNull: true,
+          allowNull: false,
         },
       },
       { transaction },
