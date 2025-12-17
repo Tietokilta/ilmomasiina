@@ -244,7 +244,7 @@ export async function updateSignupAsUser(
           errors.answers ??= {};
           errors.answers[question.id] = SignupFieldError.WRONG_TYPE;
         } else {
-          price = calculateQuestionPrice(question, answer);
+          price += calculateQuestionPrice(question, answer);
         }
       }
       return {
