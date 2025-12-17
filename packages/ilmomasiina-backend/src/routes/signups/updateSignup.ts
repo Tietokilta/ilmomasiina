@@ -252,7 +252,7 @@ export async function updateSignupAsUser(
   // Send the confirmation email
   // Awaiting the confirmation email ensures it is sent before responding to the client.
   // This is intentional to provide immediate feedback and to handle any email-sending errors here.
-  await sendSignupConfirmationMail(updatedSignup, edited ? "edit" : "signup", false);
+  sendSignupConfirmationMail(updatedSignup, edited ? "edit" : "signup", false);
 
   reply.status(200);
   return {
