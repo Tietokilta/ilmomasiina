@@ -25,6 +25,32 @@ import { refreshSignupPositions } from "./computeSignupPosition";
 import { signupEditable } from "./createNewSignup";
 import { NoSuchQuota, NoSuchSignup, SignupsClosed, SignupValidationError } from "./errors";
 
+/**
+ * Calculates the price for a question answer based on the question's options and prices.
+ * @param question The question with options and prices
+ * @param answer The answer provided (string for select, array for checkbox)
+ * @returns The calculated price in cents
+ */
+function calculateQuestionPrice(question: Question, answer: string | string[]): number {
+  if (!question.options || !question.prices) {
+    return 0;
+  }
+
+  const optionToPrice: Record<string, number> = Object.fromEntries(
+    question.options.map((opt, i) => [opt, question.prices![i] ?? 0]),
+  );
+
+  if (question.type === QuestionType.CHECKBOX && Array.isArray(answer)) {
+    return answer.reduce((sum, option) => sum + (optionToPrice[option] ?? 0), 0);
+  }
+
+  if (question.type === QuestionType.SELECT && typeof answer === "string") {
+    return optionToPrice[answer] ?? 0;
+  }
+
+  return 0;
+}
+
 async function getSignupAndEventForUpdate(id: SignupID, transaction: Transaction) {
   // Retrieve event data and lock the row for editing
   const signup = await Signup.scope("active").findByPk(id, {
@@ -218,14 +244,7 @@ export async function updateSignupAsUser(
           errors.answers ??= {};
           errors.answers[question.id] = SignupFieldError.WRONG_TYPE;
         } else {
-          const optionToPriceCents = Object.fromEntries(
-            question.options.map((opt, i) => [opt, question.prices![i] ?? 0]),
-          ) as Record<string, number>;
-          if (question.type === "checkbox" && Array.isArray(answer)) {
-            price += answer.reduce((sum, option) => sum + (optionToPriceCents[option] ?? 0), 0);
-          } else if (question.type === "select" && typeof answer === "string") {
-            price += optionToPriceCents[answer] ?? 0;
-          }
+          price = calculateQuestionPrice(question, answer);
         }
       }
       return {
@@ -293,14 +312,7 @@ async function updateExistingSignupAsAdmin(
 
     let priceCents = 0;
     if (question.options && question.prices) {
-      const optionToPrice: Record<string, number> = Object.fromEntries(
-        question.options.map((opt, i) => [opt, question.prices![i] ?? 0]),
-      );
-      if (question.type === "checkbox" && Array.isArray(answer)) {
-        priceCents = answer.reduce((sum: number, opt: string) => sum + (optionToPrice[opt] ?? 0), 0);
-      } else if (question.type === "select" && typeof answer === "string") {
-        priceCents = optionToPrice[answer] ?? 0;
-      }
+      priceCents = calculateQuestionPrice(question, answer);
     }
     return {
       questionId: question.id,
