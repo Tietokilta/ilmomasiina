@@ -5,6 +5,7 @@ import { UseFieldConfig } from "react-final-form";
 import { useTranslation } from "react-i18next";
 
 import FieldRow from "../../../components/FieldRow";
+import priceConfig from "../../../utils/priceConfig";
 import useEditorErrors from "./errors";
 import { useFieldValue } from "./hooks";
 import LanguageSelect from "./LanguageSelect";
@@ -47,12 +48,9 @@ const QuotasTab = () => {
           <FieldRow
             name="openQuotaPrice"
             label={t("editor.quotas.openQuotaPrice")}
-            type="number"
-            config={numberConfig}
-            min="0.00"
-            step="0.01"
-            placeholder="0.00" // if this is left empty, it's set to null and disabled
-            required
+            type="text"
+            config={priceConfig}
+            placeholder="0.00€"
             formatError={formatError}
           />
         </div>
