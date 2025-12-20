@@ -49,6 +49,7 @@ ENV HOST=0.0.0.0
 COPY package.json pnpm-*.yaml /opt/ilmomasiina/
 COPY packages /opt/ilmomasiina/packages
 WORKDIR /opt/ilmomasiina
+COPY .env.production.local /opt/ilmomasiina/.env.production.local
 
 # Install dependencies for backend only
 RUN corepack enable && pnpm install --frozen-lockfile --prod --filter @tietokilta/ilmomasiina-backend --filter @tietokilta/ilmomasiina-models
