@@ -31,7 +31,7 @@ import { NoSuchQuota, NoSuchSignup, SignupsClosed, SignupValidationError } from 
  * @param answer The answer provided (string for select, array for checkbox)
  * @returns The calculated price in cents
  */
-function calculateQuestionPrice(question: Question, answer: string | string[]): number {
+export function calculateQuestionPrice(question: Question, answer: string | string[]): number {
   if (!question.options || !question.prices) {
     return 0;
   }
