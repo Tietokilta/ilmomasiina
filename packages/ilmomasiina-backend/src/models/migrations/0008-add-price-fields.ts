@@ -3,7 +3,7 @@ import { DataTypes } from "sequelize";
 import { defineMigration } from "./util";
 
 export default defineMigration({
-  name: "0008-add-price-to-quota",
+  name: "0008-add-price-fields",
   async up({ context: { sequelize, transaction } }) {
     const query = sequelize.getQueryInterface();
 
