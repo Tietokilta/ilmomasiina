@@ -91,6 +91,7 @@ export default function setupQuotaModel(sequelize: Sequelize) {
       },
       price: {
         type: DataTypes.INTEGER,
+        allowNull: false,
         validate: {
           min: 0,
         },
