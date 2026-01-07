@@ -316,7 +316,7 @@ If you don't want to use Docker Compose, or already have a database, you can run
 You can also set up a production deployment without Docker. **This method is not recommended.**
 
 1. Install a suitable Node version (e.g. using nvm).
-2. Run `npm install -g pnpm@8` to install pnpm. Then run `pnpm install --frozen-lockfile` to setup cross-dependencies
+2. Run `npm install -g pnpm@10` to install pnpm. Then run `pnpm install --frozen-lockfile` to setup cross-dependencies
    between packages and install other dependencies.
 3. Create a `.env` file at the root of this repository. You can copy [.env.example](../.env.example) to begin and read the instructions within.
 4. **Optional:** Make [customizations](#customization) in other files if necessary.
@@ -404,7 +404,7 @@ Currently Prettier is not used in the project, so here is a recommended `.vscode
     - You can also use Docker for a database.
     - SQLite may also work, but is currently untested.
 3. Create a `.env` file at the root of this repository. You can copy [.env.example](../.env.example) to begin and read the instructions within.
-4. Run `npm install -g pnpm@8` to install pnpm. Then run `pnpm install --frozen-lockfile` to setup cross-dependencies
+4. Run `npm install -g pnpm@10` to install pnpm. Then run `pnpm install --frozen-lockfile` to setup cross-dependencies
    between packages and install other dependencies.
 5. Run `npm start` or `pnpm start`. This will start the frontend and backend dev servers in parallel.
     - If you want cleaner output, you can run `npm start` separately in `packages/ilmomasiina-frontend` and
