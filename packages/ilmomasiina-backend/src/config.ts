@@ -225,8 +225,18 @@ export function eventDetailsUrl({ slug, lang }: { slug: string; lang: string }) 
   return config.eventDetailsUrl.replace(/\{slug\}/g, slug).replace(/\{lang\}/g, lang);
 }
 
-export function editSignupUrl({ id, editToken, lang }: { id: string; editToken: string; lang: string }) {
-  return config.editSignupUrl
+export function editSignupUrl({
+  id,
+  editToken,
+  lang,
+  base_url,
+}: {
+  id: string;
+  editToken: string;
+  lang: string;
+  base_url?: string;
+}) {
+  return (base_url || config.editSignupUrl)
     .replace(/\{id\}/g, id)
     .replace(/\{editToken\}/g, editToken)
     .replace(/\{lang\}/g, lang);

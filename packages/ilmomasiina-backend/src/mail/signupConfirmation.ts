@@ -37,7 +37,19 @@ export default async function sendSignupConfirmationMail(
   const date = event.date && moment(event.date).tz(config.timezone).format(dateFormat);
 
   const editToken = generateToken(signup.id);
-  const cancelLink = editSignupUrl({ id: signup.id, editToken, lang: signup.language || config.defaultLanguage });
+  const cancelLink =
+    event.category === "Juhlavuosi"
+      ? editSignupUrl({
+          id: signup.id,
+          editToken,
+          lang: signup.language || config.defaultLanguage,
+          base_url: "https://juhlavuosi.fi/{lang}/signups/{id}/{editToken}",
+        })
+      : editSignupUrl({
+          id: signup.id,
+          editToken,
+          lang: signup.language || config.defaultLanguage,
+        });
 
   const params = {
     name: fullName,
