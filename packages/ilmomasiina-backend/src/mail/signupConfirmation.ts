@@ -56,7 +56,19 @@ export const sendSignupConfirmationMail = sendSynchronouslyInTest(
     const date = event.date && moment(event.date).tz(config.timezone).format(dateFormat);
 
     const editToken = generateToken(signup.id);
-    const cancelLink = editSignupUrl({ id: signup.id, editToken, lang });
+    const cancelLink =
+      event.category === "Juhlavuosi"
+        ? editSignupUrl({
+            id: signup.id,
+            editToken,
+            lang,
+            base_url: "https://juhlavuosi.fi/{lang}/signups/{id}/{editToken}",
+          })
+        : editSignupUrl({
+            id: signup.id,
+            editToken,
+            lang,
+          });
 
     const params = {
       name: fullName,
@@ -90,7 +102,19 @@ export const sendPaymentConfirmationMail = sendSynchronouslyInTest(async (paymen
   const event = quota.event!;
 
   const editToken = generateToken(signup.id);
-  const cancelLink = editSignupUrl({ id: signup.id, editToken, lang });
+  const cancelLink =
+    event.category === "Juhlavuosi"
+      ? editSignupUrl({
+          id: signup.id,
+          editToken,
+          lang,
+          base_url: "https://juhlavuosi.fi/{lang}/signups/{id}/{editToken}",
+        })
+      : editSignupUrl({
+          id: signup.id,
+          editToken,
+          lang,
+        });
 
   // Show name only if filled
   const fullName = `${signup.firstName ?? ""} ${signup.lastName ?? ""}`.trim();
