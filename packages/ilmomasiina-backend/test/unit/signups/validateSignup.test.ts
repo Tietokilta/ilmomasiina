@@ -10,15 +10,12 @@ import { validateAnswersAndGetProducts } from "../../../src/routes/signups/updat
 function validateQuestion(
   question: QuestionAttributes,
   answer?: string | string[],
-  localizedQuestion?: QuestionLanguage,
+  secondLocale?: QuestionLanguage,
+  thirdLocale?: QuestionLanguage,
 ) {
-  const languages = localizedQuestion
-    ? {
-        fi: {
-          questions: [localizedQuestion],
-        },
-      }
-    : {};
+  const languages: Record<string, { questions: QuestionLanguage[] }> = {};
+  if (secondLocale) languages.fi = { questions: [secondLocale] };
+  if (thirdLocale) languages.sv = { questions: [thirdLocale] };
 
   const event = {
     questions: [question],
@@ -382,10 +379,11 @@ describe("validateAnswersAndGetProducts", () => {
         options: ["Option A", "Option B"],
         prices: [100, 200],
       };
-      const { newAnswers, answerProducts, answerErrors } = validateQuestion(question, "Vaihtoehto A", {
+      const secondLocale: QuestionLanguage = {
         question: "Kysymys",
         options: ["Vaihtoehto A", "Vaihtoehto B"],
-      });
+      };
+      const { newAnswers, answerProducts, answerErrors } = validateQuestion(question, "Vaihtoehto A", secondLocale);
       expect(newAnswers).toEqual([{ questionId: question.id, answer: "Vaihtoehto A" }]);
       expect(answerProducts).toEqual([
         {
@@ -609,18 +607,148 @@ describe("validateAnswersAndGetProducts", () => {
         options: ["Option A", "Option B"],
         prices: [100, 200],
       };
+      const secondLocale: QuestionLanguage = {
+        question: "Kysymys",
+        options: ["Vaihtoehto A", "Vaihtoehto B"],
+      };
 
       const { newAnswers, answerProducts, answerErrors } = validateQuestion(
         question,
-        ["Vaihtoehto A", "Vaihtoehto B"],
-        { question: "Kysymys", options: ["Vaihtoehto A", "Vaihtoehto B"] },
+        ["Option A", "Vaihtoehto B"],
+        secondLocale,
       );
-      expect(newAnswers).toEqual([{ questionId: question.id, answer: ["Vaihtoehto A", "Vaihtoehto B"] }]);
+      expect(newAnswers).toEqual([{ questionId: question.id, answer: ["Option A", "Vaihtoehto B"] }]);
       expect(answerProducts).toEqual([
-        { name: "Vaihtoehto A", amount: 1, unitPrice: 100 },
+        { name: "Option A", amount: 1, unitPrice: 100 },
         { name: "Vaihtoehto B", amount: 1, unitPrice: 200 },
       ]);
       expect(answerErrors).toBeUndefined();
+    });
+
+    test("rejects duplicate selections", () => {
+      const question: QuestionAttributes = {
+        ...baseQuestion,
+        options: ["Option A", "Option B", "Option C"],
+        prices: [100, 200, 300],
+      };
+
+      const { answerErrors } = validateQuestion(question, ["Option A", "Option B", "Option A"]);
+      expect(answerErrors).toEqual({ [question.id]: SignupFieldError.DUPLICATE_OPTION });
+    });
+
+    test("rejects duplicate selections in localized options", () => {
+      const question: QuestionAttributes = {
+        ...baseQuestion,
+        options: ["Option A", "Option B", "Option C"],
+        prices: [100, 200, 300],
+      };
+      const secondLocale: QuestionLanguage = {
+        question: "Kysymys",
+        options: ["Vaihtoehto A", "Vaihtoehto B", "Vaihtoehto C"],
+      };
+
+      const { answerErrors } = validateQuestion(
+        question,
+        ["Option C", "Option B", "Vaihtoehto C"], // duplicate Vaihtoehto C / Option C
+        secondLocale,
+      );
+      expect(answerErrors).toEqual({ [question.id]: SignupFieldError.DUPLICATE_OPTION });
+    });
+  });
+
+  describe("validates options to prevent ambiguity", () => {
+    const baseQuestion = {
+      id: "checkbox-question",
+      order: 0,
+      question: "Checkbox question",
+      type: QuestionType.CHECKBOX,
+      eventId: "test-event-id",
+      required: false,
+      public: false,
+    } satisfies Partial<QuestionAttributes>;
+
+    test("rejects duplicate options in default locale", () => {
+      const question: QuestionAttributes = {
+        ...baseQuestion,
+        options: ["Option A", "Option B", "Option A"], // duplicate Option A
+        prices: [100, 200, 300],
+      };
+
+      const { answerErrors } = validateQuestion(question, ["Option A"]);
+      expect(answerErrors).toEqual({ [question.id]: SignupFieldError.DUPLICATE_OPTION });
+    });
+
+    test("rejects duplicate options in locales", () => {
+      const question: QuestionAttributes = {
+        ...baseQuestion,
+        options: ["Option A", "Option B", "Option C"],
+        prices: [100, 200, 300],
+      };
+
+      const { answerErrors } = validateQuestion(question, ["Vaihtoehto A"], {
+        question: "Kysymys",
+        options: ["Vaihtoehto A", "Vaihtoehto B", "Vaihtoehto B"], // duplicate Vaihtoehto B
+      });
+      expect(answerErrors).toEqual({ [question.id]: SignupFieldError.DUPLICATE_OPTION });
+    });
+
+    test("rejects duplicate options between a locale and default", () => {
+      const question: QuestionAttributes = {
+        ...baseQuestion,
+        options: ["Option A", "Option B", "Option C"],
+        prices: [100, 200, 300],
+      };
+      const localizedQuestion: QuestionLanguage = {
+        question: "Kysymys",
+        options: ["Vaihtoehto A", "Vaihtoehto B", "Option B"], // duplicate Option B
+      };
+
+      const { answerErrors } = validateQuestion(question, ["Option A"], localizedQuestion);
+      expect(answerErrors).toEqual({ [question.id]: SignupFieldError.DUPLICATE_OPTION });
+    });
+
+    test("rejects duplicate options between locales", () => {
+      const question: QuestionAttributes = {
+        ...baseQuestion,
+        options: ["Option A", "Option B", "Option C"],
+        prices: [100, 200, 300],
+      };
+      const secondLocale: QuestionLanguage = {
+        question: "Kysymys",
+        options: ["Vaihtoehto A", "Vaihtoehto B", "Vaihtoehto C"],
+      };
+      const thirdLocale: QuestionLanguage = {
+        question: "Fråga",
+        options: ["Alternativ A", "Alternativ B", "Vaihtoehto B"], // duplicate Vaihtoehto B
+      };
+
+      const { answerErrors } = validateQuestion(question, ["Option A"], secondLocale, thirdLocale);
+      expect(answerErrors).toEqual({ [question.id]: SignupFieldError.DUPLICATE_OPTION });
+    });
+
+    test("allows duplicate options with matching positions", () => {
+      const question: QuestionAttributes = {
+        ...baseQuestion,
+        options: ["Option A", "Option B", "Option C"],
+        prices: [100, 200, 300],
+      };
+      const secondLocale: QuestionLanguage = {
+        question: "Kysymys",
+        options: ["Option A", "Vaihtoehto B", "Option C"],
+      };
+      const thirdLocale: QuestionLanguage = {
+        question: "Fråga",
+        options: ["Alternativ A", "Vaihtoehto B", "Option C"],
+      };
+
+      const { answerErrors, newAnswers } = validateQuestion(
+        question,
+        ["Alternativ A", "Vaihtoehto B", "Option C"],
+        secondLocale,
+        thirdLocale,
+      );
+      expect(answerErrors).toBeUndefined();
+      expect(newAnswers).toEqual([{ questionId: question.id, answer: ["Alternativ A", "Vaihtoehto B", "Option C"] }]);
     });
   });
 });

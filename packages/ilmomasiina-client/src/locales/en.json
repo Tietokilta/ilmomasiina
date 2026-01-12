@@ -66,6 +66,7 @@
     "editSignup.fieldError.invalidEmail": "The email address is invalid.",
     "editSignup.fieldError.notANumber": "The answer to this question must be a valid number.",
     "editSignup.fieldError.notAnOption": "The answer to this question isn't in the allowed options. Try refreshing the page.",
+    "editSignup.fieldError.duplicateOption": "The answer to this question contains duplicate selections.",
     "editSignup.fieldError": "The answer to this field is invalid. Try refreshing the page.",
     "editSignup.title.edit": "Edit signup",
     "editSignup.title.signup": "Sign up",

@@ -65,4 +65,5 @@ export enum SignupFieldError {
   INVALID_EMAIL = "invalidEmail",
   NOT_A_NUMBER = "notANumber",
   NOT_AN_OPTION = "notAnOption",
+  DUPLICATE_OPTION = "duplicateOption",
 }

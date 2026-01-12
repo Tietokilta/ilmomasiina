@@ -62,40 +62,44 @@ export function validateAnswersAndGetProducts(
     let answer = rawAnswers?.find((a) => a.questionId === question.id)?.answer;
     let error: SignupFieldError | undefined;
 
-    const validOptions: string[] = [];
-    const optionPrices = new Map<string, number>();
+    const validOptions = new Map<string, number>();
 
-    if (question.type === QuestionType.CHECKBOX || question.type === QuestionType.SELECT) {
+    if ((question.type === QuestionType.CHECKBOX || question.type === QuestionType.SELECT) && question.options) {
       // First, collect valid options and their prices from the default language
-      if (question.options) {
-        validOptions.push(...question.options);
-
-        if (question.prices) {
-          question.options.forEach((opt, i) => {
-            optionPrices.set(opt, question.prices![i] ?? 0);
-          });
+      question.options.forEach((opt, i) => {
+        if (validOptions.has(opt)) {
+          // These shouldn't occur after 3.0, but can exist in the database from before.
+          console.warn(`Duplicate option "${opt}" detected in question ${question.id}`);
+          error = SignupFieldError.DUPLICATE_OPTION;
+          return;
         }
-      }
-
+        validOptions.set(opt, i);
+      });
       // Then, collect valid options from other languages
       for (const lang of Object.values(event.languages)) {
         const localized = lang.questions[index];
 
         if (localized && localized.options) {
-          // Only include non-empty options, since empty ones use the default language
-          const localizedOptions = localized.options.filter(Boolean);
-          validOptions.push(...localizedOptions);
+          // eslint-disable-next-line @typescript-eslint/no-loop-func -- false positive on `error`
+          localized.options.forEach((opt, i) => {
+            // Only include non-empty options, since empty ones use the default language
+            if (!opt) return;
 
-          if (question.prices) {
-            localized.options.forEach((opt, i) => {
-              optionPrices.set(opt, question.prices![i] ?? 0);
-            });
-          }
+            if (validOptions.has(opt) && validOptions.get(opt) !== i) {
+              console.warn(`Duplicate option "${opt}" detected in question ${question.id}`);
+              error = SignupFieldError.DUPLICATE_OPTION;
+              return;
+            }
+            validOptions.set(opt, i);
+          });
         }
       }
     }
 
-    if (!answer || !answer.length) {
+    if (error) {
+      // There was an error collecting valid options, skip further validation.
+      answer = "";
+    } else if (!answer || !answer.length) {
       // Disallow empty answers to required questions
       if (question.required) {
         error = SignupFieldError.MISSING;
@@ -112,18 +116,22 @@ export function validateAnswersAndGetProducts(
         error = SignupFieldError.WRONG_TYPE;
       } else {
         // Check that all checkbox answers are valid
+        const usedOptions = new Set<number>();
         for (const option of answer) {
-          if (!validOptions.includes(option)) {
+          const optIndex = validOptions.get(option);
+          if (optIndex === undefined) {
             error = SignupFieldError.NOT_AN_OPTION;
+          } else if (usedOptions.has(optIndex)) {
+            error = SignupFieldError.DUPLICATE_OPTION;
           } else {
-            // Generate a product if the option is known and the question has prices,
-            // even if the option is free.
-            const price = optionPrices.get(option);
-            if (price != null) {
+            usedOptions.add(optIndex);
+            // Question.prices are normalized to null when they are all zero, so any option prices being set implies prices exist.
+            // Generate a product if the option is known and the question has prices, even if the option is free.
+            if (event.paymentsEnabled && question.prices) {
               answerProducts.push({
                 name: option,
                 amount: 1,
-                unitPrice: price,
+                unitPrice: question.prices[optIndex] ?? 0,
               });
             }
           }
@@ -151,17 +159,16 @@ export function validateAnswersAndGetProducts(
             break;
           case QuestionType.SELECT: {
             // Check that the select answer is valid
-            if (!validOptions.includes(answer)) {
+            const optIndex = validOptions.get(answer);
+            if (optIndex === undefined) {
               error = SignupFieldError.NOT_AN_OPTION;
             } else {
-              // Generate a product if the option is known and the question has prices,
-              // even if the option is free.
-              const price = optionPrices.get(answer);
-              if (price != null) {
+              // Generate a product if the option is known and the question has prices, even if the option is free.
+              if (event.paymentsEnabled && question.prices) {
                 answerProducts.push({
                   name: answer,
                   amount: 1,
-                  unitPrice: price,
+                  unitPrice: question.prices[optIndex] ?? 0,
                 });
               }
             }

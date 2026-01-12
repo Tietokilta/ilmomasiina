@@ -66,6 +66,7 @@
     "editSignup.fieldError.invalidEmail": "Sähköpostiosoite on virheellinen.",
     "editSignup.fieldError.notANumber": "Kentän vastauksen tulee olla numero.",
     "editSignup.fieldError.notAnOption": "Kentän vastaus ei ole sallituissa vaihtoehdoissa. Kokeile päivittää sivu.",
+    "editSignup.fieldError.duplicateOption": "Kentän vastaus sisältää monta samaa valintaa.",
     "editSignup.fieldError": "Kentän vastaus on virheellinen. Kokeile päivittää sivu.",
     "editSignup.title.edit": "Muokkaa ilmoittautumista",
     "editSignup.title.signup": "Ilmoittaudu",
