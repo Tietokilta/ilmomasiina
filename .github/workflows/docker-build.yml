@@ -111,7 +111,7 @@ jobs:
   deploy:
     name: Push update to App Service
     needs: docker
-    if: github.repository == 'Tietokilta/ilmomasiina' && github.ref_type == 'tag'
+    if: github.repository == 'Tietokilta/ilmomasiina' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v3.')
     runs-on: ubuntu-latest
     environment: production
     steps:
