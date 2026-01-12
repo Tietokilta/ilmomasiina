@@ -381,7 +381,13 @@ describe("POST /api/admin/events", () => {
 
     expect(createResponse.statusCode).toBe(201);
 
-    const event = await Event.findByPk(createBody.id, { include: [Question, Quota] });
+    const event = await Event.findByPk(createBody.id, {
+      include: [Question, Quota],
+      order: [
+        [Question, "order", "ASC"],
+        [Quota, "order", "ASC"],
+      ],
+    });
     expect(event).toBeTruthy();
     expect(event!.title).toBe(postBody.title);
     expect(event!.slug).toBe(postBody.slug);
@@ -629,7 +635,10 @@ describe("POST /api/admin/events", () => {
 
     expect(createResponse.statusCode).toBe(201);
 
-    const event = await Event.findByPk(createBody.id, { include: [Question, Quota] });
+    const event = await Event.findByPk(createBody.id, {
+      include: [Question, Quota],
+      order: [[Question, "order", "ASC"]],
+    });
 
     expect(event!.questions).toHaveLength(5);
     // type: TEXT always has options: null + prices: null
