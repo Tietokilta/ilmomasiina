@@ -127,7 +127,7 @@ export function validateAnswersAndGetProducts(
             usedOptions.add(optIndex);
             // Question.prices are normalized to null when they are all zero, so any option prices being set implies prices exist.
             // Generate a product if the option is known and the question has prices, even if the option is free.
-            if (event.paymentsEnabled && question.prices) {
+            if (question.prices) {
               answerProducts.push({
                 name: option,
                 amount: 1,
@@ -164,7 +164,7 @@ export function validateAnswersAndGetProducts(
               error = SignupFieldError.NOT_AN_OPTION;
             } else {
               // Generate a product if the option is known and the question has prices, even if the option is free.
-              if (event.paymentsEnabled && question.prices) {
+              if (question.prices) {
                 answerProducts.push({
                   name: answer,
                   amount: 1,
