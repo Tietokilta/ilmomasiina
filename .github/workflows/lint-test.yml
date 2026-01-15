@@ -2,9 +2,9 @@ name: Lint & test
 
 on:
   push:
-    branches: [dev]
+    branches: [dev, dev-tik]
   pull_request:
-    branches: [dev]
+    branches: [dev, dev-tik]
     types: [synchronize, opened, reopened, ready_for_review]
   workflow_call:
 
