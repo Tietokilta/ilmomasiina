@@ -5,6 +5,7 @@ import { testEvent, testSignups } from "test/testData";
 import { beforeAll, beforeEach, describe, expect, Mock, test, vi } from "vitest";
 
 import { ErrorCode, PaymentMode, PaymentStatus, SignupPaymentStatus } from "@tietokilta/ilmomasiina-models";
+import config from "../../src/config";
 import { Payment } from "../../src/models/payment";
 import { Signup } from "../../src/models/signup";
 import { checkoutSessionStatusUpdated, expirePaymentForSignupUpdate, getStripe } from "../../src/routes/payment/stripe";
@@ -15,6 +16,7 @@ import * as api from "./api";
 let mockStripeCheckoutSessionCreate: Mock<Stripe.Checkout.SessionsResource["create"]>;
 let mockStripeCheckoutSessionExpire: Mock<Stripe.Checkout.SessionsResource["expire"]>;
 let mockStripeCheckoutSessionRetrieve: Mock<Stripe.Checkout.SessionsResource["retrieve"]>;
+let mockStripeWebhookConstructEvent: Mock<Stripe.Webhooks["constructEvent"]>;
 
 type MockCheckoutSession = Pick<Stripe.Checkout.Session, "id" | "status" | "url">;
 
@@ -41,6 +43,7 @@ beforeAll(async () => {
   mockStripeCheckoutSessionCreate = vi.spyOn(stripe.checkout.sessions, "create");
   mockStripeCheckoutSessionExpire = vi.spyOn(stripe.checkout.sessions, "expire");
   mockStripeCheckoutSessionRetrieve = vi.spyOn(stripe.checkout.sessions, "retrieve");
+  mockStripeWebhookConstructEvent = vi.spyOn(stripe.webhooks, "constructEvent");
 });
 
 beforeEach(() => {
@@ -48,6 +51,7 @@ beforeEach(() => {
     mockStripeCheckoutSessionCreate.mockClear();
     mockStripeCheckoutSessionExpire.mockClear();
     mockStripeCheckoutSessionRetrieve.mockClear();
+    mockStripeWebhookConstructEvent.mockClear();
 
     // Default mock implementation for creating checkout sessions
     mockStripeCheckoutSessionCreate.mockImplementation(async () => createMockCheckoutSession());
@@ -72,6 +76,9 @@ beforeEach(() => {
       }
       return session as Stripe.Response<Stripe.Checkout.Session>;
     });
+
+    // Default mock implementation for webhook event construction: always pass
+    mockStripeWebhookConstructEvent.mockImplementation((body) => JSON.parse(body as string) as Stripe.Event);
   }
 });
 
@@ -882,35 +889,175 @@ describe("completePayment", () => {
 });
 
 describe("Stripe webhook", () => {
-  test.todo("handles checkout.session.completed event", async () => {
-    // TODO: Test that webhook processes checkout.session.completed and updates
-    // payment to PAID status
+  test("handles valid webhooks and ignores unknown event types", async () => {
+    const mockEvent = {
+      type: "person.deleted",
+      data: { object: { first_name: "Veijo", last_name: "Tietokilta" } },
+    } as Stripe.Event;
+
+    // Default implementation: should pass but be ignored
+    const response = await api.stripeWebhook(JSON.stringify(mockEvent), "t=12345,v1=fakesignature");
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ received: true });
+    expect(mockStripeWebhookConstructEvent).toHaveBeenCalledWith(
+      Buffer.from(JSON.stringify(mockEvent)),
+      "t=12345,v1=fakesignature",
+      config.stripeWebhookSecret,
+    );
   });
 
-  test.todo("handles checkout.session.expired event", async () => {
-    // TODO: Test that webhook processes checkout.session.expired and updates
-    // payment to EXPIRED status
+  test("handles checkout.session.completed event", async () => {
+    const { event, signup } = await defaultTestEventAndSignup();
+
+    // Create a PENDING payment
+    await api.startPayment(signup.id);
+    const payment = await Payment.findOne({ where: { signupId: signup.id } });
+
+    // Send webhook event for checkout.session.completed
+    const mockEvent = {
+      type: "checkout.session.completed",
+      data: { object: { id: payment!.stripeCheckoutSessionId } },
+    } as Stripe.Event;
+
+    const response = await api.stripeWebhook(JSON.stringify(mockEvent), "t=12345,v1=fakesignature");
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ received: true });
+
+    // Verify payment was marked as PAID
+    await payment!.reload();
+    expect(payment!.status).toBe(PaymentStatus.PAID);
+    expect(payment!.completedAt).toBeTruthy();
+
+    // Verify an email was sent
+    expect(emailSend).toHaveBeenCalledExactlyOnceWith(
+      signup.email,
+      `Payment confirmation: ${event.title}`,
+      expect.stringContaining("has been received"),
+    );
   });
 
-  test.todo("ignores unknown event types", async () => {
-    // TODO: Test that webhook ignores unknown event types and returns 200
+  test("handles checkout.session.expired event", async () => {
+    const { signup } = await defaultTestEventAndSignup();
+
+    // Create a PENDING payment
+    await api.startPayment(signup.id);
+    const payment = await Payment.findOne({ where: { signupId: signup.id } });
+
+    // Send webhook event for checkout.session.expired
+    const mockEvent = {
+      type: "checkout.session.expired",
+      data: { object: { id: payment!.stripeCheckoutSessionId } },
+    } as Stripe.Event;
+
+    const response = await api.stripeWebhook(JSON.stringify(mockEvent), "t=12345,v1=fakesignature");
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ received: true });
+
+    // Verify payment was marked as EXPIRED
+    await payment!.reload();
+    expect(payment!.status).toBe(PaymentStatus.EXPIRED);
+
+    // Verify no email was sent
+    expect(emailSend).not.toHaveBeenCalled();
   });
 
   test.todo("rejects webhook with missing signature", async () => {
-    // TODO: Test that webhook rejects requests without stripe-signature header
+    // This is the responsibility of the Stripe SDK and not really easy to test nicely.
   });
 
-  test.todo("rejects webhook with invalid signature", async () => {
-    // TODO: Test that webhook rejects requests with invalid signature
+  test("rejects webhook with invalid signature", async () => {
+    const { signup } = await defaultTestEventAndSignup();
+
+    // Create a PENDING payment
+    await api.startPayment(signup.id);
+    const payment = await Payment.findOne({ where: { signupId: signup.id } });
+
+    // Mock Stripe webhook signature verification to throw
+    mockStripeWebhookConstructEvent.mockImplementationOnce(() => {
+      throw new Stripe.errors.StripeSignatureVerificationError({ type: "api_error" });
+    });
+
+    // Send webhook event
+    const mockEvent = {
+      type: "checkout.session.completed",
+      data: { object: { id: payment!.stripeCheckoutSessionId } },
+    } as Stripe.Event;
+
+    const response = await api.stripeWebhook(JSON.stringify(mockEvent), "t=12345,v1=invalidsignature");
+    expect(response.statusCode).toBe(400);
+
+    // Verify payment status unchanged
+    await payment!.reload();
+    expect(payment!.status).toBe(PaymentStatus.PENDING);
+
+    // Verify no email was sent
+    expect(emailSend).not.toHaveBeenCalled();
   });
 
-  test.todo("handles duplicate webhooks idempotently", async () => {
-    // TODO: Test that processing the same webhook multiple times (e.g., completed event)
-    // only transitions the payment once and subsequent calls are no-ops
+  test("handles duplicate webhooks idempotently", async () => {
+    const { event, signup } = await defaultTestEventAndSignup();
+
+    // Create a PENDING payment
+    await api.startPayment(signup.id);
+    const payment = await Payment.findOne({ where: { signupId: signup.id } });
+
+    // Send webhook event for checkout.session.completed a few times
+    const mockEvent = {
+      type: "checkout.session.completed",
+      data: { object: { id: payment!.stripeCheckoutSessionId } },
+    } as Stripe.Event;
+
+    const confirmationTimes = [new Date()];
+    for (let i = 0; i < 4; i++) {
+      // eslint-disable-next-line no-await-in-loop
+      const response = await api.stripeWebhook(JSON.stringify(mockEvent), "t=12345,v1=fakesignature");
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toEqual({ received: true });
+      confirmationTimes.push(new Date());
+    }
+
+    // Verify payment was marked as PAID during first webhook only
+    await payment!.reload();
+    expect(payment!.status).toBe(PaymentStatus.PAID);
+    expect(payment!.completedAt).toBeTruthy();
+    expect(payment!.completedAt!.getTime()).toBeGreaterThanOrEqual(confirmationTimes[0].getTime());
+    expect(payment!.completedAt!.getTime()).toBeLessThanOrEqual(confirmationTimes[1].getTime());
+
+    // Verify only one email was sent
+    expect(emailSend).toHaveBeenCalledExactlyOnceWith(
+      signup.email,
+      `Payment confirmation: ${event.title}`,
+      expect.stringContaining("has been received"),
+    );
   });
 
-  test.todo("ignores webhook when payment already paid", async () => {
-    // TODO: Test that expired webhook is ignored when payment is already PAID
+  test("ignores webhook when payment already paid", async () => {
+    const { signup } = await defaultTestEventAndSignup();
+
+    // Create a PENDING payment
+    await api.startPayment(signup.id);
+    const payment = await Payment.findOne({ where: { signupId: signup.id } });
+
+    // Mark payment as PAID via webhook simulation
+    await checkoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
+    expect(emailSend).toHaveBeenCalledOnce();
+
+    // Send webhook event for checkout.session.completed again
+    const mockEvent = {
+      type: "checkout.session.completed",
+      data: { object: { id: payment!.stripeCheckoutSessionId } },
+    } as Stripe.Event;
+
+    const response = await api.stripeWebhook(JSON.stringify(mockEvent), "t=12345,v1=fakesignature");
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ received: true });
+
+    // Verify payment is still PAID
+    await payment!.reload();
+    expect(payment!.status).toBe(PaymentStatus.PAID);
+
+    // Verify only one email was sent (earlier)
+    expect(emailSend).toHaveBeenCalledOnce();
   });
 });
 

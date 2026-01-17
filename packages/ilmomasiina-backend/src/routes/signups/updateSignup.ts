@@ -448,7 +448,6 @@ export async function createSignupAsAdmin(
   const updatedSignup = await getSequelize().transaction(async (transaction) => {
     // Find the given quota and event.
     const quota = await Quota.findByPk(request.body.quotaId, {
-      attributes: ["id"],
       include: [
         {
           model: Event,

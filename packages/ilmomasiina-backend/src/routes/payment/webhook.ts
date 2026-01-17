@@ -13,7 +13,10 @@ export default async function stripeWebhook(request: FastifyRequest, reply: Fast
     throw new BadRequest("Stripe webhooks are not configured");
   }
 
-  // Verify the webhook signature
+  // Stripe requires the raw body for signature verification
+  if (!request.rawBody) {
+    throw new BadRequest("Raw body not available for webhook signature verification");
+  }
   const signature = request.headers["stripe-signature"];
   if (!signature) {
     throw new BadRequest("Missing stripe-signature header");
@@ -21,13 +24,7 @@ export default async function stripeWebhook(request: FastifyRequest, reply: Fast
 
   let event: Stripe.Event;
   try {
-    // Stripe requires the raw body for signature verification
-    // TODO: This will likely not work as is, but webhooks are not a necessity.
-    const { rawBody } = request as unknown as { rawBody?: Buffer };
-    if (!rawBody) {
-      throw new BadRequest("Raw body not available for webhook signature verification");
-    }
-    event = stripe.webhooks.constructEvent(rawBody, signature, config.stripeWebhookSecret);
+    event = stripe.webhooks.constructEvent(request.rawBody, signature, config.stripeWebhookSecret);
   } catch (err) {
     throw new BadRequest("Webhook signature verification failed");
   }

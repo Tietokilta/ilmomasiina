@@ -161,3 +161,15 @@ export async function deleteSignupAsAdmin(signupId: string) {
   });
   return handleTestResponse<null>(response);
 }
+
+export function stripeWebhook(body: string, signature: string | undefined) {
+  return server.inject({
+    method: "POST",
+    url: `/api/stripe/webhook`,
+    headers: {
+      "Content-Type": "application/json",
+      "Stripe-Signature": signature,
+    },
+    payload: Buffer.from(body),
+  });
+}

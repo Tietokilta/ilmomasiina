@@ -4,6 +4,7 @@ import { Type } from "typebox";
 
 import * as schema from "@tietokilta/ilmomasiina-models";
 import { addLogEventHook } from "../auditlog";
+import getRawBody from "../util/rawBody";
 import getAuditLogItems from "./admin/auditlog/getAuditLogs";
 import getCategoriesList from "./admin/categories/getCategoriesList";
 import createEvent from "./admin/events/createEvent";
@@ -381,20 +382,8 @@ async function setupPublicRoutes(fastifyInstance: FastifyInstance) {
   server.post(
     "/stripe/webhook",
     {
-      // Custom body parser to preserve raw body for Stripe signature verification
       bodyLimit: 1048576, // 1MB limit
-      preParsing: async (request, _reply, payload) => {
-        const chunks: Buffer[] = [];
-        for await (const chunk of payload) {
-          chunks.push(chunk as Buffer);
-        }
-        const rawBody = Buffer.concat(chunks);
-        // Store raw body for signature verification
-        (request as unknown as { rawBody: Buffer }).rawBody = rawBody;
-        // Return a new readable stream with the same data
-        const { Readable } = await import("stream");
-        return Readable.from(rawBody);
-      },
+      preParsing: getRawBody, // Keep raw body for signature verification
     },
     stripeWebhook,
   );

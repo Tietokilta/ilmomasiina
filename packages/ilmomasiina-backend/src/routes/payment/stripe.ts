@@ -77,6 +77,10 @@ export async function checkoutSessionStatusUpdated(
   sessionId: Stripe.Checkout.Session["id"],
   status: Stripe.Checkout.Session.Status | null,
 ): Promise<void> {
+  // Be defensive; the sessionId comes directly from an API, so don't mess up the DB just
+  // in case the TypeScript fails we end up with an undefined sessionId somehow.
+  if (!sessionId) throw new Error("Invalid Stripe session ID");
+
   switch (status) {
     case "complete": {
       // Payment completed but we haven't processed the webhook yet.

@@ -9,7 +9,7 @@ import { User } from "../src/models/user";
 declare global {
   var server: FastifyInstance;
   var sequelize: Sequelize;
-  var emailSend: Mock<EmailService["send"]>;
+  var emailSend: Mock<(typeof EmailService)["send"]>;
   var adminUser: User;
   var adminToken: string;
 }
