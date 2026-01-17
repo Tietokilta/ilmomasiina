@@ -1,6 +1,6 @@
 {
   "name": "@tietokilta/ilmomasiina-frontend",
-  "version": "3.0.0-alpha.4",
+  "version": "3.0.0-alpha.5",
   "scripts": {
     "build": "pnpm typecheck && vite build",
     "clean": "rimraf build dist",
