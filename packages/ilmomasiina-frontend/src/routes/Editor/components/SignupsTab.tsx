@@ -114,11 +114,57 @@ type TableProps = {
   showQuota: boolean;
 };
 
-type SortKey = "createdAt" | "firstName" | "lastName" | "price" | { type: "answer"; questionId: string };
+type SortKey = "createdAt" | "firstName" | "lastName" | "email" | "price" | { type: "answer"; questionId: string };
 
 type SortState = {
   key: SortKey;
   dir: "asc" | "desc";
+};
+
+const isSameSortKey = (a: SortKey, b: SortKey) => {
+  if (typeof a === "string" && typeof b === "string") return a === b;
+  if (typeof a === "object" && typeof b === "object") return a.type === b.type && a.questionId === b.questionId;
+  return false;
+};
+
+type SortableThProps = {
+  sort: SortState;
+  sortKey: SortKey;
+  onToggle: (key: SortKey) => void;
+  children: React.ReactNode;
+};
+
+const SortableTh = ({ sort, sortKey, onToggle, children }: SortableThProps) => {
+  const isActive = isSameSortKey(sort.key, sortKey);
+  const temp = !isActive ? "none" : sort.dir;
+  const ariaSort: "none" | "ascending" | "descending" = temp === "asc" ? "ascending" : "descending";
+
+  // Indicators:
+  // - show a "sortable" hint always
+  // - show direction only for active column; otherwise show neutral "not sorted"
+  const ascdescIndicator = sort.dir === "asc" ? "↑" : "↓";
+  const stateIndicator = isActive ? ascdescIndicator : "↕";
+  const sortableIndicator = "⇅";
+
+  return (
+    <th
+      onClick={() => onToggle(sortKey)}
+      aria-sort={ariaSort}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onToggle(sortKey);
+      }}
+      className=""
+    >
+      <span>{children}</span>
+      <span className="ms-1" aria-hidden="true" title={isActive ? `Sorted ${sort.dir}` : "Not sorted"}>
+        {stateIndicator}
+      </span>
+      <span className="ms-1 text-muted" aria-hidden="true" title="Sortable">
+        {sortableIndicator}
+      </span>
+    </th>
+  );
 };
 
 const compareNullableString = (a?: string | null, b?: string | null) => {
@@ -150,14 +196,7 @@ const SignupTable = ({ event, signups, showQuota }: TableProps) => {
 
   const toggleSort = useCallback((key: SortKey) => {
     setSort((prev) => {
-      const sameKey =
-        typeof prev.key === "string" && typeof key === "string"
-          ? prev.key === key
-          : typeof prev.key === "object" &&
-            typeof key === "object" &&
-            prev.key.type === key.type &&
-            prev.key.questionId === key.questionId;
-
+      const sameKey = isSameSortKey(prev.key, key);
       if (!sameKey) return { key, dir: "asc" };
       return { key, dir: prev.dir === "asc" ? "desc" : "asc" };
     });
@@ -177,6 +216,7 @@ const SignupTable = ({ event, signups, showQuota }: TableProps) => {
       if (sort.key === "firstName") cmp = compareNullableString(sa.firstName, sb.firstName);
       else if (sort.key === "lastName") cmp = compareNullableString(sa.lastName, sb.lastName);
       else if (sort.key === "createdAt") cmp = compareNullableString(sa.createdAt, sb.createdAt);
+      else if (sort.key === "email") cmp = compareNullableString(sa.email, sb.email);
       else if (sort.key === "price") cmp = compareNullableNumber(sa.price, sb.price);
       else if (typeof sort.key === "object" && sort.key.type === "answer") {
         const qid = sort.key.questionId;
@@ -207,31 +247,43 @@ const SignupTable = ({ event, signups, showQuota }: TableProps) => {
       <thead>
         <tr className="active">
           <th key="position">#</th>
+
           {event.nameQuestion && (
-            <th key="firstName" onClick={() => toggleSort("firstName")}>
+            <SortableTh key="firstName" sort={sort} sortKey="firstName" onToggle={toggleSort}>
               {t("editor.signups.column.firstName")}
-            </th>
+            </SortableTh>
           )}
+
           {event.nameQuestion && (
-            <th key="lastName" onClick={() => toggleSort("lastName")}>
+            <SortableTh key="lastName" sort={sort} sortKey="lastName" onToggle={toggleSort}>
               {t("editor.signups.column.lastName")}
-            </th>
+            </SortableTh>
           )}
-          {event.emailQuestion && <th key="email">{t("editor.signups.column.email")}</th>}
+
+          {event.emailQuestion && (
+            <SortableTh key="email" sort={sort} sortKey="email" onToggle={toggleSort}>
+              {t("editor.signups.column.email")}
+            </SortableTh>
+          )}
+
           {showQuota && <th key="quota">{t("editor.signups.column.quota")}</th>}
+
           {event.questions.map((q) => (
-            <th key={q.id} onClick={() => toggleSort({ type: "answer", questionId: q.id })}>
+            <SortableTh key={q.id} sort={sort} sortKey={{ type: "answer", questionId: q.id }} onToggle={toggleSort}>
               {q.question}
-            </th>
+            </SortableTh>
           ))}
-          <th key="timestamp" onClick={() => toggleSort("createdAt")}>
+
+          <SortableTh key="timestamp" sort={sort} sortKey="createdAt" onToggle={toggleSort}>
             {t("editor.signups.column.time")}
-          </th>
+          </SortableTh>
+
           {event.payments !== PaymentMode.DISABLED && (
-            <th key="price" onClick={() => toggleSort("price")}>
+            <SortableTh key="price" sort={sort} sortKey="price" onToggle={toggleSort}>
               {t("editor.signups.column.price")}
-            </th>
+            </SortableTh>
           )}
+
           {event.payments !== PaymentMode.DISABLED && (
             <th key="paymentStatus">{t("editor.signups.column.paymentStatus")}</th>
           )}
