@@ -11,6 +11,7 @@ import {
   EventUpdateBody,
   SignupForEditResponse,
   SignupUpdateBody,
+  SignupUpdateResponse,
   UserEventListResponse,
   UserEventResponse,
 } from "@tietokilta/ilmomasiina-models";
@@ -66,7 +67,7 @@ export async function updateSignupAsUser(signupId: string, body: SignupUpdateBod
     headers: editTokenHeaders(signupId, editToken),
     payload: body,
   });
-  return handleTestResponse<{ id: string }>(response);
+  return handleTestResponse<SignupUpdateResponse>(response);
 }
 
 export async function deleteSignupAsUser(signupId: string, editToken?: string | false) {

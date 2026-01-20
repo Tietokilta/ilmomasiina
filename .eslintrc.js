@@ -72,6 +72,8 @@ module.exports = {
     "react-hooks/exhaustive-deps": ["error", {
       additionalHooks: "useAbortableEffect|useAbortablePromise",
     }],
+    // Allow shadowing variables in the initial assignment to them (where incorrect usage would be obvious).
+    "@typescript-eslint/no-shadow": ["error", { ignoreOnInitialization: true }],
     // Prefer arrow functions to functions expressions, as that's what was done
     // when this rule was introduced.
     "react/function-component-definition": ["error", {

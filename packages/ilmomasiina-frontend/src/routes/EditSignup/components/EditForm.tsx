@@ -136,8 +136,8 @@ const EditableUntil = () => {
   );
 };
 
-const EditFormSubmit = ({ canEdit, disabled }: { canEdit: boolean; disabled: boolean }) => {
-  const { localizedEvent: event, isNew, preview } = useEditSignupContext();
+const EditFormSubmit = ({ disabled }: { disabled: boolean }) => {
+  const { localizedEvent: event, isNew, canEdit, preview } = useEditSignupContext();
   const { t } = useTranslation();
 
   return (
@@ -176,17 +176,10 @@ type BodyProps = FormRenderProps<SignupFormData> & {
 };
 
 const EditFormBody = ({ handleSubmit, processing, onDelete, onPay }: BodyProps) => {
-  const { isNew, editingClosedOnLoad, preview, signup } = useEditSignupContext();
+  const { isNew, canEdit, showPayment, preview } = useEditSignupContext();
   const { t } = useTranslation();
   const { submitting } = useFormState({ subscription: { submitting: true } });
   const onSubmit = useEvent(handleSubmit);
-
-  const showPayment = signup!.price != null && signup!.price > 0;
-  const alreadyPaid = signup!.paymentStatus === SignupPaymentStatus.PAID;
-  // Allow editing for non-admins if not closed and not already paid.
-  const canEdit = !editingClosedOnLoad && !alreadyPaid;
-  // Allow name and email editing for non-admins if canEdit and the signup is not confirmed.
-  const canEditNameAndEmail = canEdit && isNew!;
 
   return useMemo(
     () => (
@@ -209,14 +202,14 @@ const EditFormBody = ({ handleSubmit, processing, onDelete, onPay }: BodyProps) 
         <EditableUntil />
         <SubmitError />
         <BsForm onSubmit={onSubmit} className="ilmo--form">
-          <CommonFields canEdit={canEdit} canEditNameAndEmail={canEditNameAndEmail} />
-          <QuestionFields name="answers" canEdit={canEdit} />
-          <EditFormSubmit canEdit={canEdit} disabled={submitting || processing} />
+          <CommonFields />
+          <QuestionFields name="answers" />
+          <EditFormSubmit disabled={submitting || processing} />
         </BsForm>
         {canEdit && !preview && <DeleteSignup processing={processing} onDelete={onDelete} />}
       </NarrowContainer>
     ),
-    [onSubmit, onDelete, onPay, processing, isNew, submitting, canEdit, canEditNameAndEmail, preview, showPayment, t],
+    [onSubmit, onDelete, onPay, processing, isNew, submitting, canEdit, preview, showPayment, t],
   );
 };
 

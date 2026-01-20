@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 
-import type { SignupPathParams } from "@tietokilta/ilmomasiina-models";
+import type { SignupID, SignupPathParams } from "@tietokilta/ilmomasiina-models";
 import { AuditEvent } from "@tietokilta/ilmomasiina-models";
 import { AuditLogger } from "../../auditlog";
 import { getSequelize } from "../../models";
@@ -12,8 +12,8 @@ import { signupEditable } from "./createNewSignup";
 import { NoSuchSignup, SignupsClosed } from "./errors";
 
 /** Requires admin authentication OR editTokenVerification */
-async function deleteSignup(id: string, auditLogger: AuditLogger, admin: boolean = false): Promise<void> {
-  await expireExistingPaymentsForSignupUpdate(id, admin);
+async function deleteSignup(id: SignupID, auditLogger: AuditLogger, admin: boolean = false): Promise<void> {
+  await expireExistingPaymentsForSignupUpdate(id);
 
   const event = await getSequelize().transaction(async (transaction) => {
     const signup = await Signup.scope("active").findByPk(id, {

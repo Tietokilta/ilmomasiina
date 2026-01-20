@@ -12,9 +12,23 @@ export type State = Partial<SignupForEditResponse> & {
   /** The error related to payment completion, if any. */
   paymentError?: ApiError;
   editToken: string;
+
+  /** Whether the signup was closed for editing when the view was loaded. */
   editingClosedOnLoad?: boolean;
+  /** The timestamp in milliseconds when the signup will be deleted unless confirmed. */
   confirmableUntil?: number;
+  /** The timestamp in milliseconds until which the signup can be edited. */
   editableUntil?: number;
+
+  /** Whether to show the payment section for the signup. */
+  showPayment?: boolean;
+  /** Whether the signup can be edited. */
+  canEdit?: boolean;
+  /** Whether the name and email fields can be edited. */
+  canEditNameAndEmail?: boolean;
+  /** Whether paid questions can be edited. */
+  canEditPaidQuestions?: boolean;
+
   preview?: { setPreviewingForm: (form: boolean) => void };
   updateSignup?: (response: SignupUpdateResponse) => void;
 };

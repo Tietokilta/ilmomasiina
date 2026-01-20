@@ -130,7 +130,7 @@ async function handlePendingPayment(signupId: SignupID, payment: Payment): Promi
 }
 
 /** Get or create a payment for the signup. Returns payment URL. */
-async function getOrCreatePayment(signupId: string): Promise<string> {
+async function getOrCreatePayment(signupId: SignupID): Promise<string> {
   // Load the signup with its active payment and event
   const signup = await Signup.scope("active").findByPk(signupId, {
     include: [

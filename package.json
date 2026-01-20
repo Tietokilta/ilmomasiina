@@ -14,7 +14,7 @@
     "start": "pnpm run -r --parallel start",
     "lint": "eslint packages",
     "lint:fix": "npm run lint -- --fix",
-    "format": "prettier -w packages/*/{src,test}/**/*.{ts,tsx,scss}",
+    "format": "prettier --write --list-different packages/*/{src,test}/**/*.{ts,tsx,scss}",
     "typecheck": "pnpm run -r --workspace-concurrency=1 typecheck",
     "test": "pnpm run -r test",
     "test:backend": "pnpm run --filter ilmomasiina-backend test"

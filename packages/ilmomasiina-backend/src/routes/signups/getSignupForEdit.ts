@@ -58,7 +58,7 @@ export default async function getSignupForEdit(
   const response = {
     signup: {
       ...signup.get({ plain: true }),
-      confirmed: Boolean(signup.confirmedAt),
+      confirmed: signup.confirmed,
       answers: signup.answers!.map((answer) => answer.get({ plain: true })),
       quota: signup.quota!.get({ plain: true }),
       paymentStatus: signup.effectivePaymentStatus,

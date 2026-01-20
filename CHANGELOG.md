@@ -19,7 +19,7 @@
 
 **Features:**
 
-- **ilmomasiina-client:** Added payment support to EditSignup
+- **ilmomasiina-client:** Added payment support to EditSignup, including new state flags in context
 
 **Bug fixes and improvements:**
 

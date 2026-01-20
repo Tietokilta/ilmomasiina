@@ -3,7 +3,7 @@ import { range } from "lodash";
 import moment from "moment";
 import { Optional, UniqueConstraintError } from "sequelize";
 
-import { PaymentMode, QuestionType, QuotaID } from "@tietokilta/ilmomasiina-models";
+import { PaymentMode, QuestionID, QuestionType, QuotaID } from "@tietokilta/ilmomasiina-models";
 import config from "../src/config";
 import { Answer, AnswerCreationAttributes } from "../src/models/answer";
 import { Event, EventAttributes } from "../src/models/event";
@@ -196,6 +196,7 @@ export async function testSignups(
     confirmed = expired ? false : undefined,
   }: TestSignupsOptions = {},
   overrides: Partial<SignupAttributes> = {},
+  answers: Record<QuestionID, string | string[]> = {},
 ) {
   if (!event.quotas || !event.questions) {
     throw new Error("testSignups() expects event.quotas and event.questions to be populated");
@@ -251,7 +252,9 @@ export async function testSignups(
         answer: "",
       };
       // Generate answer value based on question type and other constraints
-      if (question.type === QuestionType.TEXT) {
+      if (answers[question.id] !== undefined) {
+        answer.answer = answers[question.id];
+      } else if (question.type === QuestionType.TEXT) {
         answer.answer =
           faker.helpers.maybe(() => faker.lorem.words({ min: 1, max: 3 }), {
             probability: question.required ? 1 : 0.5,
@@ -294,8 +297,8 @@ export async function testSignups(
   // Add signup IDs to answers and create them.
   // (Note: This would not work in MySQL, since it doesn't return us the IDs from Signup.bulkCreate.)
   await Answer.bulkCreate(
-    answerValues.flatMap((answers, i) =>
-      answers.map((ans) => ({
+    answerValues.flatMap((answersForSignup, i) =>
+      answersForSignup.map((ans) => ({
         ...ans,
         signupId: signups[i].id,
       })),

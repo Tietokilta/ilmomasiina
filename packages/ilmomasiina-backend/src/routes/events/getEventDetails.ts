@@ -124,7 +124,7 @@ export const eventDetailsForUserCached = createCache({
                 lastName: event.nameQuestion && signup.namePublic ? signup.lastName : null,
                 answers: signup.answers!.map((answer) => answer.get({ plain: true })),
                 status: signup.status,
-                confirmed: signup.confirmedAt !== null,
+                confirmed: signup.confirmed,
               }))
             : // When signups are not public:
               [],
@@ -166,7 +166,7 @@ export function formatSignupForAdmin(signup: Signup): AdminSignupSchema {
   const result = {
     ...plain,
     answers: signup.answers!.map((answer) => answer.get({ plain: true })),
-    confirmed: Boolean(signup.confirmedAt),
+    confirmed: signup.confirmed,
     paymentStatus: signup.effectivePaymentStatus,
   };
   return result as unknown as StringifyApi<typeof result>;

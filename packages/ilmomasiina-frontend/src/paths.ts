@@ -21,4 +21,4 @@ const paths = {
 
 export default paths;
 
-export const apiUrl = `${urlPrefix}/api`;
+export const apiUrl = API_URL || `${urlPrefix}/api`;

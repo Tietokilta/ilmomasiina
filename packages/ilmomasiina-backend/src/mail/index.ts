@@ -44,6 +44,7 @@ export interface NewUserMailParams {
 export interface PromotedFromQueueMailParams {
   event: Event;
   date: string | null;
+  cancelLink: string;
 }
 
 const TEMPLATE_DIR = path.join(__dirname, "../../emails");

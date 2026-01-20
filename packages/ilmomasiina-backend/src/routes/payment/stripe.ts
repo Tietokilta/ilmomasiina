@@ -3,7 +3,7 @@ import { DatabaseError as PgDatabaseError } from "pg";
 import { DatabaseError, Transaction } from "sequelize";
 import Stripe from "stripe";
 
-import { PaymentStatus } from "@tietokilta/ilmomasiina-models";
+import { PaymentStatus, SignupID } from "@tietokilta/ilmomasiina-models";
 import config, { completePaymentUrl } from "../../config";
 import { sendPaymentConfirmationMail } from "../../mail/signupConfirmation";
 import { Payment } from "../../models/payment";
@@ -196,7 +196,7 @@ export async function expirePaymentForSignupUpdate(payment: Payment): Promise<vo
       break;
 
     case PaymentStatus.PAID:
-      // Nothing to do, fail later when checking for conflicting payments.
+      // Nothing to do, fail later if necessary when checking for conflicting payments.
       break;
 
     case PaymentStatus.EXPIRED:
@@ -218,7 +218,7 @@ export async function expirePaymentForSignupUpdate(payment: Payment): Promise<vo
  * Errors from concurrent state changes are ignored. This function is only best-effort; the actual
  * check for conflicting payments is done in updateExistingSignup() once a lock is held.
  */
-export async function expireExistingPaymentsForSignupUpdate(signupId: string, ignorePaid = false): Promise<void> {
+export async function expireExistingPaymentsForSignupUpdate(signupId: SignupID): Promise<void> {
   // Find any active payments
   const activePayments = await Payment.scope("active").findAll({
     where: { signupId },
@@ -228,12 +228,8 @@ export async function expireExistingPaymentsForSignupUpdate(signupId: string, ig
   await Promise.all(
     activePayments.map(async (payment) => {
       await expirePaymentForSignupUpdate(payment);
-
-      if (payment.status === PaymentStatus.PAID && !ignorePaid) {
-        // This would definitely fail later, except for admins with ignorePaid=true.
-        // TODO: Allow cancelling after payment with manual refunds.
-        throw new SignupAlreadyPaid("This signup has already been paid");
-      }
+      // Note: PAID payments are left as-is. The price comparison check in updateExistingSignup()
+      // will determine if the update is allowed based on whether the price changes.
     }),
   );
 }

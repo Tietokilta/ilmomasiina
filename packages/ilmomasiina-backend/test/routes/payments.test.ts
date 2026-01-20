@@ -4,9 +4,17 @@ import Stripe from "stripe";
 import { testEvent, testSignups } from "test/testData";
 import { beforeAll, beforeEach, describe, expect, Mock, test, vi } from "vitest";
 
-import { ErrorCode, PaymentMode, PaymentStatus, SignupPaymentStatus } from "@tietokilta/ilmomasiina-models";
+import {
+  ErrorCode,
+  PaymentMode,
+  PaymentStatus,
+  QuestionType,
+  SignupPaymentStatus,
+} from "@tietokilta/ilmomasiina-models";
 import config from "../../src/config";
+import { Answer } from "../../src/models/answer";
 import { Payment } from "../../src/models/payment";
+import { Question } from "../../src/models/question";
 import { Signup } from "../../src/models/signup";
 import { checkoutSessionStatusUpdated, expirePaymentForSignupUpdate, getStripe } from "../../src/routes/payment/stripe";
 import { deferred } from "../deferred";
@@ -85,10 +93,24 @@ beforeEach(() => {
 /** Creates a test event and signup for the most common payment test cases. */
 async function defaultTestEventAndSignup() {
   const event = await testEvent(
-    { quotaCount: 1, questionCount: 0 },
+    {
+      quotaCount: 1,
+      questionCount: 1,
+      questionOverrides: {
+        type: QuestionType.SELECT,
+        options: ["Option A", "Option B"],
+        prices: [1000, 2000],
+        required: true,
+      },
+    },
     { payments: PaymentMode.ONLINE, nameQuestion: true, emailQuestion: true },
   );
-  const [signup] = await testSignups(event, { count: 1, confirmed: true }, { language: "en" });
+  const [signup] = await testSignups(
+    event,
+    { count: 1, confirmed: true },
+    { namePublic: false, language: "en" },
+    { [event.questions![0].id]: "Option A" },
+  );
   return { event, signup };
 }
 
@@ -365,14 +387,18 @@ describe("payment and signup update locking", () => {
   //  but they do NOT test true concurrent/parallel execution with simulated race conditions.
 
   test("signup update expires existing PENDING payment", async () => {
-    const { signup } = await defaultTestEventAndSignup();
+    const { event, signup } = await defaultTestEventAndSignup();
 
     // Create a PENDING payment
     await api.startPayment(signup.id);
     const payment = await Payment.findOne({ where: { signupId: signup.id } });
 
     // Update signup
-    const [, response] = await api.updateSignupAsUser(signup.id, { firstName: "Changed!", answers: [] });
+    const [, response] = await api.updateSignupAsUser(signup.id, {
+      firstName: "Changed!",
+      // Also change price/products
+      answers: [{ questionId: event.questions![0].id, answer: "Option B" }],
+    });
     expect(response.statusCode).toBe(200);
 
     // Verify the payment was expired
@@ -382,14 +408,17 @@ describe("payment and signup update locking", () => {
   });
 
   test("admin signup update expires existing PENDING payment", async () => {
-    const { signup } = await defaultTestEventAndSignup();
+    const { event, signup } = await defaultTestEventAndSignup();
 
     // Create a PENDING payment
     await api.startPayment(signup.id);
     const payment = await Payment.findOne({ where: { signupId: signup.id } });
 
     // Admin update should succeed and expire the payment
-    const [data, response] = await api.updateSignupAsAdmin(signup.id, { firstName: "AdminChanged!" });
+    const [data, response] = await api.updateSignupAsAdmin(signup.id, {
+      firstName: "AdminChanged!",
+      answers: [{ questionId: event.questions![0].id, answer: "Option B" }],
+    });
     expect(response.statusCode).toBe(200);
     expect(data.firstName).toBe("AdminChanged!");
 
@@ -433,26 +462,113 @@ describe("payment and signup update locking", () => {
     expect(mockStripeCheckoutSessionExpire).toHaveBeenCalledExactlyOnceWith(payment!.stripeCheckoutSessionId!);
   });
 
-  test("signup update blocked when PAID payment exists", async () => {
-    const { signup } = await defaultTestEventAndSignup();
+  test("signup update allowed when PAID and price/products unchanged", async () => {
+    const { event, signup } = await defaultTestEventAndSignup();
+    const originalPrice = signup.price;
+    const originalProducts = signup.products;
+
+    // Add a question without prices
+    const newQuestion = await Question.create({
+      eventId: event.id,
+      question: "New question",
+      type: QuestionType.SELECT,
+      options: ["Option 1", "Option 2"],
+      prices: null,
+      required: true,
+      order: 1,
+    });
 
     // Create a payment
     await api.startPayment(signup.id);
     const payment = await Payment.findOne({ where: { signupId: signup.id } });
     // Mark payment as PAID via webhook simulation
     await checkoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
+    await payment!.reload();
+    expect(payment!.status).toBe(PaymentStatus.PAID);
 
-    // Attempt to update signup - should fail
-    const result = await api.updateSignupAsUser(signup.id, { firstName: "Changed!", answers: [] });
-    expect(result).toBeApiError(400, ErrorCode.SIGNUP_ALREADY_PAID);
+    // Update signup without changing price - should succeed
+    await signup.reload({ include: [Answer] });
+    const [, response] = await api.updateSignupAsUser(signup.id, {
+      namePublic: true,
+      // Make changes to answers too, but don't change the existing paid one
+      answers: [
+        { questionId: event.questions![0].id, answer: "Option A" },
+        { questionId: newQuestion.id, answer: "Option 2" },
+      ],
+    });
+    expect(response.statusCode).toBe(200);
 
-    // Verify signup was not changed
-    await signup.reload();
-    expect(signup.firstName).not.toBe("Changed!");
+    // Verify signup was changed
+    await signup.reload({ include: [Answer] });
+    expect(signup.namePublic).toBe(true);
+    expect(signup.answers!.map((ans) => ans.answer)).toContain("Option A");
+    expect(signup.answers!.map((ans) => ans.answer)).toContain("Option 2");
+    // but price/products were not
+    expect(signup.price).toBe(originalPrice);
+    expect(signup.products).toEqual(originalProducts);
+
+    // Payment status should remain PAID
+    await payment!.reload();
+    expect(payment!.status).toBe(PaymentStatus.PAID);
   });
 
-  test("admin signup update succeeds when PAID payment exists", async () => {
-    const { signup } = await defaultTestEventAndSignup();
+  test("signup update allowed when no active payment exists", async () => {
+    const { event, signup } = await defaultTestEventAndSignup();
+    const originalPrice = signup.price;
+    const originalProducts = signup.products;
+
+    // Create payments that should not block editing
+    const expiredSession = await getStripe().checkout.sessions.create();
+    const refundedSession = await getStripe().checkout.sessions.create();
+    await createMockPayment(signup, PaymentStatus.CREATION_FAILED);
+    await createMockPayment(signup, PaymentStatus.EXPIRED, expiredSession);
+    await createMockPayment(signup, PaymentStatus.REFUNDED, refundedSession);
+
+    // No active payment exists, so changing the price should be allowed
+    const [, response] = await api.updateSignupAsUser(signup.id, {
+      namePublic: true,
+      answers: [{ questionId: event.questions![0].id, answer: "Option B" }],
+    });
+    expect(response.statusCode).toBe(200);
+
+    // Verify answer and price was changed
+    await signup.reload({ include: [Answer] });
+    expect(signup.answers![0].answer).toBe("Option B");
+    expect(signup.price).not.toBe(originalPrice);
+    expect(signup.products).not.toEqual(originalProducts);
+  });
+
+  test("signup update blocked when PAID and price would change", async () => {
+    const { event, signup } = await defaultTestEventAndSignup();
+    const originalPrice = signup.price;
+    const originalProducts = signup.products;
+
+    // Create and pay for initial signup
+    await api.startPayment(signup.id);
+    const payment = await Payment.findOne({ where: { signupId: signup.id } });
+    await checkoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
+
+    // Attempt to change answer to different price option - should fail
+    const result = await api.updateSignupAsUser(signup.id, {
+      namePublic: true,
+      answers: [{ questionId: event.questions![0].id, answer: "Option B" }],
+    });
+    expect(result).toBeApiError(400, ErrorCode.SIGNUP_ALREADY_PAID);
+
+    // Verify answer was not changed
+    await signup.reload({ include: [Answer] });
+    expect(signup.namePublic).toBe(false);
+    expect(signup.answers![0].answer).toBe("Option A");
+    expect(signup.price).toBe(originalPrice);
+    expect(signup.products).toEqual(originalProducts);
+
+    // Payment status should remain PAID
+    await payment!.reload();
+    expect(payment!.status).toBe(PaymentStatus.PAID);
+  });
+
+  test("admin signup update allowed even with PAID payment", async () => {
+    const { event, signup } = await defaultTestEventAndSignup();
 
     // Create a payment
     await api.startPayment(signup.id);
@@ -460,17 +576,23 @@ describe("payment and signup update locking", () => {
     // Mark payment as PAID via webhook simulation
     await checkoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
 
-    // Verify user update is blocked
-    const userResult = await api.updateSignupAsUser(signup.id, { firstName: "UserChanged!", answers: [] });
+    // Verify user update is blocked when price changes
+    const userResult = await api.updateSignupAsUser(signup.id, {
+      namePublic: true,
+      answers: [{ questionId: event.questions![0].id, answer: "Option B" }],
+    });
     expect(userResult).toBeApiError(400, ErrorCode.SIGNUP_ALREADY_PAID);
 
-    // Admin update should succeed
-    const [data, response] = await api.updateSignupAsAdmin(signup.id, { firstName: "AdminChanged!" });
+    // Admin update should succeed even when changing price-related answers
+    const [data, response] = await api.updateSignupAsAdmin(signup.id, {
+      firstName: "AdminChanged!",
+      answers: [{ questionId: event.questions![0].id, answer: "Option B" }],
+    });
     expect(response.statusCode).toBe(200);
     expect(data.firstName).toBe("AdminChanged!");
     expect(data.paymentStatus).toBe(SignupPaymentStatus.PAID);
 
-    // Verify signup was changed
+    // Verify signup was changed including price
     await signup.reload();
     expect(signup.firstName).toBe("AdminChanged!");
 
@@ -521,7 +643,7 @@ describe("payment and signup update locking", () => {
   });
 
   test("signup update blocks ongoing payment creation by marking as CREATION_FAILED", async () => {
-    const { signup } = await defaultTestEventAndSignup();
+    const { event, signup } = await defaultTestEventAndSignup();
 
     const stripeMockRequest = deferred<void>();
     const stripeMockResponse = deferred<void>();
@@ -542,7 +664,10 @@ describe("payment and signup update locking", () => {
     expect(payment!.status).toBe(PaymentStatus.CREATING);
 
     // Attempt signup update - should mark payment as CREATION_FAILED
-    await api.updateSignupAsUser(signup.id, { namePublic: true, answers: [] });
+    await api.updateSignupAsUser(signup.id, {
+      namePublic: true,
+      answers: [{ questionId: event.questions![0].id, answer: "Option B" }],
+    });
 
     // Verify the payment was marked as CREATION_FAILED
     await payment!.reload();
@@ -594,7 +719,7 @@ describe("payment and signup update locking", () => {
   });
 
   test("signup update ignores Stripe errors when expiring session", async () => {
-    const { signup } = await defaultTestEventAndSignup();
+    const { event, signup } = await defaultTestEventAndSignup();
 
     // Create a PENDING payment
     await api.startPayment(signup.id);
@@ -605,7 +730,10 @@ describe("payment and signup update locking", () => {
     );
 
     // Update signup - should fail because payment couldn't be expired
-    const result = await api.updateSignupAsUser(signup.id, { namePublic: true });
+    const result = await api.updateSignupAsUser(signup.id, {
+      namePublic: true,
+      answers: [{ questionId: event.questions![0].id, answer: "Option B" }],
+    });
 
     // Should fail because the payment is still active
     expect(result).toBeApiError(409, ErrorCode.PAYMENT_IN_PROGRESS);
@@ -631,7 +759,10 @@ describe("payment and signup update locking", () => {
     expect(payment!.status).toBe(PaymentStatus.PENDING);
 
     // Update signup - expires old payment
-    await api.updateSignupAsUser(signup.id, { namePublic: true, answers: [] });
+    await api.updateSignupAsUser(signup.id, {
+      namePublic: true,
+      answers: [{ questionId: event.questions![0].id, answer: "Option B" }],
+    });
 
     // Verify old payment is expired
     await payment!.reload();

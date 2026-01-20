@@ -50,6 +50,10 @@ const PreviewTab = () => {
         editingClosedOnLoad: false,
         confirmableUntil: Date.now() + 30 * 60 * 60 * 1000,
         editableUntil: Date.now() + 30 * 60 * 60 * 1000,
+        showPayment: false,
+        canEdit: true,
+        canEditNameAndEmail: true,
+        canEditPaidQuestions: true,
         preview: { setPreviewingForm },
       },
     ];

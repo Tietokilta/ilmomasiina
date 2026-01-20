@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { sumBy } from "lodash";
+import { isEqual, sumBy } from "lodash";
 import { Op, Transaction } from "sequelize";
 import { isEmail } from "validator";
 
@@ -18,7 +18,7 @@ import { AuditEvent, QuestionType, SignupFieldError } from "@tietokilta/ilmomasi
 import config from "../../config";
 import { sendSignupConfirmationMail } from "../../mail/signupConfirmation";
 import { getSequelize } from "../../models";
-import { Answer, AnswerCreationAttributes } from "../../models/answer";
+import { Answer } from "../../models/answer";
 import { Event } from "../../models/event";
 import { Question } from "../../models/question";
 import { Quota } from "../../models/quota";
@@ -30,29 +30,24 @@ import { refreshSignupPositions } from "./computeSignupPosition";
 import { signupEditable } from "./createNewSignup";
 import { NoSuchQuota, NoSuchSignup, SignupsClosed, SignupValidationError } from "./errors";
 
-/** Computes product lines for a given quota. `quota.event` must be present. */
-export function getQuotaProducts(quota: Quota): ProductSchema[] {
-  if (quota.event!.paymentsEnabled && quota.price) {
-    return [
-      {
-        name: quota.title,
-        amount: 1,
-        unitPrice: quota.price,
-      },
-    ];
-  }
-  return [];
-}
-
 /** Validates and gathers basic fields of a signup that can be edited in its current state. */
-function validateBasicFields(signup: Signup, event: Event, body: SignupUpdateBody) {
+function validateBasicFields(signup: Signup, event: Event, body: SignupUpdateBody, admin: boolean) {
   const fields: Partial<Signup> = {};
   const errors: SignupValidationErrors = {};
 
-  const notConfirmedYet = !signup.confirmedAt;
+  // In admin mode, do bare minimum validation.
+  // The DB schema doesn't guarantee consistency anyway when questions are edited, which admins can also do.
+  if (admin) {
+    if (body.firstName != null) fields.firstName = body.firstName;
+    if (body.lastName != null) fields.lastName = body.lastName;
+    if (body.namePublic != null) fields.namePublic = body.namePublic;
+    if (body.email != null) fields.email = body.email;
+    if (body.language != null) fields.language = body.language;
+    return { fields, errors };
+  }
 
   // Check that required common fields are present (if first time confirming)
-  if (notConfirmedYet && event.nameQuestion) {
+  if (!signup.confirmed && event.nameQuestion) {
     const { firstName, lastName } = body;
     if (!firstName) {
       errors.firstName = SignupFieldError.MISSING;
@@ -68,7 +63,7 @@ function validateBasicFields(signup: Signup, event: Event, body: SignupUpdateBod
     fields.lastName = lastName;
   }
 
-  if (notConfirmedYet && event.emailQuestion) {
+  if (!signup.confirmed && event.emailQuestion) {
     const { email } = body;
     if (!email) {
       errors.email = SignupFieldError.MISSING;
@@ -89,6 +84,20 @@ function validateBasicFields(signup: Signup, event: Event, body: SignupUpdateBod
   }
 
   return { fields, errors };
+}
+
+/** Computes product lines for a given quota. `quota.event` must be present. */
+export function getQuotaProducts(quota: Quota): ProductSchema[] {
+  if (quota.event!.paymentsEnabled && quota.price) {
+    return [
+      {
+        name: quota.title,
+        amount: 1,
+        unitPrice: quota.price,
+      },
+    ];
+  }
+  return [];
 }
 
 /**
@@ -285,24 +294,48 @@ async function getSignupAndEventForUpdate(id: SignupID, transaction: Transaction
   return { signup, event: signup.quota.event };
 }
 
-/** Internal function to update the contents of a signup. Performs no validation at all. */
+/**
+ * Validates the fields and answers in `body` (with mode according to `admin`) and
+ * updates `signup` accordingly (in place).
+ */
 async function updateExistingSignup(
   signup: Signup,
-  fields: Partial<Signup>,
-  answers: Omit<AnswerCreationAttributes, "signupId">[],
-  answerProducts: ProductSchema[],
+  event: Event,
+  body: AdminSignupUpdateBody | SignupUpdateBody,
   transaction: Transaction,
+  admin: boolean,
 ) {
+  // Validate and assign fields found directly in Signup
+  const { fields, errors } = validateBasicFields(signup, event, body, admin);
+  // Validate answers and compute products from them
+  const { newAnswers, answerProducts, answerErrors } = validateAnswersAndGetProducts(event, body.answers, admin);
+  if (answerErrors) errors.answers = answerErrors;
+
+  if (!admin && Object.keys(errors).length > 0) {
+    throw new SignupValidationError("Errors validating signup", errors);
+  }
+
   // Get possible product line for the quota
   const quotaProducts = getQuotaProducts(signup.quota!);
   const products = [...quotaProducts, ...answerProducts];
+  // Compute final total price for the signup
+  const paymentFields = computePrice(products);
+
+  const paymentsChanged =
+    paymentFields.price !== signup.price ||
+    paymentFields.currency !== signup.currency ||
+    !isEqual(paymentFields.products, signup.products);
+
+  // Ensure there are no payments that could be paid with stale data.
+  // Paid payments are allowed to exist if the price/products don't change, or if an admin is editing
+  // (admins are expected to deal with price changes manually).
+  await checkForConflictingPaymentsForSignupUpdate(signup, transaction, admin || !paymentsChanged);
 
   // Update fields for the signup
   await signup.update(
     {
       ...fields,
-      // Compute final total price for the signup
-      ...computePrice(products),
+      ...paymentFields,
       // Mark the signup as confirmed
       confirmedAt: new Date(),
     },
@@ -314,14 +347,14 @@ async function updateExistingSignup(
     where: {
       signupId: signup.id,
       questionId: {
-        [Op.in]: answers.map((answer) => answer.questionId),
+        [Op.in]: newAnswers.map((answer) => answer.questionId),
       },
     },
     transaction,
   });
   // eslint-disable-next-line no-param-reassign -- signup.update() is already modifying the signup
   signup.answers = await Answer.bulkCreate(
-    answers.map((answer) => ({ ...answer, signupId: signup.id })),
+    newAnswers.map((answer) => ({ ...answer, signupId: signup.id })),
     { transaction },
   );
 }
@@ -334,7 +367,7 @@ export async function updateSignupAsUser(
   // First, attempt to expire any existing payments for this signup.
   await expireExistingPaymentsForSignupUpdate(request.params.id);
 
-  const { updatedSignup, updatedAnswers, edited } = await getSequelize().transaction(async (transaction) => {
+  const { updatedSignup, wasConfirmed } = await getSequelize().transaction(async (transaction) => {
     const { signup, event } = await getSignupAndEventForUpdate(request.params.id, transaction);
 
     if (!signupEditable(event, signup)) {
@@ -342,34 +375,14 @@ export async function updateSignupAsUser(
     }
 
     /** Is this signup already confirmed (i.e. is this the first update for this signup) */
-    const notConfirmedYet = !signup.confirmedAt;
+    const wasConfirmed = signup.confirmed;
 
-    // Collect fields to update on signup itself (name and email only editable on first confirmation)
-    const { fields, errors } = validateBasicFields(signup, event, request.body);
-
-    // Validate answers and compute products from them
-    const { newAnswers, answerProducts, answerErrors } = validateAnswersAndGetProducts(
-      event,
-      request.body.answers,
-      false,
-    );
-    if (answerErrors) errors.answers = answerErrors;
-
-    if (Object.keys(errors).length > 0) {
-      throw new SignupValidationError("Errors validating signup", errors);
-    }
-
-    // Ensure there are no payments that could be paid with stale data,
-    // nor any paid payments (since the expected paid amount might change).
-    await checkForConflictingPaymentsForSignupUpdate(signup, transaction);
-
-    await updateExistingSignup(signup, fields, newAnswers, answerProducts, transaction);
+    await updateExistingSignup(signup, event, request.body, transaction, false);
     await request.logEvent(AuditEvent.EDIT_SIGNUP, { signup, event, transaction });
 
     return {
       updatedSignup: signup,
-      updatedAnswers: newAnswers,
-      edited: !notConfirmedYet,
+      wasConfirmed,
     };
   });
 
@@ -377,12 +390,12 @@ export async function updateSignupAsUser(
   updatedSignup.payments = await updatedSignup.getPayments();
 
   // Send the confirmation email.
-  await sendSignupConfirmationMail(updatedSignup, edited ? "edit" : "signup", false);
+  await sendSignupConfirmationMail(updatedSignup, wasConfirmed ? "edit" : "signup", false);
 
   const response = {
     ...updatedSignup.get({ plain: true }),
-    confirmed: Boolean(updatedSignup.confirmedAt),
-    answers: updatedAnswers,
+    confirmed: updatedSignup.confirmed,
+    answers: updatedSignup.answers!.map((answer) => answer.get({ plain: true })),
     paymentStatus: updatedSignup.effectivePaymentStatus,
   };
 
@@ -390,43 +403,16 @@ export async function updateSignupAsUser(
   return response as unknown as StringifyApi<typeof response>;
 }
 
-/** Internal function that just converts the request body and then calls updateExistingSignup */
-async function updateExistingSignupAsAdmin(
-  signup: Signup,
-  event: Event,
-  body: AdminSignupUpdateBody,
-  transaction: Transaction,
-) {
-  // In admin mode, do bare minimum validation.
-  // The DB schema doesn't guarantee consistency anyway when questions are edited, which admins can also do.
-  const fields: Partial<Signup> = {};
-  if (body.firstName != null) fields.firstName = body.firstName;
-  if (body.lastName != null) fields.lastName = body.lastName;
-  if (body.namePublic != null) fields.namePublic = body.namePublic;
-  if (body.email != null) fields.email = body.email;
-  if (body.language != null) fields.language = body.language;
-
-  // Normalize answer types (string vs array) and only keep answers to existing questions.
-  // Ignore all other validation.
-  const { newAnswers, answerProducts } = validateAnswersAndGetProducts(event, body.answers, true);
-
-  // Ensure there are no payments that could be paid with stale data.
-  // Paid payments are allowed to exist; admins are expected to deal with this.
-  await checkForConflictingPaymentsForSignupUpdate(signup, transaction, true);
-
-  await updateExistingSignup(signup, fields, newAnswers, answerProducts, transaction);
-}
-
 export async function updateSignupAsAdmin(
   request: FastifyRequest<{ Params: SignupPathParams; Body: AdminSignupUpdateBody }>,
   reply: FastifyReply,
 ): Promise<AdminSignupSchema> {
   // First, attempt to expire any existing payments for this signup.
-  await expireExistingPaymentsForSignupUpdate(request.params.id, true);
+  await expireExistingPaymentsForSignupUpdate(request.params.id);
 
   const updatedSignup = await getSequelize().transaction(async (transaction) => {
     const { signup, event } = await getSignupAndEventForUpdate(request.params.id, transaction);
-    await updateExistingSignupAsAdmin(signup, event, request.body, transaction);
+    await updateExistingSignup(signup, event, request.body, transaction, true);
     await request.logEvent(AuditEvent.EDIT_SIGNUP, { signup, event, transaction });
     return signup;
   });
@@ -467,7 +453,7 @@ export async function createSignupAsAdmin(
     const signup = await Signup.create({ quotaId: quota.id }, { transaction });
     // Set the quota, which create() doesn't do.
     signup.quota = quota;
-    await updateExistingSignupAsAdmin(signup, quota.event, request.body, transaction);
+    await updateExistingSignup(signup, quota.event, request.body, transaction, true);
     await request.logEvent(AuditEvent.CREATE_SIGNUP, { signup, event: quota.event, transaction });
     return signup;
   });
@@ -475,6 +461,9 @@ export async function createSignupAsAdmin(
   // Refresh signup positions. Ignore errors, but wait for this to complete, so that the user
   // gets a status on their signup before it being returned.
   await refreshSignupPositions(updatedSignup.quota!.event!).catch((error) => console.error(error));
+
+  // Fetch updated payment data for response. (Should always be empty, but for consistency.)
+  updatedSignup.payments = await updatedSignup.getPayments();
 
   if (request.body.sendEmail ?? true) await sendSignupConfirmationMail(updatedSignup, "signup", true);
 

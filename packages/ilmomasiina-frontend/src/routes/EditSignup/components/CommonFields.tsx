@@ -7,13 +7,8 @@ import { useEditSignupContext } from "@tietokilta/ilmomasiina-client";
 import FieldRow from "../../../components/FieldRow";
 import useFieldErrors from "./fieldError";
 
-type Props = {
-  canEdit: boolean;
-  canEditNameAndEmail: boolean;
-};
-
-const CommonFields = ({ canEdit, canEditNameAndEmail }: Props) => {
-  const { localizedEvent: event } = useEditSignupContext();
+const CommonFields = () => {
+  const { localizedEvent: event, canEdit, canEditNameAndEmail } = useEditSignupContext();
   const { t } = useTranslation();
   const formatError = useFieldErrors();
 
