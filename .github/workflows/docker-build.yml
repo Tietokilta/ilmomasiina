@@ -108,22 +108,22 @@ jobs:
       tag: ${{ steps.meta.outputs.version }}
 
   # This is disabled on forks, you'll most likely need to modify it anyway for your usage
-  # deploy:
-  #   name: Push update to App Service
-  #   needs: docker
-  #   if: github.repository == 'Tietokilta/ilmomasiina' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v3.')
-  #   runs-on: ubuntu-latest
-  #   environment: production
-  #   steps:
-  #     - name: Login via Azure CLI
-  #       uses: azure/login@v1
-  #       with:
-  #         creds: ${{ secrets.AZURE_CREDENTIALS }}
-  #
-  #     - uses: azure/webapps-deploy@v3
-  #       with:
-  #         app-name: tik-ilmo-prod-app
-  #         images: "${{ env.docker_tag }}:${{ needs.docker.outputs.tag }}"
+  deploy:
+    name: Push update to App Service
+    needs: docker
+    if: github.repository == 'Tietokilta/ilmomasiina' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v3.')
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Login via Azure CLI
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - uses: azure/webapps-deploy@v3
+        with:
+          app-name: tik-ilmo-prod-app
+          images: "${{ env.docker_tag }}:${{ needs.docker.outputs.tag }}"
 
   # This is disabled on forks since you probably don't need to upload your own packages
   npm:
