@@ -9,7 +9,8 @@ export default function Layout({ children }: PropsWithChildren) {
         <meta name="viewport" content="width-device-width" />
         <meta httpEquiv="Content-Type" content="text/html; charset=UTF-8" />
         <title>Ilmomasiina</title>
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" data-inline />
+        <link href="styles.css" rel="stylesheet" type="text/css" data-inline />
       </head>
       <body itemScope itemType="http://schema.org/EmailMessage">
         <table className="body-wrap">

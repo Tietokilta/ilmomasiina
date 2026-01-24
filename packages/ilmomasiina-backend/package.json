@@ -14,7 +14,7 @@
     "loadTest": "k6 run loadTest.js",
     "stop:prod": "pm2 stop 0",
     "monit:prod": "pm2 monit",
-    "build": "tsc --build tsconfig.build.json && cp src/mail/styles.css dist/mail/",
+    "build": "tsc --build tsconfig.build.json",
     "clean": "rimraf dist coverage",
     "typecheck": "tsc --build tsconfig.build.json",
     "test": "vitest run",
@@ -66,7 +66,6 @@
     "http-errors": "^2.0.1",
     "i18next": "^25.8.0",
     "ics": "^3.8.1",
-    "juice": "^11.1.0",
     "lodash": "^4.17.21",
     "mailgun.js": "^12.7.0",
     "moment": "^2.30.1",
@@ -82,7 +81,8 @@
     "sequelize": "^6.37.7",
     "typebox": "^1.0.79",
     "umzug": "^3.8.2",
-    "validator": "^13.15.26"
+    "validator": "^13.15.26",
+    "web-resource-inliner": "^8.0.0"
   },
   "devDependencies": {
     "@faker-js/faker": "^10.2.0",
@@ -96,6 +96,7 @@
     "@types/nodemailer": "^7.0.5",
     "@types/react": "^19.2.9",
     "@types/react-dom": "^19.2.3",
+    "@types/web-resource-inliner": "^4.2.5",
     "@vitest/coverage-v8": "^4.0.17",
     "rimraf": "^6.1.2",
     "ts-node": "^10.9.2",
