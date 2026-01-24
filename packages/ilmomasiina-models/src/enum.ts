@@ -92,6 +92,7 @@ export enum ErrorCode {
   VALIDATION_ERROR = "FST_ERR_VALIDATION",
   ONLINE_PAYMENTS_DISABLED = "OnlinePaymentsDisabled",
   SIGNUP_NOT_CONFIRMED = "SignupNotConfirmed",
+  SIGNUP_IN_QUEUE = "SignupInQueue",
   SIGNUP_ALREADY_PAID = "SignupAlreadyPaid",
   PAYMENT_NOT_REQUIRED = "PaymentNotRequired",
   PAYMENT_IN_PROGRESS = "PaymentInProgress",

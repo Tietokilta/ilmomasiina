@@ -5,7 +5,7 @@ import Stripe from "stripe";
 
 import { PaymentStatus, SignupID } from "@tietokilta/ilmomasiina-models";
 import config, { completePaymentUrl } from "../../config";
-import { sendPaymentConfirmationMail } from "../../mail/signupConfirmation";
+import { sendPaymentConfirmationMail } from "../../mail/signups";
 import { Payment } from "../../models/payment";
 import { Signup } from "../../models/signup";
 import { generateToken } from "../signups/editTokens";

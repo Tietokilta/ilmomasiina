@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useEditSignupContext } from "@tietokilta/ilmomasiina-client";
 import { SignupStatus as SignupStatusEnum } from "@tietokilta/ilmomasiina-models";
 
-const SignupStatus = () => {
+const SignupStatusAndPosition = () => {
   const { localizedEvent: event, localizedSignup: signup } = useEditSignupContext();
   const { status, position, quota } = signup!;
   const { openQuotaSize } = event!;
@@ -31,4 +31,4 @@ const SignupStatus = () => {
   return <p>{t("editSignup.position.queue", { position })}</p>;
 };
 
-export default SignupStatus;
+export default SignupStatusAndPosition;

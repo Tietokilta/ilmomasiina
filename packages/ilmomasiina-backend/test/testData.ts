@@ -3,7 +3,7 @@ import { range } from "lodash";
 import moment from "moment";
 import { Optional, UniqueConstraintError } from "sequelize";
 
-import { PaymentMode, QuestionID, QuestionType, QuotaID } from "@tietokilta/ilmomasiina-models";
+import { PaymentMode, QuestionID, QuestionType } from "@tietokilta/ilmomasiina-models";
 import config from "../src/config";
 import { Answer, AnswerCreationAttributes } from "../src/models/answer";
 import { Event, EventAttributes } from "../src/models/event";
@@ -181,23 +181,30 @@ export async function testEvent(options: TestEventOptions = {}, overrides: Parti
 }
 
 type TestSignupsOptions = {
+  event: Event;
   count?: number;
-  quotaId?: QuotaID;
   expired?: boolean;
   confirmed?: boolean;
+  overrides?: Partial<SignupAttributes>;
+  answers?: Record<QuestionID, string | string[]>;
 };
 
-export async function testSignups(
-  event: Event,
-  {
-    count = faker.number.int({ min: 1, max: 40 }),
-    quotaId,
-    expired = false,
-    confirmed = expired ? false : undefined,
-  }: TestSignupsOptions = {},
-  overrides: Partial<SignupAttributes> = {},
-  answers: Record<QuestionID, string | string[]> = {},
-) {
+/** Generates test signups to the given event.
+ *
+ * If `confirmed` is set, all signups will be confirmed. If `expired` is set, all signups will be
+ * unconfirmed and expired.
+ *
+ * For confirmed signups, all fields are chosen randomly among available options and valid values,
+ * but `overrides` and `answers` can be used to set specific values.
+ */
+export async function testSignups({
+  event,
+  count = faker.number.int({ min: 1, max: 40 }),
+  expired = false,
+  confirmed = expired ? false : undefined,
+  overrides = {},
+  answers = {},
+}: TestSignupsOptions): Promise<Signup[]> {
   if (!event.quotas || !event.questions) {
     throw new Error("testSignups() expects event.quotas and event.questions to be populated");
   }
@@ -206,7 +213,7 @@ export async function testSignups(
   }
   const signupValues = range(count).map((): SignupCreationAttributes => {
     const signup: SignupCreationAttributes = {
-      quotaId: quotaId ?? faker.helpers.arrayElement(event.quotas!).id,
+      quotaId: faker.helpers.arrayElement(event.quotas!).id,
     };
     if (expired) {
       // Expired signup (never confirmed)

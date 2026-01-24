@@ -10,6 +10,9 @@ declare global {
   var server: FastifyInstance;
   var sequelize: Sequelize;
   var emailSend: Mock<(typeof EmailService)["send"]>;
+  var consoleLog: Mock<typeof console.log>;
+  var consoleWarn: Mock<typeof console.warn>;
+  var consoleError: Mock<typeof console.error>;
   var adminUser: User;
   var adminToken: string;
 }

@@ -142,7 +142,7 @@ describe("GET /api/admin/events/:id", () => {
   test("always returns signups with full data", async () => {
     const event = await testEvent({ quotaCount: 3 }, { signupsPublic: false });
     await Question.update({ public: false, required: true }, { where: { eventId: event.id } });
-    await testSignups(event, { count: 10 }, { namePublic: false });
+    await testSignups({ event, count: 10, overrides: { namePublic: false } });
     await fetchSignups(event);
 
     const [data] = await fetchAdminEventDetails(event);
@@ -961,7 +961,7 @@ describe("PATCH /api/admin/events/:id", () => {
 
   test("checks moving signups to queue", async () => {
     const event = await testEvent({ quotaCount: 1, quotaOverrides: { size: 3 } }, { openQuotaSize: 3 });
-    await testSignups(event, { count: 5, confirmed: true });
+    await testSignups({ event, count: 5, confirmed: true });
 
     const [before] = await fetchAdminEventDetails(event);
     let { updatedAt } = before;

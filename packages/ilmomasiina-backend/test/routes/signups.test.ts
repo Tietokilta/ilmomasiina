@@ -9,7 +9,7 @@ import * as api from "./api";
 describe("getSignupForEdit", () => {
   test("returns signup for editing", async () => {
     const event = await testEvent({}, { payments: PaymentMode.ONLINE });
-    const [signup] = await testSignups(event, { count: 1, confirmed: true });
+    const [signup] = await testSignups({ event, count: 1, confirmed: true });
     const quota = await signup.getQuota();
     const answers = await signup.getAnswers();
 
@@ -49,7 +49,7 @@ describe("getSignupForEdit", () => {
 
   test("returns nulls for unconfirmed signup", async () => {
     const event = await testEvent();
-    const [signup] = await testSignups(event, { count: 1, confirmed: false });
+    const [signup] = await testSignups({ event, count: 1, confirmed: false });
 
     const [data] = await api.fetchSignupForEdit(signup.id);
 
@@ -65,7 +65,7 @@ describe("getSignupForEdit", () => {
 
   test("returns correct status information", async () => {
     const event = await testEvent();
-    const signups = await testSignups(event, { count: 40 });
+    const signups = await testSignups({ event, count: 40 });
     const signup = signups[0]; // created in random order, so this suffices
     const status = await refreshSignupPositionsAndGet(event, signup.id);
 
@@ -80,10 +80,7 @@ describe("getSignupForEdit", () => {
 
   test("checks edit token authentication", async () => {
     const event = await testEvent();
-    const [signup, other] = await testSignups(event, {
-      count: 2,
-      confirmed: true,
-    });
+    const [signup, other] = await testSignups({ event, count: 2, confirmed: true });
 
     let [data, response] = await api.fetchSignupForEdit(signup.id, false);
     expect(response.statusCode).toBe(403);

@@ -28,6 +28,10 @@ export type State = Partial<SignupForEditResponse> & {
   canEditNameAndEmail?: boolean;
   /** Whether paid questions can be edited. */
   canEditPaidQuestions?: boolean;
+  /** Whether the signup is expecting an online payment now or later. */
+  canPayOnline?: boolean;
+  /** Whether the signup is in any quota (open or normal). A signup cannot be paid if it is not in a quota. */
+  isInQuota?: boolean;
 
   preview?: { setPreviewingForm: (form: boolean) => void };
   updateSignup?: (response: SignupUpdateResponse) => void;

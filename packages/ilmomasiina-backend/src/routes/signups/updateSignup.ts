@@ -16,7 +16,7 @@ import type {
 } from "@tietokilta/ilmomasiina-models";
 import { AuditEvent, QuestionType, SignupFieldError } from "@tietokilta/ilmomasiina-models";
 import config from "../../config";
-import { sendSignupConfirmationMail } from "../../mail/signupConfirmation";
+import { sendSignupConfirmationMail } from "../../mail/signups";
 import { getSequelize } from "../../models";
 import { Answer } from "../../models/answer";
 import { Event } from "../../models/event";

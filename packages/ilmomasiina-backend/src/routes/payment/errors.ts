@@ -14,6 +14,12 @@ export class SignupNotConfirmed extends CustomError {
   }
 }
 
+export class SignupInQueue extends CustomError {
+  constructor(message: string) {
+    super(400, ErrorCode.SIGNUP_IN_QUEUE, message);
+  }
+}
+
 export class SignupAlreadyPaid extends CustomError {
   constructor(message: string) {
     super(400, ErrorCode.SIGNUP_ALREADY_PAID, message);

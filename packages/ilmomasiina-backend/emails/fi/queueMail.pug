@@ -3,6 +3,13 @@ extends ../layout.pug
 block mainContent
   div.content-block
     p.bodyText Olet päässyt mukaan tapahtumaan #{event.title} varasijalta.
+  if paymentStatus == "pending"
+    div.content-block
+      p.bodyText
+        strong Ilmoittautumisesi odottaa vielä maksua!
+        if event.payments == "online"
+          |
+          | Voit suorittaa maksun #[a(href=cancelLink) ilmoittautumissivulla].
   div.content-block
     p.bodyText Tapahtuman tiedot:
     ul

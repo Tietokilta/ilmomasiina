@@ -34,7 +34,7 @@ const QuestionField = ({ name, question, validate = true }: QuestionFieldProps) 
   const formatError = useFieldErrors();
 
   // For admins, make all questions optional.
-  // (All of them are editable by the user, and the backend doesn't care for admins.)
+  // (The backend doesn't care for admins, and users will be able to fix this.)
   const isRequired = validate && question.required;
 
   const formatPrice = usePriceFormatter();

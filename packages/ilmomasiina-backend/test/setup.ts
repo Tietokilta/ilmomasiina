@@ -67,6 +67,18 @@ afterEach(() => {
   emailSend.mockClear();
 });
 
+// Allow silencing console logs
+beforeAll(() => {
+  global.consoleLog = vi.spyOn(console, "log");
+  global.consoleWarn = vi.spyOn(console, "warn");
+  global.consoleError = vi.spyOn(console, "error");
+});
+afterEach(() => {
+  consoleLog.mockClear();
+  consoleWarn.mockClear();
+  consoleError.mockClear();
+});
+
 expect.extend({
   toBeApiError(received: unknown, expectedStatus: number, expectedCode?: string) {
     if (!Array.isArray(received) || received.length !== 2) {

@@ -140,7 +140,7 @@ describe("GET /api/events/:id", () => {
 
   test("returns public signups", async () => {
     const event = await testEvent({ quotaCount: 3 }, { signupsPublic: true });
-    await testSignups(event, { count: 10, confirmed: true }, { namePublic: true });
+    await testSignups({ event, count: 10, confirmed: true, overrides: { namePublic: true } });
     await fetchSignups(event);
 
     const [data] = await api.fetchUserEventDetails(event);
@@ -165,7 +165,7 @@ describe("GET /api/events/:id", () => {
 
   test("respects signupsPublic", async () => {
     const event = await testEvent({ quotaCount: 3 }, { signupsPublic: false });
-    await testSignups(event);
+    await testSignups({ event });
 
     const [data] = await api.fetchUserEventDetails(event);
 
@@ -176,7 +176,7 @@ describe("GET /api/events/:id", () => {
 
   test("respects namePublic", async () => {
     const event = await testEvent({ quotaCount: 1 }, { signupsPublic: true });
-    await testSignups(event, { confirmed: true }, { namePublic: false });
+    await testSignups({ event, confirmed: true, overrides: { namePublic: false } });
 
     const [data] = await api.fetchUserEventDetails(event);
 
@@ -189,7 +189,7 @@ describe("GET /api/events/:id", () => {
 
   test("respects Question.public", async () => {
     const event = await testEvent({ quotaCount: 1, questionCount: 1 }, { signupsPublic: true });
-    await testSignups(event, { confirmed: true, count: 1 }, { namePublic: false });
+    await testSignups({ event, confirmed: true, count: 1, overrides: { namePublic: false } });
     await fetchSignups(event);
 
     await event.questions![0].update({ public: true });
@@ -219,7 +219,7 @@ describe("GET /api/events/:id", () => {
 
   test("returns non-public signup counts", async () => {
     const event = await testEvent({ quotaCount: 3 }, { signupsPublic: false });
-    await testSignups(event, { count: 10 });
+    await testSignups({ event, count: 10 });
     await fetchSignups(event);
 
     const [data] = await api.fetchUserEventDetails(event);
@@ -278,7 +278,7 @@ describe("GET /api/events", () => {
 
   test("returns signup counts", async () => {
     const event = await testEvent({ quotaCount: 3 }, { signupsPublic: false });
-    await testSignups(event, { count: 10 });
+    await testSignups({ event, count: 10 });
     await fetchSignups(event);
 
     const [data] = await api.fetchUserEventList();

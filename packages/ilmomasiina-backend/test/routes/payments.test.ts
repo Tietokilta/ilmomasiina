@@ -10,6 +10,7 @@ import {
   PaymentStatus,
   QuestionType,
   SignupPaymentStatus,
+  SignupStatus,
 } from "@tietokilta/ilmomasiina-models";
 import config from "../../src/config";
 import { Answer } from "../../src/models/answer";
@@ -17,6 +18,7 @@ import { Payment } from "../../src/models/payment";
 import { Question } from "../../src/models/question";
 import { Signup } from "../../src/models/signup";
 import { checkoutSessionStatusUpdated, expirePaymentForSignupUpdate, getStripe } from "../../src/routes/payment/stripe";
+import { refreshSignupPositions } from "../../src/routes/signups/computeSignupPosition";
 import { deferred } from "../deferred";
 import * as api from "./api";
 
@@ -105,12 +107,16 @@ async function defaultTestEventAndSignup() {
     },
     { payments: PaymentMode.ONLINE, nameQuestion: true, emailQuestion: true },
   );
-  const [signup] = await testSignups(
+  const [signup] = await testSignups({
     event,
-    { count: 1, confirmed: true },
-    { namePublic: false, language: "en" },
-    { [event.questions![0].id]: "Option A" },
-  );
+    count: 1,
+    confirmed: true,
+    overrides: { namePublic: false, language: "en" },
+    answers: { [event.questions![0].id]: "Option A" },
+  });
+  // Refresh positions to ensure signup has a valid status (required for queue validation)
+  await refreshSignupPositions(event);
+  await signup.reload();
   return { event, signup };
 }
 
@@ -281,7 +287,7 @@ describe("startPayment", () => {
 
   test("fails when signup is not confirmed", async () => {
     const { event } = await defaultTestEventAndSignup();
-    const [signup] = await testSignups(event, { count: 1, confirmed: false });
+    const [signup] = await testSignups({ event, count: 1, confirmed: false });
 
     const result = await api.startPayment(signup.id);
     expect(result).toBeApiError(400, ErrorCode.SIGNUP_NOT_CONFIRMED);
@@ -292,13 +298,29 @@ describe("startPayment", () => {
 
   test("fails when signup has no price", async () => {
     const event = await testEvent(
-      { quotaCount: 2, questionCount: 0, quotaOverrides: { price: 0 } },
+      {
+        quotaCount: 2,
+        questionCount: 1,
+        quotaOverrides: { price: 0 },
+        questionOverrides: {
+          type: QuestionType.SELECT,
+          required: true,
+          options: ["Paid Option", "Free Option"],
+          prices: [1000, 0],
+        },
+      },
       { payments: PaymentMode.ONLINE, nameQuestion: true, emailQuestion: true },
     );
     await event.quotas![1].update({ price: 1000 }); // Make only one quota paid
 
     // Create a free signup
-    const [signup] = await testSignups(event, { count: 1, confirmed: true, quotaId: event.quotas![0].id });
+    const [signup] = await testSignups({
+      event,
+      count: 1,
+      confirmed: true,
+      overrides: { quotaId: event.quotas![0].id },
+      answers: { [event.questions![0].id]: "Free Option" },
+    });
     expect(signup.price).toBe(0);
 
     // Attempt to start payment - should fail
@@ -322,6 +344,46 @@ describe("startPayment", () => {
     result = await api.startPayment(signup.id);
     expect(result).toBeApiError(400, ErrorCode.ONLINE_PAYMENTS_DISABLED);
 
+    expect(await Payment.findOne({ where: { signupId: signup.id } })).toBeNull();
+    expect(mockStripeCheckoutSessionCreate).not.toHaveBeenCalled();
+  });
+
+  test("fails when signup is in queue", async () => {
+    // Create event with limited quota to force queue
+    const event = await testEvent(
+      { quotaCount: 1, questionCount: 0, quotaOverrides: { size: 1 } },
+      { payments: PaymentMode.ONLINE, nameQuestion: true, emailQuestion: true, openQuotaSize: 0 },
+    );
+
+    // Create two signups, first to fill the quota, then to place another in queue
+    await testSignups({ event, count: 1, confirmed: true });
+    const [queuedSignup] = await testSignups({ event, count: 1, confirmed: true });
+
+    // Refresh positions to assign statuses
+    await refreshSignupPositions(event);
+    await queuedSignup.reload();
+    expect(queuedSignup.status).toBe(SignupStatus.IN_QUEUE);
+
+    // Attempt to start payment for queued signup - should fail
+    const result = await api.startPayment(queuedSignup.id);
+    expect(result).toBeApiError(400, ErrorCode.SIGNUP_IN_QUEUE);
+
+    // Verify no payment was created
+    expect(await Payment.findOne({ where: { signupId: queuedSignup.id } })).toBeNull();
+    expect(mockStripeCheckoutSessionCreate).not.toHaveBeenCalled();
+  });
+
+  test("fails when signup status is null", async () => {
+    const { signup } = await defaultTestEventAndSignup();
+
+    // Manually set status to null to simulate edge case (startPayment called during/before position recomputation)
+    await signup.update({ status: null });
+
+    // Attempt to start payment - should fail
+    const result = await api.startPayment(signup.id);
+    expect(result).toBeApiError(400, ErrorCode.SIGNUP_IN_QUEUE);
+
+    // Verify no payment was created
     expect(await Payment.findOne({ where: { signupId: signup.id } })).toBeNull();
     expect(mockStripeCheckoutSessionCreate).not.toHaveBeenCalled();
   });
@@ -366,7 +428,8 @@ describe("startPayment", () => {
       { quotaCount: 1, questionCount: 0 },
       { payments: PaymentMode.ONLINE, nameQuestion: true, emailQuestion: true },
     );
-    const signups = await testSignups(event, { count: 5, confirmed: true });
+    const signups = await testSignups({ event, count: 5, confirmed: true });
+    await refreshSignupPositions(event);
 
     // Create payments for all signups concurrently
     const results = await Promise.all(signups.map((signup) => api.startPayment(signup.id)));
@@ -728,6 +791,7 @@ describe("payment and signup update locking", () => {
     mockStripeCheckoutSessionExpire.mockRejectedValueOnce(
       new Stripe.errors.StripeInvalidRequestError({ type: "invalid_request_error" }),
     );
+    consoleError.mockImplementation(() => {}); // Suppress expected error log
 
     // Update signup - should fail because payment couldn't be expired
     const result = await api.updateSignupAsUser(signup.id, {
@@ -739,6 +803,8 @@ describe("payment and signup update locking", () => {
     expect(result).toBeApiError(409, ErrorCode.PAYMENT_IN_PROGRESS);
     expect(mockStripeCheckoutSessionExpire).toHaveBeenCalledOnce();
     expect(mockStripeCheckoutSessionCreate).toHaveBeenCalledOnce(); // No new payment created
+
+    expect(consoleError).toHaveBeenCalled(); // Error was logged
   });
 
   test("end-to-end: update to expire payment, then pay again", async () => {
@@ -746,16 +812,33 @@ describe("payment and signup update locking", () => {
       {
         quotaCount: 1,
         questionCount: 1,
-        questionOverrides: { options: ["Option A", "Option B"], prices: [500, 1000] },
+        quotaOverrides: { price: 1200 },
+        questionOverrides: {
+          type: QuestionType.SELECT,
+          required: true,
+          options: ["Option A", "Option B"],
+          prices: [500, 1000],
+        },
       },
       { payments: PaymentMode.ONLINE, nameQuestion: true, emailQuestion: true },
     );
-    const [signup] = await testSignups(event, { count: 1, confirmed: true });
+    const [signup] = await testSignups({
+      event,
+      count: 1,
+      confirmed: true,
+      answers: { [event.questions![0].id]: "Option A" },
+    });
+    expect(signup.price).toBe(1700);
+
+    await refreshSignupPositions(event);
+    await signup.reload();
+    expect(signup.status).toBe(SignupStatus.IN_QUOTA);
 
     // Create initial payment
     await api.startPayment(signup.id);
     const payment = await Payment.findOne({ where: { signupId: signup.id } });
     expect(payment).toBeTruthy();
+    expect(payment!.amount).toBe(1700);
     expect(payment!.status).toBe(PaymentStatus.PENDING);
 
     // Update signup - expires old payment
@@ -778,6 +861,7 @@ describe("payment and signup update locking", () => {
     const newPayment = await signup.getActivePayment();
     expect(newPayment).toBeTruthy();
     expect(newPayment!.id).not.toBe(payment!.id);
+    expect(newPayment!.amount).toBe(2200);
     expect(newPayment!.status).toBe(PaymentStatus.PENDING);
     expect(mockStripeCheckoutSessionCreate).toHaveBeenCalledTimes(2);
   });
@@ -883,8 +967,8 @@ describe("completePayment", () => {
         confirmed: true,
         createdAt: signup.createdAt.toISOString(),
         quota: expect.any(Object),
-        position: null,
-        status: null,
+        position: signup.position,
+        status: signup.status,
         confirmableForMillis: 0,
         editableForMillis: expect.any(Number),
         price: payment!.amount, // important

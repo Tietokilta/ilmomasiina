@@ -3,6 +3,13 @@ extends ../layout.pug
 block mainContent
   div.content-block
     p.bodyText Your signup to #{event.title} was accepted from the queue.
+  if paymentStatus == "pending"
+    div.content-block
+      p.bodyText
+        strong Your signup is still pending payment!
+        if event.payments == "online"
+          |
+          | You can complete the payment on the #[a(href=cancelLink) signup page].
   div.content-block
     p.bodyText Event details:
     ul

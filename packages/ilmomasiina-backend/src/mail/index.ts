@@ -3,6 +3,7 @@ import { existsSync } from "fs";
 import i18next from "i18next";
 import path from "path";
 
+import { SignupPaymentStatus } from "@tietokilta/ilmomasiina-models";
 import config, { adminUrl } from "../config";
 import i18n from "../i18n";
 import { Event } from "../models/event";
@@ -21,6 +22,7 @@ export interface ConfirmationMailParams {
   admin: boolean;
   date: string | null;
   event: Event;
+  paymentStatus: SignupPaymentStatus | null;
   cancelLink: string;
 }
 
@@ -44,6 +46,7 @@ export interface NewUserMailParams {
 export interface PromotedFromQueueMailParams {
   event: Event;
   date: string | null;
+  paymentStatus: SignupPaymentStatus | null;
   cancelLink: string;
 }
 

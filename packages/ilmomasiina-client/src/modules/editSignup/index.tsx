@@ -1,7 +1,7 @@
 import React, { PropsWithChildren, useMemo } from "react";
 
 import type { SignupForEditResponse, SignupUpdateResponse } from "@tietokilta/ilmomasiina-models";
-import { EDIT_TOKEN_HEADER, SignupPaymentStatus } from "@tietokilta/ilmomasiina-models";
+import { EDIT_TOKEN_HEADER, PaymentMode, SignupPaymentStatus, SignupStatus } from "@tietokilta/ilmomasiina-models";
 import { ApiError, apiFetch } from "../../api";
 import { useAbortablePromise } from "../../utils/abortable";
 import { getLocalizedEvent, getLocalizedSignup } from "../../utils/localizedEvent";
@@ -77,12 +77,18 @@ export function useEditSignupState({ id, editToken, paid, language }: EditSignup
         canEditNameAndEmail: !editingClosedOnLoad && isNew,
         // Allow editing of paid questions only if canEdit and not already paid.
         canEditPaidQuestions: !editingClosedOnLoad && !alreadyPaid,
+        // The signup can be paid online if payments are enabled and the signup is pending payment.
+        canPayOnline:
+          response.event.payments === PaymentMode.ONLINE &&
+          response.signup.paymentStatus === SignupPaymentStatus.PENDING,
+        isInQuota:
+          response.signup.status === SignupStatus.IN_QUOTA || response.signup.status === SignupStatus.IN_OPEN_QUOTA,
 
         updateSignup: (update: SignupUpdateResponse) => {
           // Only store the update if the hook hasn't unmounted.
           if (!signal.aborted) setUpdated(update);
         },
-      };
+      } satisfies Partial<State>;
     },
     [id, editToken, paid],
   );

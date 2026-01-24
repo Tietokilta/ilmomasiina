@@ -675,6 +675,8 @@ describe("validateAnswersAndGetProducts", () => {
         prices: [100, 200, 300],
       };
 
+      consoleWarn.mockImplementation(() => {}); // Suppress expected warning log
+
       const { answerErrors } = validateQuestion(question, ["Option A"]);
       expect(answerErrors).toEqual({ [question.id]: SignupFieldError.DUPLICATE_OPTION });
     });
@@ -685,6 +687,8 @@ describe("validateAnswersAndGetProducts", () => {
         options: ["Option A", "Option B", "Option C"],
         prices: [100, 200, 300],
       };
+
+      consoleWarn.mockImplementation(() => {}); // Suppress expected warning log
 
       const { answerErrors } = validateQuestion(question, ["Vaihtoehto A"], {
         question: "Kysymys",
@@ -704,6 +708,8 @@ describe("validateAnswersAndGetProducts", () => {
         options: ["Vaihtoehto A", "Vaihtoehto B", "Option B"], // duplicate Option B
       };
 
+      consoleWarn.mockImplementation(() => {}); // Suppress expected warning log
+
       const { answerErrors } = validateQuestion(question, ["Option A"], localizedQuestion);
       expect(answerErrors).toEqual({ [question.id]: SignupFieldError.DUPLICATE_OPTION });
     });
@@ -722,6 +728,8 @@ describe("validateAnswersAndGetProducts", () => {
         question: "Fråga",
         options: ["Alternativ A", "Alternativ B", "Vaihtoehto B"], // duplicate Vaihtoehto B
       };
+
+      consoleWarn.mockImplementation(() => {}); // Suppress expected warning log
 
       const { answerErrors } = validateQuestion(question, ["Option A"], secondLocale, thirdLocale);
       expect(answerErrors).toEqual({ [question.id]: SignupFieldError.DUPLICATE_OPTION });

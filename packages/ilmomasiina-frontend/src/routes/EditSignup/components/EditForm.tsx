@@ -15,7 +15,7 @@ import {
   useStartPayment,
   useUpdateSignup,
 } from "@tietokilta/ilmomasiina-client";
-import { ErrorCode, PaymentMode, SignupPaymentStatus, SignupValidationError } from "@tietokilta/ilmomasiina-models";
+import { ErrorCode, SignupPaymentStatus, SignupValidationError } from "@tietokilta/ilmomasiina-models";
 import LinkButton from "../../../components/LinkButton";
 import type { TKey } from "../../../i18n";
 import paths from "../../../paths";
@@ -27,7 +27,7 @@ import DeleteSignup from "./DeleteSignup";
 import { formDataToSignupUpdate, SignupFormData, signupToFormData } from "./formData";
 import NarrowContainer from "./NarrowContainer";
 import QuestionFields from "./QuestionFields";
-import SignupStatus from "./SignupStatus";
+import SignupStatusAndPosition from "./SignupStatusAndPosition";
 
 type PaymentProps = {
   disabled: boolean;
@@ -35,7 +35,7 @@ type PaymentProps = {
 };
 
 const Payment = ({ disabled, onPay }: PaymentProps) => {
-  const { signup, event, paymentError } = useEditSignupContext();
+  const { signup, paymentError, canPayOnline, isInQuota } = useEditSignupContext();
   const formatPrice = useDecimalPriceFormatter(signup!.currency ?? CURRENCY);
   const { t } = useTranslation();
 
@@ -43,12 +43,17 @@ const Payment = ({ disabled, onPay }: PaymentProps) => {
   if (paymentError) {
     alert = <Alert variant="danger">{t(errorDesc<TKey>(paymentError, "editSignup.paymentError"))}</Alert>;
   } else if (signup!.paymentStatus === SignupPaymentStatus.PENDING) {
-    alert = <Alert variant="info">{t("editSignup.payment.status.pending")}</Alert>;
+    if (isInQuota) {
+      alert = <Alert variant="info">{t("editSignup.payment.status.pending")}</Alert>;
+    } else {
+      alert = <Alert variant="info">{t("editSignup.payment.status.inQueue")}</Alert>;
+    }
   } else if (signup!.paymentStatus === SignupPaymentStatus.PAID) {
     alert = <Alert variant="success">{t("editSignup.payment.status.paid")}</Alert>;
   } else if (signup!.paymentStatus === SignupPaymentStatus.REFUNDED) {
     alert = <Alert variant="info">{t("editSignup.payment.status.refunded")}</Alert>;
   }
+
   return (
     <section className="ilmo--payment-summary">
       <h2>{t("editSignup.title.payment")}</h2>
@@ -73,9 +78,9 @@ const Payment = ({ disabled, onPay }: PaymentProps) => {
           </tr>
         </tfoot>
       </Table>
-      {event!.payments === PaymentMode.ONLINE && signup!.paymentStatus === SignupPaymentStatus.PENDING && (
+      {canPayOnline && (
         <nav className="ilmo--submit-buttons">
-          <Button variant="primary" onClick={onPay} disabled={disabled}>
+          <Button variant="primary" onClick={onPay} disabled={disabled || !isInQuota}>
             {t("editSignup.action.pay")}
           </Button>
         </nav>
@@ -198,7 +203,7 @@ const EditFormBody = ({ handleSubmit, processing, onDelete, onPay }: BodyProps) 
                   : t("editSignup.title.edit")
           }
         </h2>
-        <SignupStatus />
+        <SignupStatusAndPosition />
         <EditableUntil />
         <SubmitError />
         <BsForm onSubmit={onSubmit} className="ilmo--form">

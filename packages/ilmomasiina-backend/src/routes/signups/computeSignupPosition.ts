@@ -1,41 +1,16 @@
 import debug from "debug";
-import moment from "moment-timezone";
 import { Transaction, WhereOptions } from "sequelize";
 
 import { AuditEvent, SignupStatus } from "@tietokilta/ilmomasiina-models";
 import { internalAuditLogger } from "../../auditlog";
-import config, { editSignupUrl } from "../../config";
-import i18n from "../../i18n";
-import EmailService from "../../mail";
+import { sendPromotedFromQueueMail } from "../../mail/signups";
 import { getSequelize } from "../../models";
 import { Event } from "../../models/event";
 import { Quota } from "../../models/quota";
 import { Signup } from "../../models/signup";
 import { WouldMoveSignupsToQueue } from "../admin/events/errors";
-import { generateToken } from "./editTokens";
 
 const perfLog = debug("app:perf:signups");
-
-async function sendPromotedFromQueueMail(signup: Signup, eventId: Event["id"]) {
-  if (signup.email === null) return;
-
-  const lang = signup.language ?? config.defaultLanguage;
-
-  // Re-fetch event for all attributes
-  const event = await Event.findByPk(eventId);
-  if (event === null) throw new Error("event missing when sending queue email");
-
-  const editToken = generateToken(signup.id);
-  const cancelLink = editSignupUrl({ id: signup.id, editToken, lang });
-
-  const dateFormat = i18n.t("dateFormat.general", { lng: lang });
-  const params = {
-    event,
-    date: event.date && moment(event.date).tz(config.timezone).format(dateFormat),
-    cancelLink,
-  };
-  await EmailService.sendPromotedFromQueueMail(signup.email, signup.language, params);
-}
 
 /** Internal, non-batched version. See below for explanation of what this does. */
 async function refreshSignupPositionsInternal(
@@ -125,7 +100,7 @@ async function refreshSignupPositionsInternal(
   await Promise.all(
     result.map(async ({ signup, status }) => {
       if (signup.status === SignupStatus.IN_QUEUE && status !== SignupStatus.IN_QUEUE) {
-        sendPromotedFromQueueMail(signup, event.id);
+        await sendPromotedFromQueueMail(signup);
 
         await internalAuditLogger(AuditEvent.PROMOTE_SIGNUP, {
           signup,
