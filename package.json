@@ -40,7 +40,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-simple-import-sort": "^12.1.1",
-    "prettier": "^3.7.4",
+    "prettier": "^3.8.0",
     "typescript": "~5.9.3"
   },
   "browserslist": {
@@ -71,8 +71,6 @@
     "overrides": {
       "react-final-form@6.5.9>react": "^19.2.0",
       "react-final-form-arrays@3.1.4>react": "^19.2.0",
-      "email-templates@*>preview-email": "-",
-      "@types/email-templates@*>juice": "^11.1.0",
       "@types/nodemailer@*>@aws-sdk/client-sesv2": "-"
     }
   }

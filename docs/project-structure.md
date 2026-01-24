@@ -44,9 +44,9 @@ The project is divided into four packages. Source folders are listed under each,
     - `src/routes`: API route implementations. Most code goes here.
     - `src/cron`: Functions that run periodical maintenance tasks.
     - `src/locales`: Locale files for things like email subjects.
-    - `src/mail`: Code for formatting and sending emails.
-    - `emails`: Pug templates and CSS for email templates.
-    - `test`: Backend test code.
+    - `src/mail`: Code for formatting and sending emails, plus react and CSS for templates.
+    - `test/unit`: Unit tests for backend functions.
+    - `test/routes`: Integration tests for API routes.
 - `ilmomasiina-client` contains reusable client code for the user-facing parts of the frontend.
     - `src/modules`: API access and minimal state logic for each route provided by this package.
       See [state-context.md](./state-context.md) for more on what these files contain.

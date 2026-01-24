@@ -1,5 +1,8 @@
 {
   "rules": {
+    // We use jsx-react mode.
+    "react/jsx-uses-react": "off",
+    "react/react-in-jsx-scope": "off",
     // Used server-side.
     "no-console": "off"
   },
