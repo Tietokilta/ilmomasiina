@@ -1,12 +1,16 @@
 import type { PropsWithChildren } from "react";
+import { useTranslation } from "react-i18next";
 
 import config from "../../config";
 
 export default function Layout({ children }: PropsWithChildren) {
+  const {
+    i18n: { language },
+  } = useTranslation();
   return (
-    <html lang="fi">
+    <html lang={language}>
       <head>
-        <meta name="viewport" content="width-device-width" />
+        <meta name="viewport" content="width=device-width" />
         <meta httpEquiv="Content-Type" content="text/html; charset=UTF-8" />
         <title>Ilmomasiina</title>
         <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" data-inline />
