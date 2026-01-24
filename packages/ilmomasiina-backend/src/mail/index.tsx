@@ -1,9 +1,8 @@
-import { readFileSync } from "fs";
-import juice from "juice";
 import path from "path";
 import type { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { I18nextProvider } from "react-i18next";
+import inline from "web-resource-inliner";
 
 import config from "../config";
 import i18n from "../i18n";
@@ -16,23 +15,32 @@ import ResetPassword from "./templates/ResetPassword";
 
 export type { ConfirmationMailParams, CredentialsMailParams, PaymentMailParams, QueueMailParams };
 
-const styles = readFileSync(path.resolve(__dirname, "styles.css"), "utf-8");
+const assetsDir = path.resolve(__dirname, "../../emails");
 
 const DOCTYPE =
   '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">';
 
-function renderEmail(element: ReactElement, language: string): string {
+async function renderEmail(element: ReactElement, language: string): Promise<string> {
   const i18nInstance = i18n.cloneInstance({ lng: language });
 
   const wrapped = <I18nextProvider i18n={i18nInstance}>{element}</I18nextProvider>;
   const html = renderToStaticMarkup(wrapped);
   const withDoctype = `${DOCTYPE}\n${html}`;
 
-  // Skip juice for console transport (keeps output readable)
+  // Skip resource inlining for console transport (keeps output readable)
   if (mailTransporter.transporter.name === "console fallback") {
     return withDoctype;
   }
-  return juice(withDoctype, { extraCss: styles });
+  return new Promise((resolve, reject) => {
+    inline.html(
+      {
+        fileContent: withDoctype,
+        relativeTo: assetsDir,
+        strict: true,
+      },
+      (error: unknown, inlined: string) => (error ? reject(error) : resolve(inlined)),
+    );
+  });
 }
 
 function getLanguage(language: string | null): string {
@@ -55,7 +63,7 @@ export default class EmailService {
     try {
       const lng = getLanguage(language);
       const subject = i18n.t(`emails.confirmation.${params.type}.subject`, { lng, event: params.event.title });
-      const html = renderEmail(<Confirmation {...params} />, lng);
+      const html = await renderEmail(<Confirmation {...params} />, lng);
       await EmailService.send(to, subject, html);
     } catch (error) {
       console.error(error);
@@ -66,7 +74,7 @@ export default class EmailService {
     try {
       const lng = getLanguage(language);
       const subject = i18n.t("emails.payment.subject", { lng, event: params.event.title });
-      const html = renderEmail(<Payment {...params} />, lng);
+      const html = await renderEmail(<Payment {...params} />, lng);
       await EmailService.send(to, subject, html);
     } catch (error) {
       console.error(error);
@@ -77,7 +85,7 @@ export default class EmailService {
     try {
       const lng = getLanguage(language);
       const subject = i18n.t("emails.newUser.subject", { lng });
-      const html = renderEmail(<NewUser {...params} />, lng);
+      const html = await renderEmail(<NewUser {...params} />, lng);
       await EmailService.send(to, subject, html);
     } catch (error) {
       console.error(error);
@@ -88,7 +96,7 @@ export default class EmailService {
     try {
       const lng = getLanguage(language);
       const subject = i18n.t("emails.resetPassword.subject", { lng });
-      const html = renderEmail(<ResetPassword {...params} />, lng);
+      const html = await renderEmail(<ResetPassword {...params} />, lng);
       await EmailService.send(to, subject, html);
     } catch (error) {
       console.error(error);
@@ -99,7 +107,7 @@ export default class EmailService {
     try {
       const lng = getLanguage(language);
       const subject = i18n.t("emails.queueMail.subject", { lng, event: params.event.title });
-      const html = renderEmail(<QueueMail {...params} />, lng);
+      const html = await renderEmail(<QueueMail {...params} />, lng);
       await EmailService.send(to, subject, html);
     } catch (error) {
       console.error(error);
