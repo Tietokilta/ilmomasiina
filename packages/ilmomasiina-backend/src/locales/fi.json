@@ -1,10 +1,36 @@
 {
   "translation": {
     "dateFormat.general": "DD.MM.YYYY HH:mm",
+
     "emails.confirmation.signup.subject": "Ilmoittautumisvahvistus: {{event}}",
     "emails.confirmation.edit.subject": "Muokkausvahvistus: {{event}}",
+    "emails.adminSignup": "Ylläpitäjä on ilmoittanut sinut tapahtumaan.",
+    "emails.adminEdit": "Ylläpitäjä on muokannut ilmoittautumistasi.",
+    "emails.pendingPayment": "Ilmoittautumisesi odottaa vielä maksua!",
+    "emails.completePayment": "Voit suorittaa maksun <1>ilmoittautumissivulla</1>.",
+    "emails.queuePosition": "Olet jonossa sijalla {{position}}.",
+    "emails.queueNotify": "Jos saat paikan jonosta, sinulle lähetetään ilmoitus sähköpostitse.",
+
     "emails.newUser.subject": "Käyttäjätunnukset Ilmomasiinaan",
-    "emails.promotedFromQueue.subject": "Pääsit varasijalta tapahtumaan {{event}}",
-    "emails.resetPassword.subject": "Salasanasi Ilmomasiinaan on nollattu"
+    "emails.newUser.created": "Sinulle on luotu admin-tunnukset Ilmomasiinaan.",
+    "emails.newUser.password": "Salasana",
+
+    "emails.resetPassword.subject": "Salasanasi Ilmomasiinaan on nollattu",
+    "emails.resetPassword.reset": "Salasanasi Ilmomasiinaan on nollattu.",
+    "emails.resetPassword.newPassword": "Uusi salasana",
+
+    "emails.queueMail.subject": "Pääsit varasijalta tapahtumaan {{event}}",
+    "emails.queueMail.accepted": "Olet päässyt mukaan tapahtumaan {{event}} varasijalta.",
+
+    "emails.eventDetails": "Tapahtuman tiedot:",
+    "emails.event": "Tapahtuma",
+    "emails.location": "Sijainti",
+    "emails.time": "Aika",
+    "emails.signupDetails": "Ilmoittautumisesi tiedot:",
+    "emails.name": "Nimi",
+    "emails.email": "Sähköposti",
+    "emails.quota": "Kiintiö",
+    "emails.editLink": "Mikäli haluat muokata tai perua ilmoittautumisesi, voit tehdä sen painamalla tätä <1>linkkiä</1>.",
+    "emails.login": "Voit kirjautua sisään osoitteessa <1>{{url}}</1>."
   }
 }

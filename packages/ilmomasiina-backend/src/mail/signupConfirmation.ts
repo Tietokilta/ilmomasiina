@@ -37,9 +37,9 @@ export default async function sendSignupConfirmationMail(
   const date = event.date && moment(event.date).tz(config.timezone).format(dateFormat);
 
   const editToken = generateToken(signup.id);
-  const cancelLink = editSignupUrl({ id: signup.id, editToken, lang: signup.language || config.defaultLanguage });
+  const signupLink = editSignupUrl({ id: signup.id, editToken, lang: signup.language || config.defaultLanguage });
 
-  const params = {
+  const params: ConfirmationMailParams = {
     name: fullName,
     email: signup.email,
     quota: quota.title,
@@ -49,7 +49,7 @@ export default async function sendSignupConfirmationMail(
     admin,
     date,
     event,
-    cancelLink,
+    signupLink,
   };
 
   await EmailService.sendConfirmationMail(signup.email, signup.language, params);

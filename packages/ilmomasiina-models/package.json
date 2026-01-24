@@ -31,6 +31,6 @@
     "typescript": "~5.9.3"
   },
   "dependencies": {
-    "typebox": "^1.0.74"
+    "typebox": "^1.0.79"
   }
 }

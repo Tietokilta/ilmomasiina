@@ -4,14 +4,15 @@ import { Transaction, WhereOptions } from "sequelize";
 
 import { AuditEvent, SignupStatus } from "@tietokilta/ilmomasiina-models";
 import { internalAuditLogger } from "../../auditlog";
-import config from "../../config";
+import config, { editSignupUrl } from "../../config";
 import i18n from "../../i18n";
-import EmailService from "../../mail";
+import EmailService, { QueueMailParams } from "../../mail";
 import { getSequelize } from "../../models";
 import { Event } from "../../models/event";
 import { Quota } from "../../models/quota";
 import { Signup } from "../../models/signup";
 import { WouldMoveSignupsToQueue } from "../admin/events/errors";
+import { generateToken } from "./editTokens";
 
 const perfLog = debug("app:perf:signups");
 
@@ -24,9 +25,14 @@ async function sendPromotedFromQueueMail(signup: Signup, eventId: Event["id"]) {
 
   const lng = signup.language ?? undefined;
   const dateFormat = i18n.t("dateFormat.general", { lng });
-  const params = {
+
+  const editToken = generateToken(signup.id);
+  const signupLink = editSignupUrl({ id: signup.id, editToken, lang: signup.language || config.defaultLanguage });
+
+  const params: QueueMailParams = {
     event,
     date: event.date && moment(event.date).tz(config.timezone).format(dateFormat),
+    signupLink,
   };
   await EmailService.sendPromotedFromQueueMail(signup.email, signup.language, params);
 }
