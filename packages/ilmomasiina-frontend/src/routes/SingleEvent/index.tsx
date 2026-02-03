@@ -5,8 +5,10 @@ import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 
 import { errorDesc, errorTitle, SingleEventProvider, useSingleEventContext } from "@tietokilta/ilmomasiina-client";
+import branding from "../../branding";
 import { TKey } from "../../i18n";
 import paths from "../../paths";
+import useDocumentTitle from "../../utils/useDocumentTitle";
 import EventDescription from "./components/EventDescription";
 import QuotaStatus from "./components/QuotaStatus";
 import SignupCountdown from "./components/SignupCountdown";
@@ -17,6 +19,8 @@ import "./SingleEvent.scss";
 const SingleEventView = () => {
   const { localizedEvent: event, signupsByQuota, pending, error } = useSingleEventContext();
   const { t } = useTranslation();
+
+  useDocumentTitle(`${event?.title ?? t("events.title")} - ${branding.headerTitleShort}`);
 
   if (error) {
     return (
