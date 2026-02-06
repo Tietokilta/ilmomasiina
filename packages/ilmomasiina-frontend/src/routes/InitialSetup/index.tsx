@@ -16,6 +16,7 @@ import paths from "../../paths";
 import useEvent from "../../utils/useEvent";
 
 import "./InitialSetup.scss";
+import useDocumentTitle from "src/utils/useDocumentTitle";
 
 type FormData = {
   email: string;
@@ -55,6 +56,8 @@ const InitialSetup = () => {
   const { createInitialUser } = useStore((state) => state.auth);
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  useDocumentTitle(`${t("initialSetup.title")} - ${branding.headerTitle}`);
 
   const onSubmit = useEvent(async (data: FormData) => {
     const { email, password } = data;
