@@ -21,7 +21,7 @@ export const frontendsSchema = z.record(
     eventDetailsUrl: z
       .url({ protocol: /^https?/ })
       .refine((url) => url.includes("{slug}"), { error: "eventDetailsUrl must include {slug}" })
-      .optional(),
+      .nullish(),
 
     /** URL template for a signup edit page. Used for emails. Contains `{id}` and `{editToken}`, may contain `{lang}`.
      *
@@ -33,7 +33,7 @@ export const frontendsSchema = z.record(
       .url({ protocol: /^https?/ })
       .refine((url) => url.includes("{id}"), { error: "editSignupUrl must include {id}" })
       .refine((url) => url.includes("{editToken}"), { error: "editSignupUrl must include {editToken}" })
-      .optional(),
+      .nullish(),
 
     /** URL template for a signup payment completion page. Used for payments. Contains `{id}` and `{editToken}`, may contain `{lang}`.
      *
@@ -45,7 +45,7 @@ export const frontendsSchema = z.record(
       .url({ protocol: /^https?/ })
       .refine((url) => url.includes("{id}"), { error: "completePaymentUrl must include {id}" })
       .refine((url) => url.includes("{editToken}"), { error: "completePaymentUrl must include {editToken}" })
-      .optional(),
+      .nullish(),
 
     /** URL template for the admin main page. Used for emails. May contain `{lang}`.
      *
@@ -53,12 +53,19 @@ export const frontendsSchema = z.record(
      *
      * @example "http://example.com/{lang}/admin"
      */
-    adminUrl: z.url({ protocol: /^https?/ }).optional(),
+    adminUrl: z.url({ protocol: /^https?/ }).nullish(),
   }),
 );
 
 export type FrontendConfig = z.infer<typeof frontendsSchema>[string];
-export type FrontendsConfig = z.infer<typeof frontendsSchema> & { default: Required<FrontendConfig> };
+export type FrontendsConfig = z.infer<typeof frontendsSchema> & {
+  default: {
+    eventDetailsUrl: string;
+    editSignupUrl: string;
+    completePaymentUrl: string;
+    adminUrl: string;
+  };
+};
 
 /** Validation schema for Stripe branding settings.
  *
