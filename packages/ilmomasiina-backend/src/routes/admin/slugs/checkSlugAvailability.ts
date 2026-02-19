@@ -8,7 +8,7 @@ export default async function checkSlugAvailability(
   response: FastifyReply,
 ): Promise<CheckSlugResponse> {
   const event = await Event.findOne({
-    where: request.params,
+    where: { slug: request.params.slug },
     attributes: ["id", "title"],
   });
 
