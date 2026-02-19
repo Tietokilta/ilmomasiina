@@ -13,6 +13,9 @@ env:
   branding_footer_home_link: "https://tietokilta.fi"
   branding_login_placeholder_email: "admin@tietokilta.fi"
 
+  # The actual values come from Terraform, so we just need to define the keys.
+  frontends: '{"default":{},"juhlavuosi.fi":{}}'
+
 on:
   push:
     tags: ["v*"]
@@ -103,6 +106,7 @@ jobs:
             BRANDING_FOOTER_HOME_TEXT=${{ env.branding_footer_home_text }}
             BRANDING_FOOTER_HOME_LINK=${{ env.branding_footer_home_link }}
             BRANDING_LOGIN_PLACEHOLDER_EMAIL=${{ env.branding_login_placeholder_email }}
+            FRONTENDS=${{ env.frontends }}
             VERSION=${{steps.get-version.outputs.version}}
     outputs:
       tag: ${{ steps.meta.outputs.version }}
