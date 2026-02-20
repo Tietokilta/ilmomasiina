@@ -23,7 +23,7 @@ export function useEditSignupState({ id, editToken, paid, language }: EditSignup
   const [updated, setUpdated] = React.useState<SignupUpdateResponse | null>(null);
 
   const {
-    result: original,
+    result: initialValues,
     error,
     pending,
   } = useAbortablePromise(
@@ -53,37 +53,16 @@ export function useEditSignupState({ id, editToken, paid, language }: EditSignup
           },
         });
       }
-
-      const isNew = !response.signup.confirmed;
-      const alreadyPaid = response.signup.paymentStatus === SignupPaymentStatus.PAID;
-
       const now = Date.now();
-      const editingClosedOnLoad = response.signup.editableForMillis === 0;
 
+      // Return here only the things that don't change when updating the signup.
+      // (Technically the event could change, but it's not returned with SignupUpdateResponse.)
       return {
-        ...response,
+        event: response.event,
+        signup: response.signup,
         paymentError,
-        // Compute these once when the response arrives.
-        editingClosedOnLoad,
         confirmableUntil: now + response.signup.confirmableForMillis,
         editableUntil: now + response.signup.editableForMillis,
-        isNew,
-
-        // Show payment if there's a price to pay.
-        showPayment: response.signup.price != null && response.signup.price > 0,
-        // Allow editing for non-admins if not closed.
-        canEdit: !editingClosedOnLoad,
-        // Allow name and email editing for non-admins if canEdit and the signup is not confirmed.
-        canEditNameAndEmail: !editingClosedOnLoad && isNew,
-        // Allow editing of paid questions only if canEdit and not already paid.
-        canEditPaidQuestions: !editingClosedOnLoad && !alreadyPaid,
-        // The signup can be paid online if payments are enabled and the signup is pending payment.
-        canPayOnline:
-          response.event.payments === PaymentMode.ONLINE &&
-          response.signup.paymentStatus === SignupPaymentStatus.PENDING,
-        isInQuota:
-          response.signup.status === SignupStatus.IN_QUOTA || response.signup.status === SignupStatus.IN_OPEN_QUOTA,
-
         updateSignup: (update: SignupUpdateResponse) => {
           // Only store the update if the hook hasn't unmounted.
           if (!signal.aborted) setUpdated(update);
@@ -93,26 +72,54 @@ export function useEditSignupState({ id, editToken, paid, language }: EditSignup
     [id, editToken, paid],
   );
 
-  // Merge any updates into the result.
-  const result = useMemo(
-    () => (original && updated ? { ...original, signup: { ...original.signup, ...updated } } : original),
-    [original, updated],
-  );
+  // Merge any updates into the result and compute some derived state.
+  const initialEvent = initialValues?.event;
+  const initialSignup = initialValues?.signup;
+  const mergedValues = useMemo(() => {
+    if (!initialEvent || !initialSignup) return undefined;
+
+    const event = initialEvent;
+    const signup = { ...initialSignup, ...updated };
+
+    const isNew = !signup.confirmed;
+    const alreadyPaid = signup.paymentStatus === SignupPaymentStatus.PAID;
+    const editingClosedOnLoad = signup.editableForMillis === 0;
+
+    return {
+      event,
+      signup,
+      isNew,
+      editingClosedOnLoad,
+      // Show payment if there's a price to pay.
+      showPayment: signup.price != null && signup.price > 0,
+      // Allow editing for non-admins if not closed.
+      canEdit: !editingClosedOnLoad,
+      // Allow name and email editing for non-admins if canEdit and the signup is not confirmed.
+      canEditNameAndEmail: !editingClosedOnLoad && isNew,
+      // Allow editing of paid questions only if canEdit and not already paid.
+      canEditPaidQuestions: !editingClosedOnLoad && !alreadyPaid,
+      // The signup can be paid online if payments are enabled and the signup is pending payment.
+      canPayOnline: event.payments === PaymentMode.ONLINE && signup.paymentStatus === SignupPaymentStatus.PENDING,
+      // The signup is considered in quota if it's in quota or in open quota.
+      isInQuota: signup.status === SignupStatus.IN_QUOTA || signup.status === SignupStatus.IN_OPEN_QUOTA,
+    } satisfies Partial<State>;
+  }, [initialEvent, initialSignup, updated]);
 
   const localizedEvent = useMemo(
-    () => (result && language ? getLocalizedEvent(result.event, language) : result?.event),
-    [result, language],
+    () => (mergedValues && language ? getLocalizedEvent(mergedValues.event, language) : mergedValues?.event),
+    [mergedValues, language],
   );
   const localizedSignup = useMemo(
-    () => (result && language ? getLocalizedSignup(result, language) : result?.signup),
-    [result, language],
+    () => (mergedValues && language ? getLocalizedSignup(mergedValues, language) : mergedValues?.signup),
+    [mergedValues, language],
   );
 
   return useShallowMemo<State>({
     editToken,
     pending,
     error: error as ApiError | undefined,
-    ...result,
+    ...initialValues,
+    ...mergedValues,
     localizedEvent,
     localizedSignup,
   });
