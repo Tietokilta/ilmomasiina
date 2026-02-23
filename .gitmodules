@@ -1,0 +1,6 @@
+[submodule "packages/ilmomasiina-receiptgen/laskugeneraattori"]
+	path = packages/ilmomasiina-receiptgen/laskugeneraattori
+	url = git@github.com:Tietokilta/laskugeneraattori.git
+[submodule "packages/ilmomasiina-receiptgen/crates/vendor/receipt-core"]
+	path = packages/ilmomasiina-receiptgen/crates/vendor/receipt-core
+	url = git@github.com:Tietokilta/laskugeneraattori

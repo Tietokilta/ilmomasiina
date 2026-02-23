@@ -75,5 +75,8 @@
       "@types/email-templates@*>juice": "^11.1.0",
       "@types/nodemailer@*>@aws-sdk/client-sesv2": "-"
     }
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.4"
   }
 }
