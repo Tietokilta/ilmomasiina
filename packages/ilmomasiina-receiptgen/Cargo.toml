@@ -1,8 +1,8 @@
 [package]
-name = "receiptgen-node"
+name = "ilmomasiina_receiptgen"
 version = "0.1.0"
 edition = "2021"
-authors = ["Luukas Pörtfors <lajp@iki.fi>"]
+authors = ["Lasse Kukkula <lasse.kukkula@tietokilta.fi>"]
 
 [lib]
 crate-type = ["cdylib"]
@@ -12,5 +12,5 @@ crate-type = ["cdylib"]
 napi = { version = "3", default-features = false, features = ["napi8"] }
 napi-derive = "3"
 serde_json = "1.0.145"
-laskugeneraattori = { path = ".." }
+laskugeneraattori = { path = "./crates/vendor/laskugeneraattori" }
 garde = { version = "0.22.0", features = ["derive"] }

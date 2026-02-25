@@ -6,7 +6,7 @@ import i18n, { i18nResources, knownLanguages } from "./i18n";
 import { envBoolean, envEnum, envInteger, envJson, envString, frontendFilesPath } from "./util/config";
 
 // Vite/Vitest sets BASE_URL. This conflicts with our config, but isn't used
-// in tests, so just overwrite it.
+// in test, so just overwrite it.
 if (process.env.VITEST) {
   process.env.BASE_URL = "http://localhost:3000/";
 }
@@ -104,7 +104,7 @@ const config = {
   dbPassword: envString("DB_PASSWORD", null),
   /** Database name. */
   dbDatabase: envString("DB_DATABASE"),
-  /** Required to run tests, as they reset the test database for every test. */
+  /** Required to run test, as they reset the test database for every test. */
   allowTestsToResetDb: envBoolean("THIS_IS_A_TEST_DB_AND_CAN_BE_WIPED", false),
 
   /** Salt for generating legacy edit tokens. Used only to keep tokens valid from a previous installation. */

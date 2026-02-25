@@ -1,0 +1,9 @@
+{
+  "receipt_number": "123456",
+  "purchaser_name": "John Doe",
+  "purchaser_email": "test@test.fi",
+  "rows": [
+    { "product": "Product 1", "vat": 255, "unit_price": 10 },
+    { "product": "Product 2", "vat": 140, "unit_price": 20 }
+  ]
+}

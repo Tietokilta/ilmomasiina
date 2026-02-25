@@ -447,7 +447,7 @@ describe("startPayment", () => {
 });
 
 describe("payment and signup update locking", () => {
-  // TODO: These tests verify the correctness of the locking logic and state transitions,
+  // TODO: These test verify the correctness of the locking logic and state transitions,
   //  but they do NOT test true concurrent/parallel execution with simulated race conditions.
 
   test("signup update expires existing PENDING payment", async () => {

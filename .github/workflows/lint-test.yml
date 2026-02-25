@@ -94,7 +94,7 @@ jobs:
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
 
-    - name: Run tests
+    - name: Run test
       run: |
         cp .env.test.example .env.test
         npm run test

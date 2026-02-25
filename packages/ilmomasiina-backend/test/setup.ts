@@ -44,7 +44,7 @@ beforeEach(async () => {
   faker.seed(133742069);
 
   if (sequelize) {
-    // Delete test data that can conflict between tests.
+    // Delete test data that can conflict between test.
     await User.truncate({ cascade: true, force: true });
     await Payment.truncate({ cascade: true, force: true });
     // Event truncation cascades to all other event data:

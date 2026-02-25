@@ -5,7 +5,8 @@ module.exports = {
       "packages/ilmomasiina-models/tsconfig.json",
       "packages/ilmomasiina-client/tsconfig.json",
       "packages/ilmomasiina-frontend/tsconfig.json",
-      "packages/ilmomasiina-backend/tsconfig.json"
+      "packages/ilmomasiina-backend/tsconfig.json",
+      "packages/ilmomasiina-receiptgen/tsconfig.json",
     ],
     "tsconfigRootDir": __dirname,
     // https://github.com/typescript-eslint/typescript-eslint/issues/2094
@@ -22,7 +23,8 @@ module.exports = {
     "*.png",
     "*.md",
     "*.scss",
-    "*.json"
+    "*.json",
+    "*.pdf"
   ],
   "settings": {
     "react": {
