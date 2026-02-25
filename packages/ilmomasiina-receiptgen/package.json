@@ -1,0 +1,25 @@
+{
+  "name": "ilmomasiina-receiptgen",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "index.node",
+    "crates/**"
+  ],
+  "scripts": {
+    "build": "napi build -o . --manifest-path crates/receiptgen/Cargo.toml -p ilmomasiina_receiptgen",
+    "build:release": "napi build --release -o . --manifest-path crates/receiptgen/Cargo.toml -p ilmomasiina_receiptgen",
+    "test": "git submodule update --recursive && pnpm run build && node --test --import tsx test/**/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.5.1",
+    "@types/node": "^24.10.4",
+    "tsx": "^4.21.0",
+    "typescript": "^5.0.0"
+  }
+}

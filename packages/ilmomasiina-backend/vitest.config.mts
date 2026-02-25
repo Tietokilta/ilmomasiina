@@ -5,8 +5,8 @@ import config from "./src/config";
 
 if (!config.allowTestsToResetDb) {
   throw new Error(
-    "THIS_IS_A_TEST_DB_AND_CAN_BE_WIPED=1 must be set to run tests.\n" +
-      "Warning: Your database is cleared whenever you run tests.",
+    "THIS_IS_A_TEST_DB_AND_CAN_BE_WIPED=1 must be set to run test.\n" +
+      "Warning: Your database is cleared whenever you run test.",
   );
 }
 
