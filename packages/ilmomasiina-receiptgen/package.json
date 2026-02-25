@@ -13,7 +13,7 @@
   "scripts": {
     "build": "napi build -o . --manifest-path crates/receiptgen/Cargo.toml -p ilmomasiina_receiptgen",
     "build:release": "napi build --release -o . --manifest-path crates/receiptgen/Cargo.toml -p ilmomasiina_receiptgen",
-    "test": "pnpm run build && node --test --import tsx test/**/*.test.ts",
+    "test": "git submodule update --recursive && pnpm run build && node --test --import tsx test/**/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
