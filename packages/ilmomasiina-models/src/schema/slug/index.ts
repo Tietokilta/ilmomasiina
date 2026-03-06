@@ -1,4 +1,4 @@
-import { Static, Type } from "@sinclair/typebox";
+import { Static, Type } from "typebox";
 
 import { eventID, eventSlug } from "../event/attributes";
 import { Nullable } from "../utils";

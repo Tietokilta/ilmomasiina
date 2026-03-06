@@ -34,7 +34,7 @@ function eventLogger(ipAddress: string, user?: () => string | null) {
         eventId: event?.id || signup?.quota?.event?.id || null,
         eventName: event?.title || signup?.quota?.event?.title || null,
         signupId: signup?.id || null,
-        signupName: signup ? `${signup.firstName} ${signup.lastName}` : null,
+        signupName: signup?.firstName != null ? `${signup.firstName} ${signup.lastName}` : null,
         extra: extra ? JSON.stringify(extra) : null,
         ipAddress,
       },

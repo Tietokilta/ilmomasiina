@@ -1,7 +1,10 @@
-import { Static, Type } from "@sinclair/typebox";
+import { Static, Type } from "typebox";
 
 import { AuditEvent } from "../../enum";
 import { auditLogItemAttributes } from "./attributes";
+
+/** Default limit for audit log queries. */
+export const AUDIT_LOG_DEFAULT_LIMIT = 100;
 
 /** Query parameters applicable to the audit log API. */
 export const auditLoqQuery = Type.Object({
@@ -34,7 +37,7 @@ export const auditLoqQuery = Type.Object({
   limit: Type.Optional(
     Type.Integer({
       minimum: 0,
-      default: Number.MAX_SAFE_INTEGER, // TODO: Better limits?
+      default: AUDIT_LOG_DEFAULT_LIMIT,
       description: "Maximum number of log events to return.",
     }),
   ),

@@ -1,8 +1,10 @@
 {
   "translation": {
     "dateFormat.general": "DD.MM.YYYY HH:mm",
-    "emails.confirmation.subject": "Signup confirmation: {{event}}",
-    "emails.editConfirmation.subject": "Edit confirmation: {{event}}",
+    "currencyFormat.locale": "en-FI",
+    "emails.confirmation.signup.subject": "Signup confirmation: {{event}}",
+    "emails.confirmation.edit.subject": "Edit confirmation: {{event}}",
+    "emails.paymentConfirmation.subject": "Payment confirmation: {{event}}",
     "emails.newUser.subject": "User created for Ilmomasiina",
     "emails.promotedFromQueue.subject": "You got into {{event}} from the queue",
     "emails.resetPassword.subject": "Your Ilmomasiina password has been reset"

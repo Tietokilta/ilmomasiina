@@ -3,41 +3,42 @@ import { NotFound } from "http-errors";
 import moment from "moment";
 import { Op } from "sequelize";
 
-import type {
+import {
   AdminEventPathParams,
   AdminEventResponse,
+  AdminSignupSchema,
   EventID,
   EventSlug,
+  SignupPaymentStatus,
   UserEventPathParams,
   UserEventResponse,
 } from "@tietokilta/ilmomasiina-models";
+import { Answer } from "../../models/answer";
 import {
   adminEventGetEventAttrs,
+  adminEventGetSignupAttrs,
   eventGetAnswerAttrs,
   eventGetEventAttrs,
   eventGetQuestionAttrs,
   eventGetQuotaAttrs,
   eventGetSignupAttrs,
-} from "@tietokilta/ilmomasiina-models/dist/attrs/event";
-import { Answer } from "../../models/answer";
+} from "../../models/attrs";
 import { Event } from "../../models/event";
+import { Payment } from "../../models/payment";
 import { Question } from "../../models/question";
 import { Quota } from "../../models/quota";
 import { Signup } from "../../models/signup";
 import createCache from "../../util/cache";
-import { StringifyApi } from "../utils";
+import type { StringifyApi } from "../utils";
 
 export const basicEventInfoCached = createCache({
   maxAgeMs: 5000,
   maxPendingAgeMs: 5000,
+  logName: "basicEventInfoCached",
   async get(eventSlug: EventSlug) {
     // First query general event information
     const event = await Event.scope("user").findOne({
-      where: {
-        slug: eventSlug,
-        // are not drafts,
-        draft: false,
-      },
+      where: [{ slug: eventSlug }],
       attributes: eventGetEventAttrs,
       include: [
         {
@@ -59,6 +60,7 @@ export const basicEventInfoCached = createCache({
     return {
       event: {
         ...event.get({ plain: true }),
+        effectiveEndDate: event.effectiveEndDate,
         questions: event.questions!.map((question) => question.get({ plain: true })),
       },
       publicQuestions,
@@ -69,47 +71,44 @@ export const basicEventInfoCached = createCache({
 export const eventDetailsForUserCached = createCache({
   maxAgeMs: 1000,
   maxPendingAgeMs: 1000,
+  logName: "eventDetailsForUserCached",
   async get(eventSlug: EventSlug) {
     const { event, publicQuestions } = await basicEventInfoCached(eventSlug);
 
-    // If registrationEndDate or endDate or date is more than a week ago, return nothing
-    const isOld =
-      event.registrationEndDate &&
-      moment(event.registrationEndDate).isBefore(moment().subtract(7, "days")) &&
-      event.date &&
-      moment(event.date).isBefore(moment().subtract(7, "days")) &&
-      event.endDate &&
-      moment(event.endDate).isBefore(moment().subtract(7, "days"));
+    // If event ended or registration closed than a week ago, don't return signups or quotas
+    const effectiveEnd = event.effectiveEndDate;
+    const isOld = effectiveEnd != null && effectiveEnd < moment().subtract(7, "days").valueOf();
 
-    // Query all quotas for the event
-    const quotas = isOld
-      ? []
-      : await Quota.findAll({
-          where: { eventId: event.id },
-          attributes: eventGetQuotaAttrs,
-          include: [
-            // Include all signups for the quota
-            {
-              model: Signup.scope("active"),
-              attributes: eventGetSignupAttrs,
-              required: false,
-              include: [
-                // ... and public answers of signups
-                {
-                  model: Answer,
-                  attributes: eventGetAnswerAttrs,
-                  required: false,
-                  where: { questionId: { [Op.in]: publicQuestions } },
-                },
-              ],
-            },
-          ],
-          // First sort by Quota order, then by signup creation date
-          order: [
-            ["order", "ASC"],
-            [Signup, "createdAt", "ASC"],
-          ],
-        });
+    let quotas: Quota[] = [];
+    if (!isOld) {
+      // Query all quotas for the event
+      quotas = await Quota.findAll({
+        where: { eventId: event.id },
+        attributes: eventGetQuotaAttrs,
+        include: [
+          // Include all signups for the quota
+          {
+            model: Signup.scope("active"),
+            attributes: eventGetSignupAttrs,
+            required: false,
+            include: [
+              // ... and public answers of signups
+              {
+                model: Answer,
+                attributes: eventGetAnswerAttrs,
+                required: false,
+                where: { questionId: { [Op.in]: publicQuestions } },
+              },
+            ],
+          },
+        ],
+        // First sort by Quota order, then by signup creation date
+        order: [
+          ["order", "ASC"],
+          [Signup, "createdAt", "ASC"],
+        ],
+      });
+    }
 
     return {
       event: {
@@ -123,9 +122,9 @@ export const eventDetailsForUserCached = createCache({
                 // Hide name if necessary
                 firstName: event.nameQuestion && signup.namePublic ? signup.firstName : null,
                 lastName: event.nameQuestion && signup.namePublic ? signup.lastName : null,
-                answers: signup.answers!,
+                answers: signup.answers!.map((answer) => answer.get({ plain: true })),
                 status: signup.status,
-                confirmed: signup.confirmedAt !== null,
+                confirmed: signup.confirmed,
               }))
             : // When signups are not public:
               [],
@@ -140,7 +139,6 @@ export const eventDetailsForUserCached = createCache({
 
 export async function eventDetailsForUser(eventSlug: EventSlug): Promise<UserEventResponse> {
   const { event, registrationStartDate, registrationEndDate } = await eventDetailsForUserCached(eventSlug);
-
   // Dynamic extra fields
   let registrationClosed = true;
   let millisTillOpening = null;
@@ -160,6 +158,18 @@ export async function eventDetailsForUser(eventSlug: EventSlug): Promise<UserEve
     registrationClosed,
   };
   return res as unknown as StringifyApi<typeof res>;
+}
+
+/** Converts a signup with answers included to JSON for the admin API. */
+export function formatSignupForAdmin(signup: Signup): AdminSignupSchema {
+  const plain = signup.get({ plain: true });
+  const result = {
+    ...plain,
+    answers: signup.answers!.map((answer) => answer.get({ plain: true })),
+    confirmed: signup.confirmed,
+    paymentStatus: signup.effectivePaymentStatus,
+  };
+  return result as unknown as StringifyApi<typeof result>;
 }
 
 export async function eventDetailsForAdmin(eventID: EventID): Promise<AdminEventResponse> {
@@ -191,14 +201,19 @@ export async function eventDetailsForAdmin(eventID: EventID): Promise<AdminEvent
     // Include all signups for the quotas
     include: [
       {
-        model: Signup.scope("active"),
-        attributes: [...eventGetSignupAttrs, "id", "email"],
+        model: Signup.scope("admin"),
+        attributes: adminEventGetSignupAttrs,
         required: false,
         // ... and answers of signups
         include: [
           {
             model: Answer,
             attributes: eventGetAnswerAttrs,
+            required: false,
+          },
+          {
+            model: Payment,
+            attributes: ["status"],
             required: false,
           },
         ],
@@ -210,22 +225,27 @@ export async function eventDetailsForAdmin(eventID: EventID): Promise<AdminEvent
       [Signup, "createdAt", "ASC"],
     ],
   });
-
   // Admins get a simple result with many columns
+  // Filter out deleted signups that don't have PAID/REFUNDED status
   const res = {
     ...event.get({ plain: true }),
-    questions: event.questions!.map((question) => question.get({ plain: true })),
+    // updatedAt must be manually repeated here, as it's not present in EventManualAttributes (see models/event.ts)
     updatedAt: event.updatedAt,
-    quotas: quotas.map((quota) => ({
-      ...quota.get({ plain: true }),
-      signups: quota.signups!.map((signup) => ({
-        ...signup.get({ plain: true }),
-        status: signup.status,
-        answers: signup.answers!.map((answer) => answer.get({ plain: true })),
-        confirmed: Boolean(signup.confirmedAt),
-      })),
-      signupCount: quota.signups!.length,
-    })),
+    questions: event.questions!.map((question) => question.get({ plain: true })),
+    quotas: quotas.map((quota) => {
+      const filteredSignups = quota.signups!.filter((signup) => {
+        // Include all non-deleted signups
+        if (!signup.deletedAt) return true;
+        // Only include deleted signups with PAID/REFUNDED status
+        const status = signup.effectivePaymentStatus;
+        return status === SignupPaymentStatus.PAID || status === SignupPaymentStatus.REFUNDED;
+      });
+      return {
+        ...quota.get({ plain: true }),
+        signups: filteredSignups.map(formatSignupForAdmin),
+        signupCount: filteredSignups.filter((s) => !s.deletedAt).length,
+      };
+    }),
   };
   return res as unknown as StringifyApi<typeof res>;
 }

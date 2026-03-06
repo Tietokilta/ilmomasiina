@@ -1,17 +1,14 @@
-import { Static, Type } from "@sinclair/typebox";
+import { Static, Type } from "typebox";
 
 import { password, userAttributes, userID, userIdentity } from "./attributes";
 
 /** Request body for creating an admin user. */
-export const userCreateSchema = Type.Composite([
-  userAttributes,
-  Type.Object({
-    password,
-  }),
-]);
+export const userCreateSchema = Type.Interface([userAttributes], {
+  password,
+});
 
 /** Request body for inviting an admin user. */
-export const userInviteSchema = Type.Composite([userAttributes]);
+export const userInviteSchema = userAttributes;
 
 /** Request body for changing the user's own password. */
 export const userChangePasswordSchema = Type.Object({
@@ -20,7 +17,7 @@ export const userChangePasswordSchema = Type.Object({
 });
 
 /** Schema for a user. */
-export const userSchema = Type.Composite([userIdentity, userAttributes]);
+export const userSchema = Type.Interface([userIdentity, userAttributes], {});
 
 /** Response schema for fetching a list of users. */
 export const userListResponse = Type.Array(userSchema);

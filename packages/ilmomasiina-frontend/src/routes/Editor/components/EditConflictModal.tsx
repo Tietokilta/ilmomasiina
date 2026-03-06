@@ -4,12 +4,11 @@ import { Button, Modal } from "react-bootstrap";
 import { useForm } from "react-final-form";
 import { Trans, useTranslation } from "react-i18next";
 
-import { useActionDateTimeFormatter } from "@tietokilta/ilmomasiina-components/dist/utils/dateFormat";
-import useEvent from "@tietokilta/ilmomasiina-components/dist/utils/useEvent";
 import { EditConflictError } from "@tietokilta/ilmomasiina-models";
-import { editConflictDismissed, reloadEvent } from "../../../modules/editor/actions";
 import { EditorEvent, EditorQuestion, EditorQuota } from "../../../modules/editor/types";
-import { useTypedDispatch, useTypedSelector } from "../../../store/reducers";
+import useStore from "../../../modules/store";
+import { useActionDateTimeFormatter } from "../../../utils/dateFormat";
+import useEvent from "../../../utils/useEvent";
 import { useFieldValue } from "./hooks";
 
 const DeletedQuotasAndQuestions = ({ modal }: { modal: EditConflictError }) => {
@@ -42,8 +41,7 @@ type Props = {
 };
 
 const EditConflictModal = ({ onSave }: Props) => {
-  const dispatch = useTypedDispatch();
-  const modal = useTypedSelector((state) => state.editor.editConflictModal);
+  const { editConflictModal: modal, editConflictDismissed, reloadEvent } = useStore((state) => state.editor);
   const { t } = useTranslation();
   const actionDateFormat = useActionDateTimeFormatter();
 
@@ -79,19 +77,17 @@ const EditConflictModal = ({ onSave }: Props) => {
         };
       }),
     );
-    dispatch(editConflictDismissed());
+    editConflictDismissed();
     onSave();
   });
 
   const revert = useEvent(() => {
-    dispatch(reloadEvent());
-    dispatch(editConflictDismissed());
+    reloadEvent();
+    editConflictDismissed();
   });
 
-  const cancel = useEvent(() => dispatch(editConflictDismissed()));
-
   return (
-    <Modal show={!!modal} onHide={cancel} backdrop="static">
+    <Modal show={!!modal} onHide={editConflictDismissed} backdrop="static">
       <Modal.Header>
         <Modal.Title>{t("editor.editConflict.title")}</Modal.Title>
       </Modal.Header>
@@ -113,7 +109,7 @@ const EditConflictModal = ({ onSave }: Props) => {
         <p>{t("editor.editConflict.info2")}</p>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="muted" onClick={cancel}>
+        <Button variant="muted" onClick={editConflictDismissed}>
           {t("editor.editConflict.action.cancel")}
         </Button>
         <Button variant="secondary" onClick={revert}>

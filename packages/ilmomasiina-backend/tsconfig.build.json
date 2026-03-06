@@ -6,6 +6,6 @@
   },
   "include": ["src/**/*"],
   "references": [
-    { "path": "../ilmomasiina-models" }
+    { "path": "../ilmomasiina-models/tsconfig.cjs.json" }
   ]
 }

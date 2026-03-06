@@ -2,35 +2,31 @@ import React, { useEffect } from "react";
 
 import { Spinner } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
-import { shallowEqual } from "react-redux";
 import { Link } from "react-router-dom";
 
-import { errorDesc, errorTitle } from "@tietokilta/ilmomasiina-components/dist/utils/errorMessage";
+import { errorDesc, errorTitle } from "@tietokilta/ilmomasiina-client";
 import requireAuth from "../../containers/requireAuth";
-import { getUsers, resetState } from "../../modules/adminUsers/actions";
-import appPaths from "../../paths";
-import { useTypedDispatch, useTypedSelector } from "../../store/reducers";
+import type { TKey } from "../../i18n";
+import useStore from "../../modules/store";
+import paths from "../../paths";
 import AdminUserListItem from "./AdminUserListItem";
 import ChangePasswordForm from "./ChangePasswordForm";
 import UserForm from "./UserForm";
 
 const AdminUsersList = () => {
-  const dispatch = useTypedDispatch();
-  const { users, loadError } = useTypedSelector((state) => state.adminUsers, shallowEqual);
+  const { users, loadError, getUsers, resetState } = useStore((state) => state.adminUsers);
   const { t } = useTranslation();
 
   useEffect(() => {
-    dispatch(getUsers());
-    return () => {
-      resetState();
-    };
-  }, [dispatch]);
+    getUsers();
+    return () => resetState();
+  }, [getUsers, resetState]);
 
   if (loadError) {
     return (
       <>
-        <h1>{errorTitle(t, loadError, "adminUsers.loadError")}</h1>
-        <p>{errorDesc(t, loadError, "adminUsers.loadError")}</p>
+        <h1>{t(errorTitle<TKey>(loadError, "adminUsers.loadError"))}</h1>
+        <p>{t(errorDesc<TKey>(loadError, "adminUsers.loadError"))}</p>
       </>
     );
   }
@@ -64,7 +60,7 @@ const AdminUsersList = () => {
 
   return (
     <>
-      <Link to={appPaths.adminEventsList}>&#8592; {t("adminUsers.returnToEvents")}</Link>
+      <Link to={paths.adminEventsList}>&#8592; {t("adminUsers.returnToEvents")}</Link>
       <h1>{t("adminUsers.title")}</h1>
       {content}
     </>

@@ -1,14 +1,15 @@
-@use "@tietokilta/ilmomasiina-components/src/styles/definitions" as *;
+@use "../../styles/definitions" as *;
 
 .navbar {
   background: $primary;
   margin-bottom: 1.5rem;
+  --bs-navbar-brand-margin-end: auto !important;
 }
 
 .navbar-brand {
   display: flex !important;
   align-items: center;
-  color: color-yiq($primary) !important;
+  color: color-contrast($primary) !important;
   text-transform: uppercase;
   font-weight: 600;
   letter-spacing: 1px;

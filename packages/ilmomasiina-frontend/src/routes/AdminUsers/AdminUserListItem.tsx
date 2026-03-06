@@ -4,18 +4,17 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 
-import { ApiError } from "@tietokilta/ilmomasiina-components";
-import { errorDesc } from "@tietokilta/ilmomasiina-components/dist/utils/errorMessage";
+import { ApiError, errorDesc } from "@tietokilta/ilmomasiina-client";
 import type { UserSchema } from "@tietokilta/ilmomasiina-models";
-import { deleteUser, getUsers, resetUserPassword } from "../../modules/adminUsers/actions";
-import { useTypedDispatch } from "../../store/reducers";
+import type { TKey } from "../../i18n";
+import useStore from "../../modules/store";
 
 type Props = {
   user: UserSchema;
 };
 
 const AdminUserListItem = ({ user }: Props) => {
-  const dispatch = useTypedDispatch();
+  const { deleteUser, getUsers, resetUserPassword } = useStore((state) => state.adminUsers);
   const { t } = useTranslation();
 
   async function onDelete() {
@@ -23,19 +22,19 @@ const AdminUserListItem = ({ user }: Props) => {
     const confirmed = window.confirm(t("adminUsers.deleteUser.confirm", { user: user.email }));
     if (confirmed) {
       try {
-        await dispatch(deleteUser(user.id));
+        await deleteUser(user.id);
         toast.success(t("adminUsers.deleteUser.success", { user: user.email }), {
           autoClose: 5000,
         });
       } catch (err) {
         toast.error(
-          errorDesc(t, err as ApiError, "adminUsers.deleteUser.errors", {
+          t(errorDesc<TKey>(err as ApiError, "adminUsers.deleteUser.errors"), {
             user: user.email,
           }),
           { autoClose: 5000 },
         );
       }
-      dispatch(getUsers());
+      getUsers();
     }
   }
   async function onResetPassword() {
@@ -43,13 +42,13 @@ const AdminUserListItem = ({ user }: Props) => {
     const confirmed = window.confirm(t("adminUsers.resetPassword.confirm", { user: user.email }));
     if (confirmed) {
       try {
-        await dispatch(resetUserPassword(user.id));
+        await resetUserPassword(user.id);
         toast.success(t("adminUsers.resetPassword.success", { user: user.email }), {
           autoClose: 5000,
         });
       } catch (err) {
         toast.error(
-          errorDesc(t, err as ApiError, "adminUsers.resetPassword.errors", {
+          t(errorDesc<TKey>(err as ApiError, "adminUsers.resetPassword.errors"), {
             user: user.email,
           }),
           { autoClose: 5000 },

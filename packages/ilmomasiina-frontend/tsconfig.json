@@ -10,7 +10,7 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react",
@@ -19,19 +19,15 @@
     "rootDirs": ["src", "."],
     "baseUrl": ".",
     "paths": {
-      "@tietokilta/ilmomasiina-components": [
-        "../ilmomasiina-components/src/index.ts"
-      ],
-      "@tietokilta/ilmomasiina-components/dist/*": [
-        "../ilmomasiina-components/src/*"
-      ],
+      "@tietokilta/ilmomasiina-client": ["../ilmomasiina-client/src/index.ts"],
+      "@tietokilta/ilmomasiina-client/dist/*": ["../ilmomasiina-client/src/*"],
       "@tietokilta/ilmomasiina-models": ["../ilmomasiina-models/src/index.ts"]
     }
   },
   "exclude": ["dist"],
-  "include": ["src", "vite.config.ts"],
+  "include": ["src", "vite.config.mts"],
   "references": [
-    { "path": "../ilmomasiina-components" },
+    { "path": "../ilmomasiina-client" },
     { "path": "../ilmomasiina-models" }
   ]
 }

@@ -1,32 +1,19 @@
 import { testEvent, testSignups } from "test/testData";
 import { describe, expect, test } from "vitest";
 
-import { EDIT_TOKEN_HEADER, SignupForEditResponse } from "@tietokilta/ilmomasiina-models";
-import { Signup } from "../../src/models/signup";
+import { PaymentMode, SignupPaymentStatus } from "@tietokilta/ilmomasiina-models";
 import { refreshSignupPositionsAndGet } from "../../src/routes/signups/computeSignupPosition";
 import { generateToken } from "../../src/routes/signups/editTokens";
-
-async function fetchSignupForEdit(signup: Signup, editToken?: string | false) {
-  const headers: Record<string, string> = {};
-  if (editToken !== false) {
-    headers[EDIT_TOKEN_HEADER] = editToken ?? generateToken(signup.id);
-  }
-  const response = await server.inject({
-    method: "GET",
-    url: `/api/signups/${signup.id}`,
-    headers,
-  });
-  return [response.json<SignupForEditResponse>(), response] as const;
-}
+import * as api from "./api";
 
 describe("getSignupForEdit", () => {
   test("returns signup for editing", async () => {
-    const event = await testEvent();
-    const [signup] = await testSignups(event, { count: 1, confirmed: true });
+    const event = await testEvent({}, { payments: PaymentMode.ONLINE });
+    const [signup] = await testSignups({ event, count: 1, confirmed: true });
     const quota = await signup.getQuota();
     const answers = await signup.getAnswers();
 
-    const [data, response] = await fetchSignupForEdit(signup);
+    const [data, response] = await api.fetchSignupForEdit(signup.id);
 
     expect(response.statusCode).toBe(200);
 
@@ -45,20 +32,26 @@ describe("getSignupForEdit", () => {
           id: quota.id,
           title: quota.title,
           size: quota.size,
+          price: quota.price,
         },
         position: null,
         status: null,
         confirmableForMillis: 0,
         editableForMillis: expect.any(Number),
+        price: signup.price,
+        currency: signup.currency,
+        products: signup.products,
+        paymentStatus: SignupPaymentStatus.PENDING,
+        deletedAt: null,
       },
     });
   });
 
   test("returns nulls for unconfirmed signup", async () => {
     const event = await testEvent();
-    const [signup] = await testSignups(event, { count: 1, confirmed: false });
+    const [signup] = await testSignups({ event, count: 1, confirmed: false });
 
-    const [data] = await fetchSignupForEdit(signup);
+    const [data] = await api.fetchSignupForEdit(signup.id);
 
     expect(data).toMatchObject({
       signup: {
@@ -72,28 +65,28 @@ describe("getSignupForEdit", () => {
 
   test("returns correct status information", async () => {
     const event = await testEvent();
-    const signups = await testSignups(event, { count: 40 });
+    const signups = await testSignups({ event, count: 40 });
     const signup = signups[0]; // created in random order, so this suffices
     const status = await refreshSignupPositionsAndGet(event, signup.id);
 
-    const [data] = await fetchSignupForEdit(signup);
+    const [data] = await api.fetchSignupForEdit(signup.id);
 
     expect(data.signup.status).toEqual(status.status);
     expect(data.signup.position).toEqual(status.position);
+    expect(data.signup.price).toEqual(signup.price);
+    expect(data.signup.currency).toEqual(signup.currency);
+    expect(data.signup.products).toEqual(signup.products);
   });
 
   test("checks edit token authentication", async () => {
     const event = await testEvent();
-    const [signup, other] = await testSignups(event, {
-      count: 2,
-      confirmed: true,
-    });
+    const [signup, other] = await testSignups({ event, count: 2, confirmed: true });
 
-    let [data, response] = await fetchSignupForEdit(signup, false);
+    let [data, response] = await api.fetchSignupForEdit(signup.id, false);
     expect(response.statusCode).toBe(403);
     expect(data.signup).toBe(undefined);
 
-    [data, response] = await fetchSignupForEdit(signup, generateToken(other.id));
+    [data, response] = await api.fetchSignupForEdit(signup.id, generateToken(other.id));
     expect(response.statusCode).toBe(403);
     expect(data.signup).toBe(undefined);
   });

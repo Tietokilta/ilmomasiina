@@ -5,8 +5,8 @@ import { useFormState } from "react-final-form";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
-import appPaths from "../../../paths";
-import { useTypedSelector } from "../../../store/reducers";
+import useStore from "../../../modules/store";
+import paths from "../../../paths";
 
 type Props = {
   onSave: (evt: BaseSyntheticEvent) => void;
@@ -17,8 +17,8 @@ const EditorToolbar = ({ onSave, onSaveToggleDraft }: Props) => {
   const isSubmitting = useFormState({
     subscription: { submitting: true },
   }).submitting;
-  const event = useTypedSelector((state) => state.editor.event);
-  const isNew = useTypedSelector((state) => state.editor.isNew);
+  const event = useStore((state) => state.editor.event);
+  const isNew = useStore((state) => state.editor.isNew);
   const isDraft = event?.draft || isNew;
 
   const { t } = useTranslation();
@@ -28,7 +28,7 @@ const EditorToolbar = ({ onSave, onSaveToggleDraft }: Props) => {
       <h1>{isNew ? t("editor.title.new") : t("editor.title.edit")}</h1>
       <div className="event-editor--buttons-wrapper">
         <div className="flex-fill">
-          <Link to={appPaths.adminEventsList}>&#8592; {t("editor.action.goBack")}</Link>
+          <Link to={paths.adminEventsList}>&#8592; {t("editor.action.goBack")}</Link>
         </div>
         {isSubmitting && <Spinner animation="border" />}
         <div className="event-editor--public-status">
@@ -37,7 +37,7 @@ const EditorToolbar = ({ onSave, onSaveToggleDraft }: Props) => {
             {isDraft ? (
               t("editor.status.draft")
             ) : (
-              <Link to={appPaths.eventDetails(event!.slug)} target="_blank">
+              <Link to={paths.eventDetails(event!.slug)} target="_blank">
                 {t("editor.status.published")}
               </Link>
             )}

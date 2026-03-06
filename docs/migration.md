@@ -1,14 +1,22 @@
 # Migration
 
-This file documents the migration process from the Athene-created version of Ilmomasiina to the new one.
+This file documents:
 
-## Migration script
+- The migration from MySQL/MariaDB to PostgreSQL for Ilmomasiina v3+
+- The migration from Athene's Ilmomasiina to Ilmomasiina v2+
 
-The below SQL script migrates the database schema. It is written for MySQL/MariaDB.
-If you use PostgreSQL, let us know.
+## Migration from MySQL/MariaDB to PostgreSQL
 
-There will be more automatic migration tools when we reach production, but the initial migration will likely stay
-as a script.
+TODO. A tool of some kind will be provided.
+
+## Migration from Athene's Ilmomasiina
+
+If you're still using Athene's Ilmomasiina version, you'll need to run some manual migrations steps before
+Ilmomasiina's built-in migrations can take over.
+
+The below SQL script is written for MySQL/MariaDB. If you use PostgreSQL, ask your favorite AI to convert it over.
+
+After running the script, start the latest version of Ilmomasiina v2.x to run the built-in migrations.
 
 **Please make full backups of your data before proceeding with this migration.**
 

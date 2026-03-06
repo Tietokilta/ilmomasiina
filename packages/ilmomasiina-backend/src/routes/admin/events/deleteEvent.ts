@@ -12,7 +12,7 @@ export default async function deleteEvent(
   response: FastifyReply,
 ): Promise<void> {
   await getSequelize().transaction(async (transaction) => {
-    const event = await Event.findByPk(request.params.id);
+    const event = await Event.findByPk(request.params.id, { transaction });
     if (event === null) {
       response.notFound("No event found with id");
       return;

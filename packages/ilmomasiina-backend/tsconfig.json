@@ -35,9 +35,9 @@
   "include": [
     "src/**/*",
     "test/**/*",
-    "vitest.config.ts"
+    "vitest.config.mts"
   ],
   "references": [
-    { "path": "../ilmomasiina-models" }
+    { "path": "../ilmomasiina-models/tsconfig.cjs.json" }
   ]
 }

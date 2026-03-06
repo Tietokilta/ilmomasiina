@@ -6,32 +6,31 @@ import { Form } from "react-final-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 
-import { ApiError } from "@tietokilta/ilmomasiina-components";
-import { errorDesc } from "@tietokilta/ilmomasiina-components/dist/utils/errorMessage";
+import { ApiError, errorDesc } from "@tietokilta/ilmomasiina-client";
 import branding from "../../branding";
 import FieldFormGroup from "../../components/FieldFormGroup";
-import { createUser, getUsers } from "../../modules/adminUsers/actions";
-import { useTypedDispatch } from "../../store/reducers";
+import type { TKey } from "../../i18n";
+import useStore from "../../modules/store";
 
 type FormData = {
   email: string;
 };
 
 const UserForm = () => {
-  const dispatch = useTypedDispatch();
+  const { getUsers, createUser } = useStore((state) => state.adminUsers);
   const { t } = useTranslation();
 
   const onSubmit = async (data: FormData, form: FormApi<FormData>) => {
     try {
-      await dispatch(createUser(data));
-      dispatch(getUsers());
+      await createUser(data);
+      getUsers();
       form.restart();
       toast.success(t("adminUsers.createUser.success", { email: data.email }), {
         autoClose: 2000,
       });
     } catch (err) {
       toast.error(
-        errorDesc(t, err as ApiError, "adminUsers.createUser.errors", {
+        t(errorDesc<TKey>(err as ApiError, "adminUsers.createUser.errors"), {
           email: data.email,
         }),
         { autoClose: 5000 },

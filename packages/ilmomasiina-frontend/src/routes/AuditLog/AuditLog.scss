@@ -1,4 +1,4 @@
-@use "@tietokilta/ilmomasiina-components/src/styles/definitions" as *;
+@use "../../styles/definitions" as *;
 
 .audit-log--pagination {
   display: flex;
@@ -24,11 +24,5 @@
   > * {
     width: 0;
     flex: 1 1;
-  }
-}
-
-@if $force-link-underline {
-  .audit-log--table :link {
-    text-decoration: underline;
   }
 }

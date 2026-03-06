@@ -1,4 +1,4 @@
-import { Static, Type } from "@sinclair/typebox";
+import { Static, Type } from "typebox";
 
 /** Type of an event category. */
 export const eventCategory = Type.String({

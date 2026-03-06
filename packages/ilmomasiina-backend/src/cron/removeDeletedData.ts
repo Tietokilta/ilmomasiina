@@ -40,17 +40,17 @@ export default async function removeDeletedData() {
     force: true,
   });
 
+  // TODO: This will fail for signups that have payments.
   await Signup.unscoped().destroy({
     where: {
       deletedAt: {
         [Op.lt]: ifRemovedBefore,
       },
-    } as WhereOptions,
-    force: true,
+    },
   });
 
-  // Technically shouldn't be necessary due to how ON DELETE CASCADE and paranoid mode interact,
-  // but here for completeness' sake.
+  // Deletes answers that have been replaced by new ones.
+  // Answers to deleted signups are already CASCADEd above.
   await Answer.unscoped().destroy({
     where: {
       deletedAt: {

@@ -1,0 +1,21 @@
+extends ../layout.pug
+
+block mainContent
+  div.content-block
+    p.bodyText Your payment for #[strong #{event.title}] has been received.
+  if event.verificationEmail
+    div.content-block
+      p.bodyText #{event.verificationEmail}
+  div.content-block
+    p.bodyText Purchase details:
+    table
+      each product in products
+        tr
+          td #{product.amount}&times;
+          td #{product.name}
+          td #{product.unitPriceFormatted}
+      tr
+        th(colspan="2") Total
+        th #{totalFormatted}
+  div.content-block
+    p.bodyText To view your signup, click #[a(href=cancelLink) this link].

@@ -48,9 +48,13 @@ const tabForField: Record<keyof EditorEvent, EditorTab | null> = {
   emailQuestion: EditorTab.QUESTIONS,
   draft: EditorTab.BASIC_DETAILS,
   listed: EditorTab.BASIC_DETAILS,
+  preferredFrontend: EditorTab.BASIC_DETAILS,
   verificationEmail: EditorTab.EMAILS,
   quotas: EditorTab.QUOTAS,
   questions: EditorTab.QUESTIONS,
+  payments: EditorTab.BASIC_DETAILS,
+  languages: EditorTab.BASIC_DETAILS,
+  defaultLanguage: EditorTab.BASIC_DETAILS,
   moveSignupsToQueue: null,
   updatedAt: null,
 };

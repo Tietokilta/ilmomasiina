@@ -39,7 +39,7 @@ export default function enforceHTTPS(config: { trustProxy: boolean; isAzure: boo
     if (forwardedProto !== "https") {
       if (["GET", "HEAD"].includes(request.method.toUpperCase())) {
         // Redirect GET & HEAD requests
-        reply.redirect(301, `https://${request.hostname}${request.url}`);
+        reply.redirect(`https://${request.host}${request.url}`, 301);
       } else {
         // Reply 403 for others
         reply.forbidden("HTTPS connection required");

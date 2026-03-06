@@ -1,7 +1,7 @@
-import React, { AnchorHTMLAttributes, useEffect, useMemo } from "react";
+import React, { HTMLProps, useEffect, useMemo } from "react";
 
 import { Options, stringify } from "csv-stringify/browser/esm/sync";
-import { Button } from "react-bootstrap";
+import { Button, ButtonProps } from "react-bootstrap";
 
 export type { Options as CSVOptions };
 
@@ -11,10 +11,13 @@ function makeCsvUrl(data: string[][], options?: Options) {
   return URL.createObjectURL(blob);
 }
 
-type Props = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> & {
-  data: string[][];
-  csvOptions?: Options;
-};
+type Props = Omit<ButtonProps, "href"> &
+  // This is a bit dirty, since TypeScript doesn't realize we're "illegally" passing `download` to Button,
+  // but it's spread onto the underlying <a> element.
+  Pick<HTMLProps<HTMLAnchorElement>, "download"> & {
+    data: string[][];
+    csvOptions?: Options;
+  };
 
 const CSVLink = ({ data, csvOptions, ...props }: Props) => {
   const url = useMemo(() => makeCsvUrl(data, csvOptions), [data, csvOptions]);
@@ -27,7 +30,7 @@ const CSVLink = ({ data, csvOptions, ...props }: Props) => {
     [url],
   );
 
-  return <Button as="a" variant="primary" href={url} {...props} />;
+  return <Button variant="primary" href={url} {...props} />;
 };
 
 export default CSVLink;

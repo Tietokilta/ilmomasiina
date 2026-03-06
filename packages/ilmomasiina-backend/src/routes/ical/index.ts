@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { createEvents, DateArray } from "ics";
 import { Op } from "sequelize";
 
-import config from "../../config";
+import config, { eventDetailsUrl } from "../../config";
 import { Event } from "../../models/event";
 
 function dateToArray(date: Date) {
@@ -18,17 +18,19 @@ function dateToArray(date: Date) {
 /** Domain name for generating iCalendar UIDs.
  * @see https://datatracker.ietf.org/doc/html/rfc5545#section-3.8.4.7
  */
-const uidDomain = config.icalUidDomain || new URL(config.baseUrl ?? "http://localhost").hostname;
+const uidDomain = config.icalUidDomain || new URL(config.baseUrl).hostname;
 
 export async function eventsAsICal() {
   const events = await Event.scope("user").findAll({
-    where: {
-      listed: true,
-      // only events, not signup-only
-      date: { [Op.ne]: null },
-      // ignore legacy events with no end date
-      endDate: { [Op.ne]: null },
-    },
+    where: [
+      {
+        listed: true,
+        // only events, not signup-only
+        date: { [Op.ne]: null },
+        // ignore legacy events with no end date
+        endDate: { [Op.ne]: null },
+      },
+    ],
     order: [
       ["date", "ASC"],
       ["registrationEndDate", "ASC"],
@@ -48,7 +50,7 @@ export async function eventsAsICal() {
       description: event.description || undefined, // TODO convert markdown
       location: event.location || undefined,
       categories: event.category ? [event.category] : undefined,
-      url: config.eventDetailsUrl.replace(/\{slug\}/g, event.slug).replace(/\{lang\}/g, config.mailDefaultLang),
+      url: eventDetailsUrl({ slug: event.slug, lang: config.defaultLanguage, frontend: event.preferredFrontend }),
     })),
   );
 

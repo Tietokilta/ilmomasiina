@@ -3,7 +3,8 @@ import { existsSync } from "fs";
 import i18next from "i18next";
 import path from "path";
 
-import config from "../config";
+import { SignupPaymentStatus } from "@tietokilta/ilmomasiina-models";
+import config, { adminUrl } from "../config";
 import i18n from "../i18n";
 import { Event } from "../models/event";
 import mailTransporter from "./config";
@@ -17,8 +18,22 @@ export interface ConfirmationMailParams {
     answer: string;
   }[];
   queuePosition: number | null;
-  edited: boolean;
+  type: "signup" | "edit";
+  admin: boolean;
   date: string | null;
+  event: Event;
+  paymentStatus: SignupPaymentStatus | null;
+  cancelLink: string;
+}
+
+export interface PaymentMailParams {
+  totalFormatted: string;
+  currency: string;
+  products: {
+    name: string;
+    amount: number;
+    unitPriceFormatted: string;
+  }[];
   event: Event;
   cancelLink: string;
 }
@@ -31,25 +46,28 @@ export interface NewUserMailParams {
 export interface PromotedFromQueueMailParams {
   event: Event;
   date: string | null;
+  paymentStatus: SignupPaymentStatus | null;
+  cancelLink: string;
 }
 
 const TEMPLATE_DIR = path.join(__dirname, "../../emails");
 
 /** Gets a localized template for the given language, or a fallback one if it doesn't exist. */
 function getTemplate(language: string | null, template: string) {
-  const lng = language || config.mailDefaultLang;
+  const lng = language || config.defaultLanguage;
   // ensure no path injections
   if (!/^[a-zA-Z-]{2,}$/.test(lng)) throw new Error("invalid language");
 
   const localizedPath = path.join(TEMPLATE_DIR, lng, `${template}.pug`);
   if (existsSync(localizedPath)) return { template: localizedPath, lng };
 
-  const defaultPath = path.join(TEMPLATE_DIR, config.mailDefaultLang, `${template}.pug`);
-  return { template: defaultPath, lng: config.mailDefaultLang };
+  const defaultPath = path.join(TEMPLATE_DIR, config.defaultLanguage, `${template}.pug`);
+  return { template: defaultPath, lng: config.defaultLanguage };
 }
 
-const TEMPLATE_OPTIONS = {
-  juice: true,
+const TEMPLATE_OPTIONS: Email.EmailConfig = {
+  // When printing to console, don't preprocess CSS, as it makes the printouts massive.
+  juice: mailTransporter.transporter.name !== "console fallback",
   juiceResources: {
     preserveImportant: true,
     webResources: {
@@ -82,10 +100,29 @@ export default class EmailService {
       };
       const { template, lng } = getTemplate(language, "confirmation");
       const html = await email.render(template, brandedParams);
-      const subject = i18next.t(params.edited ? "emails.editConfirmation.subject" : "emails.confirmation.subject", {
+      const subject = i18next.t(`emails.confirmation.${params.type}.subject`, {
         lng,
         event: params.event.title,
       });
+      await EmailService.send(to, subject, html);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  static async sendPaymentConfirmationMail(to: string, language: string | null, params: PaymentMailParams) {
+    try {
+      const email = new Email(TEMPLATE_OPTIONS);
+      const brandedParams = {
+        ...params,
+        branding: {
+          footerText: config.brandingMailFooterText,
+          footerLink: config.brandingMailFooterLink,
+        },
+      };
+      const { template, lng } = getTemplate(language, "payment");
+      const html = await email.render(template, brandedParams);
+      const subject = i18n.t("emails.paymentConfirmation.subject", { lng, event: params.event.title });
       await EmailService.send(to, subject, html);
     } catch (error) {
       console.error(error);
@@ -97,7 +134,7 @@ export default class EmailService {
       const email = new Email(TEMPLATE_OPTIONS);
       const brandedParams = {
         ...params,
-        siteUrl: config.adminUrl.replace(/\{lang\}/g, language || config.mailDefaultLang),
+        siteUrl: adminUrl({ lang: language || config.defaultLanguage }),
         branding: {
           footerText: config.brandingMailFooterText,
           footerLink: config.brandingMailFooterLink,
@@ -117,7 +154,7 @@ export default class EmailService {
       const email = new Email(TEMPLATE_OPTIONS);
       const brandedParams = {
         ...params,
-        siteUrl: config.adminUrl.replace(/\{lang\}/g, language || config.mailDefaultLang),
+        siteUrl: adminUrl({ lang: language || config.defaultLanguage }),
         branding: {
           footerText: config.brandingMailFooterText,
           footerLink: config.brandingMailFooterLink,

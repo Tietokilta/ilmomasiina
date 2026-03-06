@@ -18,10 +18,19 @@ import {
   Sequelize,
 } from "sequelize";
 
-import type { QuotaAttributes } from "@tietokilta/ilmomasiina-models/dist/models";
 import type { Event } from "./event";
 import { generateRandomId, RANDOM_ID_LENGTH } from "./randomId";
 import type { Signup } from "./signup";
+
+export interface QuotaAttributes {
+  id: string;
+  order: number;
+  title: string;
+  size: number | null;
+  eventId: Event["id"];
+  signupCount?: number;
+  price: number;
+}
 
 export interface QuotaCreationAttributes extends Optional<QuotaAttributes, "id"> {}
 
@@ -30,6 +39,7 @@ export class Quota extends Model<QuotaAttributes, QuotaCreationAttributes> imple
   public order!: number;
   public title!: string;
   public size!: number | null;
+  public price!: number;
 
   public eventId!: Event["id"];
   public event?: Event;
@@ -87,6 +97,13 @@ export default function setupQuotaModel(sequelize: Sequelize) {
       },
       signupCount: {
         type: DataTypes.VIRTUAL,
+      },
+      price: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: {
+          min: 0,
+        },
       },
     },
     {

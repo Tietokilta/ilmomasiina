@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { Op, WhereOptions } from "sequelize";
 
 import type { AuditLogResponse, AuditLoqQuery } from "@tietokilta/ilmomasiina-models";
-import { auditLoqQuery } from "@tietokilta/ilmomasiina-models";
+import { AUDIT_LOG_DEFAULT_LIMIT } from "@tietokilta/ilmomasiina-models";
 import { AuditLog } from "../../../models/auditlog";
 import { StringifyApi } from "../../utils";
 
@@ -36,8 +36,8 @@ export default async function getAuditLogItems(
   const logs = await AuditLog.findAndCountAll({
     where,
     order: [["createdAt", "DESC"]],
-    offset: request.query.offset || auditLoqQuery.properties.offset.default,
-    limit: Math.min(MAX_LOGS, request.query.limit || auditLoqQuery.properties.limit.default),
+    offset: request.query.offset ?? 0,
+    limit: Math.min(MAX_LOGS, request.query.limit ?? AUDIT_LOG_DEFAULT_LIMIT),
   });
 
   response.status(200);

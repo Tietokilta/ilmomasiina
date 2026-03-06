@@ -1,0 +1,84 @@
+@use "definitions" as *;
+
+@include media-breakpoint-up(sm) {
+  .ilmo--mobile-only {
+    display: none;
+  }
+}
+@include media-breakpoint-down(sm) {
+  .ilmo--desktop-only {
+    display: none;
+  }
+}
+
+.ilmo--title-nav {
+  display: flex;
+  align-items: center;
+  column-gap: $spacer * 0.5;
+  row-gap: $spacer;
+  margin-block: 1em;
+
+  > :first-child {
+    flex: 1 1 auto;
+  }
+
+  h1 {
+    margin-block: 0;
+  }
+}
+
+@include media-breakpoint-down(sm) {
+  .ilmo--title-nav {
+    flex-wrap: wrap;
+
+    > :first-child {
+      min-width: fit-content;
+    }
+  }
+}
+
+.ilmo--title-nav-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: $spacer * 0.5;
+}
+
+.ilmo--narrow-container {
+  justify-content: center;
+}
+.ilmo--status-container {
+  text-align: center;
+}
+.ilmo--loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 50px;
+}
+
+@if $lighter-primary-hover {
+  .btn-primary {
+    @include button-variant(
+      $primary,
+      $primary,
+      $hover-background: lighten($primary, 15%),
+      $hover-border: lighten($primary, 20%),
+      $active-background: lighten($primary, 20%),
+      $active-border: lighten($primary, 25%)
+    );
+  }
+}
+@if $lighter-secondary-hover {
+  .btn-secondary {
+    @include button-variant(
+      $primary,
+      $primary,
+      $hover-background: lighten($primary, 15%),
+      $hover-border: lighten($primary, 20%),
+      $active-background: lighten($primary, 20%),
+      $active-border: lighten($primary, 25%)
+    );
+  }
+}

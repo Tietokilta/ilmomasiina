@@ -16,6 +16,6 @@ To start contributing to the project, read at least:
   since the Athene version.
 
 Other technical documentation:
-- [`createStateContext`](state-context.md), the `useContext` wrapper used in `ilmomasiina-components`.
+- [`createStateContext`](state-context.md), the `useContext` wrapper used in `ilmomasiina-client`.
   Relevant if you want to develop that package.
 - [Signup logic](signup-logic.md), documents the exact business logic behind signups, quotas and queueing

@@ -1,45 +1,32 @@
-import moment from "moment-timezone";
+import debug from "debug";
 import { Transaction, WhereOptions } from "sequelize";
 
 import { AuditEvent, SignupStatus } from "@tietokilta/ilmomasiina-models";
 import { internalAuditLogger } from "../../auditlog";
-import config from "../../config";
-import i18n from "../../i18n";
-import EmailService from "../../mail";
+import { sendPromotedFromQueueMail } from "../../mail/signups";
 import { getSequelize } from "../../models";
 import { Event } from "../../models/event";
 import { Quota } from "../../models/quota";
 import { Signup } from "../../models/signup";
 import { WouldMoveSignupsToQueue } from "../admin/events/errors";
 
-async function sendPromotedFromQueueMail(signup: Signup, eventId: Event["id"]) {
-  if (signup.email === null) return;
-
-  // Re-fetch event for all attributes
-  const event = await Event.findByPk(eventId);
-  if (event === null) throw new Error("event missing when sending queue email");
-
-  const lng = signup.language ?? undefined;
-  const dateFormat = i18n.t("dateFormat.general", { lng });
-  const params = {
-    event,
-    date: event.date && moment(event.date).tz(config.timezone).format(dateFormat),
-  };
-  await EmailService.sendPromotedFromQueueMail(signup.email, signup.language, params);
-}
+const perfLog = debug("app:perf:signups");
 
 /** Internal, non-batched version. See below for explanation of what this does. */
 async function refreshSignupPositionsInternal(
-  eventRef: Event,
-  transaction?: Transaction,
-  moveSignupsToQueue: boolean = true,
+  eventRef: Pick<Event, "id">,
+  transaction: Transaction | undefined,
+  moveSignupsToQueue: boolean,
+  queuedCount: number,
 ): Promise<Signup[]> {
   // Wrap in transaction if not given
   if (!transaction) {
     return getSequelize().transaction(async (trans) =>
-      refreshSignupPositionsInternal(eventRef, trans, moveSignupsToQueue),
+      refreshSignupPositionsInternal(eventRef, trans, moveSignupsToQueue, queuedCount),
     );
   }
+
+  const startTime = performance.now();
 
   // Lock event to prevent simultaneous changes
   const event = await Event.findByPk(eventRef.id, {
@@ -112,8 +99,8 @@ async function refreshSignupPositionsInternal(
   // If a signup was just promoted from the queue, send an email about it asynchronously.
   await Promise.all(
     result.map(async ({ signup, status }) => {
-      if (signup.status === "in-queue" && status !== "in-queue") {
-        sendPromotedFromQueueMail(signup, event.id);
+      if (signup.status === SignupStatus.IN_QUEUE && status !== SignupStatus.IN_QUEUE) {
+        await sendPromotedFromQueueMail(signup);
 
         await internalAuditLogger(AuditEvent.PROMOTE_SIGNUP, {
           signup,
@@ -133,10 +120,22 @@ async function refreshSignupPositionsInternal(
     }),
   );
 
+  const duration = performance.now() - startTime;
+  perfLog(
+    `Computed ${result.length} signup positions in ${event.id} in ${duration.toFixed(2)}ms (batch of ${queuedCount})`,
+  );
+
   return result.map(({ signup }) => signup);
 }
 
-const refreshQueues = new Map<Event["id"], { ongoing?: Promise<unknown>; queued?: Promise<Signup[]> }>();
+const refreshQueues = new Map<
+  Event["id"],
+  {
+    ongoing?: Promise<unknown>;
+    queued?: Promise<Signup[]>;
+    queuedCount?: number;
+  }
+>();
 
 /**
  * Updates the status and position attributes on all signups in the given event. Also sends "promoted from queue"
@@ -149,14 +148,14 @@ const refreshQueues = new Map<Event["id"], { ongoing?: Promise<unknown>; queued?
  * performed only once for all calls performed during a previous operation.
  */
 export async function refreshSignupPositions(
-  eventRef: Event,
+  eventRef: Pick<Event, "id">,
   transaction?: Transaction,
   moveSignupsToQueue: boolean = true,
 ): Promise<Signup[]> {
   // If a transaction is passed, we need to do the refresh within that transaction.
   // It may need to wait for other transactions, but let's handle that on the DB level.
   if (transaction) {
-    return refreshSignupPositionsInternal(eventRef, transaction, moveSignupsToQueue);
+    return refreshSignupPositionsInternal(eventRef, transaction, moveSignupsToQueue, 1);
   }
 
   let queue = refreshQueues.get(eventRef.id);
@@ -167,7 +166,10 @@ export async function refreshSignupPositions(
 
   // If a another refresh is already ongoing and another is queued, reuse the last queued one,
   // since it will be executed after this moment anyway.
-  if (queue.queued) return queue.queued;
+  if (queue.queued) {
+    queue.queuedCount! += 1;
+    return queue.queued;
+  }
 
   // Otherwise, if another refresh is already ongoing, queue a new one after it completes.
   if (queue.ongoing) {
@@ -176,20 +178,23 @@ export async function refreshSignupPositions(
         // ignore errors, we always want to run after the ongoing refresh finishes
       })
       .then(async () => {
-        queue!.ongoing = queued;
+        const count = queue!.queuedCount!;
+        queue!.ongoing = queue!.queued;
         queue!.queued = undefined;
+        queue!.queuedCount = 0;
         try {
-          return await refreshSignupPositionsInternal(eventRef, transaction, moveSignupsToQueue);
+          return await refreshSignupPositionsInternal(eventRef, transaction, moveSignupsToQueue, count);
         } finally {
           if (queue!.ongoing === queued) queue!.ongoing = undefined;
         }
       });
     queue.queued = queued;
+    queue.queuedCount = 1;
     return queued;
   }
 
   // Otherwise, immediately perform a refresh.
-  const promise = refreshSignupPositionsInternal(eventRef, transaction, moveSignupsToQueue);
+  const promise = refreshSignupPositionsInternal(eventRef, transaction, moveSignupsToQueue, 1);
   queue.ongoing = promise;
   try {
     return await promise;

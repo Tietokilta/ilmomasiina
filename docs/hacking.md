@@ -2,34 +2,20 @@
 
 This document presents a few ways you might want to use Ilmomasiina outside our pre-packaged image.
 
-## Embedding
+## Embedding with state hooks and providers
 
-To embed events on your site, there are a few options:
+To embed events on your own React frontend, you can import the `@tietokilta/ilmomasiina-client` package (available on npm).
+This package contains:
 
-### Route components
+- React hooks to fetch and manage state for the Events, SingleEvent and EditSignup routes.
+- Provider components that do the fetch and provide the state in a context.
+- Locale strings in Finnish and English for all UI needed for those routes.
+- Utility functions for formatting API objects, such as flattening and sorting signups.
 
-The simplest option is to import ready-made route components from `ilmomasiina-components`.
+## API models
 
-In order to allow style customization, styles are not imported by our TS files. You'll need to `@use` either
-`_all.scss` or individual component styles manually. You can
-[override variables](https://sass-lang.com/documentation/at-rules/use#reassigning-variables) from `_definitions.scss`
-before that.
-
-In addition, you'll want to import suitable (or all) parts of Bootstrap 4's SCSS. This works best if you have a
-Bootstrap 4 based app, or if you import Bootstrap nested inside your own wrapper CSS class.
-
-The exported route components ()`Events`, `SingleEvent`, `EditSignup`) are already wrapped in `<I18nProvider>`,
-which is an `I18nextProvider` with the exported `i18n` object that contains the translations for the routes.
-You must call `init()` on the latter to initialize it. You can call `changeLanguage` on it to set the language.
-
-### State hooks
-
-You can import the state hooks from `ilmomasiina-components` and write your own React frontend. This will free you from
-using Bootstrap at all.
-
-### API models
-
-You can also go fully custom and only import the API models from `ilmomasiina-models` (see [API](#api)).
+You can also implement a fully custom API client by only importing the API models from `@tietokilta/ilmomasiina-models`
+(also available on npm).
 
 ## App customization
 
@@ -40,8 +26,3 @@ GitHub Action that clones this repo (as a submodule or directly), replaces `_def
 If you fork the repository and don't modify `ilmomasiina-models`,
 your modified backend or frontend should be compatible with the current unmodified versions.
 Don't forget to submit a PR if your code might be useful to others!
-
-## API
-
-To build a new API client, import `ilmomasiina-models` and use your fetch library of choice. `dist/services` has
-type definitions for the API, while `dist/models` is intended for backend use.

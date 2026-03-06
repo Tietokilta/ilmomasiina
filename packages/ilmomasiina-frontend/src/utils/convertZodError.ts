@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle, prefer-destructuring */
 import { FORM_ERROR } from "final-form";
-import { ZodError, ZodIssue } from "zod";
+import * as z from "zod";
 
 // Zod produces a _errors array for each field. Post-process to the format expected to final-form:
 // only one error per field, and a leaf field at that.
@@ -12,17 +12,19 @@ type FinalFormErrorObject<T, R> = T extends any[]
 type FinalFormRootError<T, R> = FinalFormErrorObject<T, R> & { [FORM_ERROR]?: R };
 
 export default function convertZodError<T extends object, R>(
-  zodErr: ZodError<T>,
-  convertIssue: (issue: ZodIssue) => R,
+  zodErr: z.ZodError<T>,
+  convertIssue: (issue: z.core.$ZodIssue) => R,
 ): FinalFormRootError<T, R>;
 
-export default function convertZodError<T extends object>(zodErr: ZodError<T>): FinalFormRootError<T, ZodIssue>;
+export default function convertZodError<T extends object>(
+  zodErr: z.ZodError<T>,
+): FinalFormRootError<T, z.core.$ZodIssue>;
 
 /** Converts a Zod formatted error to a final-form compatible format. */
 export default function convertZodError<T extends object>(
-  zodErr: ZodError<T>,
-  convertIssue = (issue: ZodIssue) => issue,
-): FinalFormRootError<T, ZodIssue> {
+  zodErr: z.ZodError<T>,
+  convertIssue = (issue: z.core.$ZodIssue) => issue,
+): FinalFormRootError<T, z.core.$ZodIssue> {
   // Assume the root is always an object; start with an object, even if the typing says otherwise.
   // This has to be `any` in practice - anything else will cause errors.
   const result = {} as any;

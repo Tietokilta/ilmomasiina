@@ -1,7 +1,9 @@
 import dotenvFlow from "dotenv-flow";
 import path from "path";
 
-import { envBoolean, envEnum, envInteger, envString, frontendFilesPath } from "./util/config";
+import { FrontendsConfig, frontendsSchema, stripeBrandingSchema } from "./configSchemas";
+import i18n, { i18nResources, knownLanguages } from "./i18n";
+import { envBoolean, envEnum, envInteger, envJson, envString, frontendFilesPath } from "./util/config";
 
 // Vite/Vitest sets BASE_URL. This conflicts with our config, but isn't used
 // in tests, so just overwrite it.
@@ -12,15 +14,56 @@ if (process.env.VITEST) {
 // Load environment variables from .env files (from the root of repository)
 dotenvFlow.config({ path: path.resolve(__dirname, "../../..") });
 
-// Compatibility for older configs
-if (!process.env.BASE_URL && process.env.EMAIL_BASE_URL) {
-  process.env.BASE_URL = envString("EMAIL_BASE_URL") + envString("PATH_PREFIX", "");
-  console.warn(
-    "BASE_URL is not set - assuming based on EMAIL_BASE_URL and PATH_PREFIX:\n" +
-      `${process.env.BASE_URL}\n` +
-      "This behavior is DEPRECATED and may be removed in a future Ilmomasiina version.",
+// Check for no longer supported configuration options
+if (process.env.CLEARDB_DATABASE_URL || (process.env.DB_DIALECT && process.env.DB_DIALECT !== "postgres")) {
+  throw new Error(
+    "Only PostgreSQL is supported by Ilmomasiina 3.0. MySQL migration tools will be provided in a future Ilmomasiina 2.x version.",
   );
 }
+if (process.env.EVENT_DETAILS_URL || process.env.EDIT_SIGNUP_URL || process.env.ADMIN_URL) {
+  if (!process.env.FRONTENDS) {
+    throw new Error(
+      "EVENT_DETAILS_URL, EDIT_SIGNUP_URL and ADMIN_URL are no longer supported by Ilmomasiina 3.0. Use FRONTENDS instead.",
+    );
+  } else {
+    console.warn(
+      "EVENT_DETAILS_URL, EDIT_SIGNUP_URL and ADMIN_URL are no longer supported by Ilmomasiina 3.0 and should be removed from your configuration. Use FRONTENDS instead.",
+    );
+  }
+}
+if (process.env.EMAIL_BASE_URL) {
+  if (!process.env.BASE_URL) {
+    throw new Error("EMAIL_BASE_URL is not supported by Ilmomasiina 3.0. Use BASE_URL and/or FRONTENDS instead.");
+  } else {
+    console.warn(
+      "EMAIL_BASE_URL is not supported by Ilmomasiina 3.0 and should be removed from your configuration. Use BASE_URL and/or FRONTENDS instead.",
+    );
+  }
+}
+if (process.env.MAIL_DEFAULT_LANG) {
+  if (!process.env.DEFAULT_LANGUAGE) {
+    throw new Error("MAIL_DEFAULT_LANG is not supported by Ilmomasiina 3.0. Use DEFAULT_LANGUAGE instead.");
+  } else {
+    console.warn(
+      "MAIL_DEFAULT_LANG is not supported by Ilmomasiina 3.0 and should be removed from your configuration. Use DEFAULT_LANGUAGE instead.",
+    );
+  }
+}
+
+const baseUrl = envString("BASE_URL");
+
+// Fill in default values in frontend config
+const baseFrontends = envJson("FRONTENDS", frontendsSchema, {});
+const frontends: FrontendsConfig = {
+  ...baseFrontends,
+  default: {
+    ...baseFrontends.default,
+    eventDetailsUrl: baseFrontends.default?.eventDetailsUrl ?? `${baseUrl}/events/{slug}`,
+    editSignupUrl: baseFrontends.default?.editSignupUrl ?? `${baseUrl}/signup/{id}/{editToken}`,
+    completePaymentUrl: baseFrontends.default?.completePaymentUrl ?? `${baseUrl}/payment/{id}/{editToken}`,
+    adminUrl: baseFrontends.default?.adminUrl ?? `${baseUrl}/admin`,
+  },
+};
 
 const config = {
   nodeEnv: envEnum("NODE_ENV", ["production", "development", "test", "bench"], "development"),
@@ -49,22 +92,18 @@ const config = {
   /** Version number added as a header to responses. */
   version: envString("VERSION", null),
 
-  /** ClearDB connection string. */
-  clearDbUrl: envString("CLEARDB_DATABASE_URL", null),
-  /** `mysql` and `postgres` are supported. */
-  dbDialect: envString("DB_DIALECT", null),
   /** Hostname for the database. */
-  dbHost: envString("DB_HOST", null),
+  dbHost: envString("DB_HOST"),
   /** Port for the database. */
   dbPort: envInteger("DB_PORT", null),
   /** Whether to use SSL for the database. */
   dbSsl: envBoolean("DB_SSL", false),
   /** Username for the database. */
-  dbUser: envString("DB_USER", null),
+  dbUser: envString("DB_USER"),
   /** Password for the database. */
   dbPassword: envString("DB_PASSWORD", null),
   /** Database name. */
-  dbDatabase: envString("DB_DATABASE", null),
+  dbDatabase: envString("DB_DATABASE"),
   /** Required to run tests, as they reset the test database for every test. */
   allowTestsToResetDb: envBoolean("THIS_IS_A_TEST_DB_AND_CAN_BE_WIPED", false),
 
@@ -83,11 +122,8 @@ const config = {
   brandingMailFooterLink: envString("BRANDING_MAIL_FOOTER_LINK"),
   /** Calendar name included in iCalendar exports. */
   icalCalendarName: envString("BRANDING_ICAL_CALENDAR_NAME", "Ilmomasiina"),
-  /** Default language for emails, if no language is known for the signup.
-   *
-   * Also used for URLs in iCalendar.
-   */
-  mailDefaultLang: envString("MAIL_DEFAULT_LANG", "fi"),
+  /** Default language for emails, iCalendar exports, and signups for which no language is known. */
+  defaultLanguage: envEnum("DEFAULT_LANGUAGE", knownLanguages, "fi"),
 
   /** Domain name used for iCalendar UIDs. */
   icalUidDomain: envString("ICAL_UID_DOMAIN", null),
@@ -100,28 +136,12 @@ const config = {
    * @example "http://example.com"
    * @example "http://example.com/ilmo"
    */
-  baseUrl: envString("BASE_URL"),
-  /** URL template for an event details page. Used for iCalendar exports. Contains `{slug}`, may contain `{lang}`.
+  baseUrl,
+  /** Alternate frontend URL definitions as JSON. Used by the backend for emails, iCalendar exports, and payment links.
    *
-   * This is intended for custom frontends; the default is for the frontend included in the repo.
-   *
-   * @example "http://example.com/events/{slug}"
+   * The "default" key is used when no frontend can be determined for the current operation.
    */
-  eventDetailsUrl: envString("EVENT_DETAILS_URL", `${envString("BASE_URL")}/events/{slug}`),
-  /** URL template for a signup edit page. Used for emails. Contains `{id}` and `{editToken}`, may contain `{lang}`.
-   *
-   * This is intended for custom frontends; the default is for the frontend included in the repo.
-   *
-   * @example "http://example.com/signup/{id}/{editToken}"
-   */
-  editSignupUrl: envString("EDIT_SIGNUP_URL", `${envString("BASE_URL")}/signup/{id}/{editToken}`),
-  /** URL template for the admin main page. Used for emails. May contain `{lang}`.
-   *
-   * This is intended for custom frontends; the default is for the frontend included in the repo.
-   *
-   * @example "http://example.com/{lang}/admin"
-   */
-  adminUrl: envString("ADMIN_URL", `${envString("BASE_URL")}/admin`),
+  frontends,
 
   /** SMTP server hostname. */
   smtpHost: envString("SMTP_HOST", null),
@@ -147,8 +167,22 @@ const config = {
 
   /** How long after an event's date to remove signup details. */
   anonymizeAfterDays: envInteger("ANONYMIZE_AFTER_DAYS", 180),
+  /** How long after an event's date it will become fully invisible to users. */
+  hideEventAfterDays: envInteger("HIDE_EVENT_AFTER_DAYS", 180),
   /** How long items stay in the database after deletion, in order to allow restoring accidentally deleted items. */
   deletionGracePeriod: envInteger("DELETION_GRACE_PERIOD_DAYS", 14),
+
+  /** The currency used for payments. */
+  currency: envString("CURRENCY", "EUR"),
+
+  /** Stripe secret key for payment processing. */
+  stripeSecretKey: envString("STRIPE_SECRET_KEY", null),
+  /** Stripe webhook signing secret for verifying webhook events. */
+  stripeWebhookSecret: envString("STRIPE_WEBHOOK_SECRET", null),
+  /** How long (in minutes) before a Stripe Checkout Session expires. Default: 30 minutes. */
+  stripeCheckoutExpiryMins: envInteger("STRIPE_CHECKOUT_EXPIRY_MINS", 30),
+  /** Stripe branding customization. */
+  stripeBranding: envJson("STRIPE_BRANDING_JSON", stripeBrandingSchema, {}),
 } as const;
 
 if (!process.env.PORT && config.nodeEnv === "production") {
@@ -179,20 +213,60 @@ if (config.oldEditTokenSalt === config.newEditTokenSecret) {
   );
 }
 
-try {
-  // Node only supports URL.canParse since 18.17.0
-  // eslint-disable-next-line no-new
-  new URL(config.baseUrl);
-} catch (err) {
+if (!URL.canParse(config.baseUrl)) {
   throw new Error("BASE_URL is invalid - make sure it is a full URL like http://example.com.");
 }
 
-if (!config.eventDetailsUrl.includes("{slug}")) {
-  throw new Error("EVENT_DETAILS_URL must contain {slug} if set.");
+if (config.stripeCheckoutExpiryMins < 30 || config.stripeCheckoutExpiryMins > 1440) {
+  throw new Error("STRIPE_CHECKOUT_EXPIRY_MINS must be between 30 and 1440 (24 hours).");
 }
 
-if (!config.editSignupUrl.includes("{id}") || !config.editSignupUrl.includes("{editToken}")) {
-  throw new Error("EDIT_SIGNUP_URL must contain {id} and {editToken} if set.");
+if (config.stripeSecretKey && !config.stripeWebhookSecret) {
+  console.warn("STRIPE_WEBHOOK_SECRET is not configured - ignoring webhooks.");
 }
+
+i18n.init({
+  lng: config.defaultLanguage,
+  fallbackLng: config.defaultLanguage,
+  resources: i18nResources,
+  interpolation: {
+    // We only pass i18n strings to email subjects or Pug, which also does escaping
+    escapeValue: false,
+  },
+});
 
 export default config;
+
+type AdminUrlParams = { lang: string; frontend?: string };
+
+export function adminUrl({ lang, frontend = "default" }: AdminUrlParams) {
+  const template = config.frontends[frontend]?.adminUrl ?? config.frontends.default.adminUrl;
+  return template.replace(/\{lang\}/g, lang);
+}
+
+type EventDetailsUrlParams = { slug: string; lang: string; frontend: string | undefined };
+
+export function eventDetailsUrl({ slug, lang, frontend = "default" }: EventDetailsUrlParams) {
+  const template = config.frontends[frontend]?.eventDetailsUrl ?? config.frontends.default.eventDetailsUrl;
+  return template.replace(/\{slug\}/g, slug).replace(/\{lang\}/g, lang);
+}
+
+type EditSignupUrlParams = { id: string; editToken: string; lang: string; frontend: string | undefined };
+
+export function editSignupUrl({ id, editToken, lang, frontend = "default" }: EditSignupUrlParams) {
+  const template = config.frontends[frontend]?.editSignupUrl ?? config.frontends.default.editSignupUrl;
+  return template
+    .replace(/\{id\}/g, id)
+    .replace(/\{editToken\}/g, editToken)
+    .replace(/\{lang\}/g, lang);
+}
+
+type CompletePaymentUrlParams = { id: string; editToken: string; lang: string; frontend: string | undefined };
+
+export function completePaymentUrl({ id, editToken, lang, frontend = "default" }: CompletePaymentUrlParams) {
+  const template = config.frontends[frontend]?.completePaymentUrl ?? config.frontends.default.completePaymentUrl;
+  return template
+    .replace(/\{id\}/g, id)
+    .replace(/\{editToken\}/g, editToken)
+    .replace(/\{lang\}/g, lang);
+}

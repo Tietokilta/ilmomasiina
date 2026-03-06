@@ -1,21 +1,21 @@
 import React from "react";
 
-import { Form, FormControlProps } from "react-bootstrap";
+import { Form, FormSelectProps } from "react-bootstrap";
 
 type SelectOptions = [string, string][];
 
-type Props = FormControlProps & {
+type Props = FormSelectProps & {
   options: SelectOptions;
 };
 
 const SelectBox = ({ options, ...props }: Props) => (
-  <Form.Control as="select" {...props}>
+  <Form.Select {...props}>
     {options.map(([value, label]) => (
       <option key={value} value={value}>
         {label}
       </option>
     ))}
-  </Form.Control>
+  </Form.Select>
 );
 
 export default SelectBox;

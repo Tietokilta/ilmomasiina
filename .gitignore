@@ -20,3 +20,4 @@ src/react-app-env.d.ts
 package-lock.json
 
 .env
+scripts/

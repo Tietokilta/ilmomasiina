@@ -1,10 +1,10 @@
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
-import { Type } from "@sinclair/typebox";
 import { FastifyInstance } from "fastify";
+import { Type } from "typebox";
 
 import * as schema from "@tietokilta/ilmomasiina-models";
 import { addLogEventHook } from "../auditlog";
-import AdminAuthSession from "../authentication/adminAuthSession";
+import getRawBody from "../util/rawBody";
 import getAuditLogItems from "./admin/auditlog/getAuditLogs";
 import getCategoriesList from "./admin/categories/getCategoriesList";
 import createEvent from "./admin/events/createEvent";
@@ -21,27 +21,26 @@ import { adminLogin, renewAdminToken, requireAdmin } from "./authentication/admi
 import { getEventDetailsForAdmin, getEventDetailsForUser } from "./events/getEventDetails";
 import { getEventsListForAdmin, getEventsListForUser } from "./events/getEventsList";
 import { sendICalFeed } from "./ical";
+import completePayment from "./payment/completePayment";
+import startPayment from "./payment/startPayment";
+import stripeWebhook from "./payment/webhook";
 import createSignup from "./signups/createNewSignup";
 import { deleteSignupAsAdmin, deleteSignupAsUser } from "./signups/deleteSignup";
 import { requireValidEditToken } from "./signups/editTokens";
 import getSignupForEdit from "./signups/getSignupForEdit";
-import updateSignup from "./signups/updateSignup";
+import { createSignupAsAdmin, updateSignupAsAdmin, updateSignupAsUser } from "./signups/updateSignup";
 
 const errorResponses = {
   "4XX": schema.errorResponse,
   "5XX": schema.errorResponse,
 };
 
-export interface RouteOptions {
-  adminSession: AdminAuthSession;
-}
-
 /** Setup admin routes (prefixed with '/admin') */
-async function setupAdminRoutes(fastifyInstance: FastifyInstance, opts: RouteOptions) {
+async function setupAdminRoutes(fastifyInstance: FastifyInstance) {
   // Add session validation hook:
   // All the following routes require a valid session. The route functions are called only if the session is valid.
   // For invalid sessions, the hook automatically responds with a proper error response.
-  requireAdmin(opts.adminSession, fastifyInstance);
+  requireAdmin(fastifyInstance.adminSession, fastifyInstance);
 
   const server = fastifyInstance.withTypeProvider<TypeBoxTypeProvider>();
 
@@ -116,7 +115,7 @@ async function setupAdminRoutes(fastifyInstance: FastifyInstance, opts: RouteOpt
         response: {
           ...errorResponses,
           200: schema.adminEventResponse,
-          409: Type.Union([schema.editConflictError, schema.wouldMoveSignupsToQueueError]),
+          409: Type.Union([schema.editConflictError, schema.wouldMoveSignupsToQueueError, schema.errorResponse]),
         },
       },
     },
@@ -130,7 +129,7 @@ async function setupAdminRoutes(fastifyInstance: FastifyInstance, opts: RouteOpt
         params: schema.adminEventPathParams,
         response: {
           ...errorResponses,
-          204: {},
+          204: Type.Null(),
         },
       },
     },
@@ -138,6 +137,43 @@ async function setupAdminRoutes(fastifyInstance: FastifyInstance, opts: RouteOpt
   );
 
   /** Admin routes for signups */
+  server.post<{
+    Params: schema.SignupPathParams;
+    Body: schema.AdminSignupCreateBody;
+  }>(
+    "/signups",
+    {
+      schema: {
+        body: schema.adminSignupCreateBody,
+        response: {
+          ...errorResponses,
+          200: schema.adminSignupSchema,
+          400: Type.Union([schema.signupValidationError, schema.errorResponse]),
+        },
+      },
+    },
+    createSignupAsAdmin,
+  );
+
+  server.patch<{
+    Params: schema.SignupPathParams;
+    Body: schema.AdminSignupUpdateBody;
+  }>(
+    "/signups/:id",
+    {
+      schema: {
+        params: schema.signupPathParams,
+        body: schema.adminSignupUpdateBody,
+        response: {
+          ...errorResponses,
+          200: schema.adminSignupSchema,
+          400: Type.Union([schema.signupValidationError, schema.errorResponse]),
+        },
+      },
+    },
+    updateSignupAsAdmin,
+  );
+
   server.delete<{ Params: schema.SignupPathParams }>(
     "/signups/:id",
     {
@@ -145,7 +181,7 @@ async function setupAdminRoutes(fastifyInstance: FastifyInstance, opts: RouteOpt
         params: schema.signupPathParams,
         response: {
           ...errorResponses,
-          204: {},
+          204: Type.Null(),
         },
       },
     },
@@ -217,7 +253,7 @@ async function setupAdminRoutes(fastifyInstance: FastifyInstance, opts: RouteOpt
         params: schema.userPathParams,
         response: {
           ...errorResponses,
-          204: {},
+          204: Type.Null(),
         },
       },
     },
@@ -231,7 +267,7 @@ async function setupAdminRoutes(fastifyInstance: FastifyInstance, opts: RouteOpt
         params: schema.userPathParams,
         response: {
           ...errorResponses,
-          204: {},
+          204: Type.Null(),
         },
       },
     },
@@ -244,7 +280,7 @@ async function setupAdminRoutes(fastifyInstance: FastifyInstance, opts: RouteOpt
         body: schema.userChangePasswordSchema,
         response: {
           ...errorResponses,
-          204: {},
+          204: Type.Null(),
         },
       },
     },
@@ -252,7 +288,7 @@ async function setupAdminRoutes(fastifyInstance: FastifyInstance, opts: RouteOpt
   );
 }
 
-async function setupPublicRoutes(fastifyInstance: FastifyInstance, opts: RouteOptions) {
+async function setupPublicRoutes(fastifyInstance: FastifyInstance) {
   const server = fastifyInstance.withTypeProvider<TypeBoxTypeProvider>();
 
   // Routes that require a signup edit token
@@ -291,7 +327,7 @@ async function setupPublicRoutes(fastifyInstance: FastifyInstance, opts: RouteOp
       // Require valid edit token:
       preHandler: requireValidEditToken,
     },
-    updateSignup,
+    updateSignupAsUser,
   );
 
   server.delete<{ Params: schema.SignupPathParams }>(
@@ -301,13 +337,55 @@ async function setupPublicRoutes(fastifyInstance: FastifyInstance, opts: RouteOp
         params: schema.signupPathParams,
         response: {
           ...errorResponses,
-          204: {},
+          204: Type.Null(),
         },
       },
       // Require valid edit token:
       preHandler: requireValidEditToken,
     },
     deleteSignupAsUser,
+  );
+
+  server.post<{ Params: schema.SignupPathParams }>(
+    "/signups/:id/payment/start",
+    {
+      schema: {
+        params: schema.signupPathParams,
+        response: {
+          ...errorResponses,
+          200: schema.startPaymentResponse,
+        },
+      },
+      // Require valid edit token:
+      preHandler: requireValidEditToken,
+    },
+    startPayment,
+  );
+
+  server.post<{ Params: schema.SignupPathParams }>(
+    "/signups/:id/payment/complete",
+    {
+      schema: {
+        params: schema.signupPathParams,
+        response: {
+          ...errorResponses,
+          200: schema.signupForEditResponse,
+        },
+      },
+      // Require valid edit token:
+      preHandler: requireValidEditToken,
+    },
+    completePayment,
+  );
+
+  // Stripe webhook
+  server.post(
+    "/stripe/webhook",
+    {
+      bodyLimit: 1048576, // 1MB limit
+      preParsing: getRawBody, // Keep raw body for signature verification
+    },
+    stripeWebhook,
   );
 
   // Admin session management routes
@@ -323,7 +401,7 @@ async function setupPublicRoutes(fastifyInstance: FastifyInstance, opts: RouteOp
         },
       },
     },
-    adminLogin(opts.adminSession),
+    adminLogin,
   );
 
   server.post(
@@ -336,7 +414,7 @@ async function setupPublicRoutes(fastifyInstance: FastifyInstance, opts: RouteOp
         },
       },
     },
-    renewAdminToken(opts.adminSession),
+    renewAdminToken,
   );
 
   // Public routes for events
@@ -399,16 +477,13 @@ async function setupPublicRoutes(fastifyInstance: FastifyInstance, opts: RouteOp
         },
       },
     },
-    createInitialUser(opts.adminSession),
+    createInitialUser,
   );
 }
 
-export default async function setupRoutes(
-  instance: FastifyInstance,
-  opts: RouteOptions,
-): Promise<void> {
+export default async function setupRoutes(instance: FastifyInstance): Promise<void> {
   addLogEventHook(instance);
 
-  await instance.register(setupAdminRoutes, { ...opts, prefix: "/admin" });
-  await instance.register(setupPublicRoutes, { ...opts, prefix: undefined });
+  await instance.register(setupAdminRoutes, { prefix: "/admin" });
+  await instance.register(setupPublicRoutes, { prefix: undefined });
 }

@@ -3,10 +3,10 @@ import React from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
-import { useActionDateTimeFormatter } from "@tietokilta/ilmomasiina-components/dist/utils/dateFormat";
 import type { AuditLogItemSchema } from "@tietokilta/ilmomasiina-models";
 import { AuditEvent } from "@tietokilta/ilmomasiina-models";
-import appPaths from "../../paths";
+import paths from "../../paths";
+import { useActionDateTimeFormatter } from "../../utils/dateFormat";
 
 type Props = {
   item: AuditLogItemSchema;
@@ -18,6 +18,7 @@ const ACTION_STRINGS = {
   [AuditEvent.PUBLISH_EVENT]: "auditLog.description.publishEvent",
   [AuditEvent.UNPUBLISH_EVENT]: "auditLog.description.unpublishEvent",
   [AuditEvent.DELETE_EVENT]: "auditLog.description.deleteEvent",
+  [AuditEvent.CREATE_SIGNUP]: "auditLog.description.createSignup",
   [AuditEvent.EDIT_SIGNUP]: "auditLog.description.editSignup",
   [AuditEvent.DELETE_SIGNUP]: "auditLog.description.deleteSignup",
   [AuditEvent.PROMOTE_SIGNUP]: "auditLog.description.promoteSignup",
@@ -45,12 +46,13 @@ function useItemDescription(item: AuditLogItemSchema) {
         <Trans t={t} i18nKey={ACTION_STRINGS[item.action]}>
           created event
           {item.eventId ? (
-            <Link to={appPaths.adminEditEvent(item.eventId as any)}>{{ event: item.eventName ?? "" }}</Link>
+            <Link to={paths.adminEditEvent(item.eventId as any)}>{{ event: item.eventName ?? "" }}</Link>
           ) : (
             { event: item.eventName ?? "" }
           )}
         </Trans>
       );
+    case AuditEvent.CREATE_SIGNUP:
     case AuditEvent.EDIT_SIGNUP:
     case AuditEvent.DELETE_SIGNUP:
     case AuditEvent.PROMOTE_SIGNUP:
@@ -60,7 +62,7 @@ function useItemDescription(item: AuditLogItemSchema) {
           {{ signup: `${item.signupId} (${item.signupName})` }}
           in event
           {item.eventId ? (
-            <Link to={appPaths.adminEditEvent(item.eventId)}>{{ event: item.eventName ?? "" }}</Link>
+            <Link to={paths.adminEditEvent(item.eventId)}>{{ event: item.eventName ?? "" }}</Link>
           ) : (
             { event: item.eventName ?? "" }
           )}

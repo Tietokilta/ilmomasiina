@@ -1,6 +1,19 @@
 extends ../layout.pug
 
 block mainContent
+  if admin && type == "signup"
+    div.content-block
+      p.bodyText #[strong Ylläpitäjä on ilmoittanut sinut tapahtumaan.]
+  if admin && type == "edit"
+    div.content-block
+      p.bodyText #[strong Ylläpitäjä on muokannut ilmoittautumistasi.]
+  if paymentStatus == "pending"
+    div.content-block
+      p.bodyText
+        strong Ilmoittautumisesi odottaa vielä maksua!
+        if event.payments == "online"
+          |
+          | Voit suorittaa maksun #[a(href=cancelLink) ilmoittautumissivulla].
   if event.verificationEmail
     div.content-block
       p.bodyText #{event.verificationEmail}

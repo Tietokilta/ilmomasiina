@@ -14,7 +14,7 @@ export default function FieldFormGroup({ name, label, required, children }: Prop
   return (
     <Field name={name}>
       {({ input, meta }) => (
-        <FormGroup controlId={name}>
+        <FormGroup className="mb-3" controlId={name}>
           <FormLabel data-required={required}>{label}</FormLabel>
           {children({ input, meta })}
           {meta.touched && meta.error ? <FormText className="text-danger">{meta.error}</FormText> : null}

@@ -1,0 +1,48 @@
+{
+  "name": "@tietokilta/ilmomasiina-client",
+  "version": "3.0.0-alpha.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tietokilta/ilmomasiina.git"
+  },
+  "license": "MIT",
+  "main": "dist/cjs/index.js",
+  "types": "dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "node": "./dist/cjs/index.js"
+    },
+    "./dist/*": {
+      "types": "./dist/esm/*.d.ts",
+      "import": "./dist/esm/*.js",
+      "node": "./dist/cjs/*.js"
+    },
+    "./src/*": "./src/*.ts"
+  },
+  "scripts": {
+    "build": "tsc --build && tsc --build tsconfig.cjs.json",
+    "clean": "rimraf dist",
+    "typecheck": "tsc --build"
+  },
+  "dependencies": {
+    "@tietokilta/ilmomasiina-models": "workspace:*",
+    "lodash-es": "^4.17.22"
+  },
+  "peerDependencies": {
+    "react": "^17 || ^18 || ^19"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/lodash-es": "^4.17.12",
+    "@types/react": "^19.2.7",
+    "react": "^19.2.3",
+    "rimraf": "^6.1.2",
+    "typescript": "~5.9.3"
+  }
+}

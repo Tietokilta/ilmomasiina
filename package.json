@@ -1,12 +1,12 @@
 {
   "name": "ilmomasiina",
-  "version": "2.0.0-alpha33",
+  "version": "3.0.0-alpha.1",
   "private": true,
   "license": "MIT",
   "engines": {
-    "node": "^20"
+    "node": "^24"
   },
-  "packageManager": "pnpm@9.1.1",
+  "packageManager": "pnpm@10.28.0",
   "scripts": {
     "bootstrap": "pnpm install",
     "clean": "pnpm run -r clean",
@@ -14,7 +14,7 @@
     "start": "pnpm run -r --parallel start",
     "lint": "eslint packages",
     "lint:fix": "npm run lint -- --fix",
-    "format": "prettier -w packages/*/{src,test}/**/*.{ts,tsx,scss}",
+    "format": "prettier --write --list-different packages/*/{src,test}/**/*.{ts,tsx,scss}",
     "typecheck": "pnpm run -r --workspace-concurrency=1 typecheck",
     "test": "pnpm run -r test",
     "test:backend": "pnpm run --filter ilmomasiina-backend test"
@@ -29,19 +29,19 @@
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
-    "eslint": "^8.56.0",
+    "eslint": "^8.57.1",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^17.1.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-import": "^2.29.1",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jest": "^27.9.0",
-    "eslint-plugin-jsx-a11y": "^6.8.0",
-    "eslint-plugin-promise": "^6.1.1",
-    "eslint-plugin-react": "^7.33.2",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-simple-import-sort": "^12.0.0",
-    "prettier": "^3.3.3",
-    "typescript": "~5.2.2"
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-promise": "^6.6.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "prettier": "^3.7.4",
+    "typescript": "~5.9.3"
   },
   "browserslist": {
     "production": [
@@ -69,7 +69,11 @@
       ]
     },
     "overrides": {
-      "@types/react": "^17.0.47"
+      "react-final-form@6.5.9>react": "^19.2.0",
+      "react-final-form-arrays@3.1.4>react": "^19.2.0",
+      "email-templates@*>preview-email": "-",
+      "@types/email-templates@*>juice": "^11.1.0",
+      "@types/nodemailer@*>@aws-sdk/client-sesv2": "-"
     }
   }
 }

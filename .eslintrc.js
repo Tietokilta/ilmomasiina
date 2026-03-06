@@ -3,7 +3,7 @@ module.exports = {
   "parserOptions": {
     "project": [
       "packages/ilmomasiina-models/tsconfig.json",
-      "packages/ilmomasiina-components/tsconfig.json",
+      "packages/ilmomasiina-client/tsconfig.json",
       "packages/ilmomasiina-frontend/tsconfig.json",
       "packages/ilmomasiina-backend/tsconfig.json"
     ],
@@ -15,10 +15,12 @@ module.exports = {
     "**/node_modules/**",
     "**/dist/**",
     "**/build/**",
+    "**/coverage/**",
     ".eslintrc.js",
     "jest.config.js",
     "*.svg",
     "*.png",
+    "*.md",
     "*.scss",
     "*.json"
   ],
@@ -70,6 +72,8 @@ module.exports = {
     "react-hooks/exhaustive-deps": ["error", {
       additionalHooks: "useAbortableEffect|useAbortablePromise",
     }],
+    // Allow shadowing variables in the initial assignment to them (where incorrect usage would be obvious).
+    "@typescript-eslint/no-shadow": ["error", { ignoreOnInitialization: true }],
     // Prefer arrow functions to functions expressions, as that's what was done
     // when this rule was introduced.
     "react/function-component-definition": ["error", {
@@ -80,8 +84,8 @@ module.exports = {
     "import/no-extraneous-dependencies": ["error", {
       devDependencies: [
         "**/test/**",
-        "**/vite.config.ts",
-        "**/vitest.config.ts",
+        "**/vite.config.mts",
+        "**/vitest.config.mts",
         "**/.eslintrc.js"
       ],
     }],

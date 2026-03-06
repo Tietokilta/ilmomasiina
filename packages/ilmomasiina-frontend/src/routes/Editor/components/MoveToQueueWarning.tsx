@@ -3,27 +3,24 @@ import React from "react";
 import { Button, Modal } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 
-import useEvent from "@tietokilta/ilmomasiina-components/dist/utils/useEvent";
-import { moveToQueueCanceled } from "../../../modules/editor/actions";
-import { useTypedDispatch, useTypedSelector } from "../../../store/reducers";
+import useStore from "../../../modules/store";
+import useEvent from "../../../utils/useEvent";
 
 type Props = {
   onProceed: () => void;
 };
 
 const MoveToQueueWarning = ({ onProceed }: Props) => {
-  const dispatch = useTypedDispatch();
-  const modal = useTypedSelector((state) => state.editor.moveToQueueModal);
+  const { moveToQueueModal: modal, moveToQueueCanceled } = useStore((state) => state.editor);
   const { t } = useTranslation();
 
   const proceed = useEvent(() => {
-    dispatch(moveToQueueCanceled());
+    moveToQueueCanceled();
     onProceed();
   });
-  const cancel = useEvent(() => dispatch(moveToQueueCanceled()));
 
   return (
-    <Modal show={!!modal} onHide={cancel}>
+    <Modal show={!!modal} onHide={moveToQueueCanceled}>
       <Modal.Header>
         <Modal.Title>{t("editor.moveToQueue.title")}</Modal.Title>
       </Modal.Header>
@@ -32,7 +29,7 @@ const MoveToQueueWarning = ({ onProceed }: Props) => {
         <p>{t("editor.moveToQueue.info2")}</p>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="muted" onClick={cancel}>
+        <Button variant="muted" onClick={moveToQueueCanceled}>
           {t("editor.moveToQueue.action.cancel")}
         </Button>
         <Button variant="danger" onClick={proceed}>

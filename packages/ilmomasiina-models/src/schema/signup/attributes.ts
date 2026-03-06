@@ -1,6 +1,7 @@
-import { Type } from "@sinclair/typebox";
+import { Type } from "typebox";
 
-import { SignupStatus } from "../../enum";
+import { ManualPaymentStatus, SignupPaymentStatus, SignupStatus } from "../../enum";
+import { productSchema } from "../product";
 import { questionID } from "../question/attributes";
 import { Nullable } from "../utils";
 
@@ -42,42 +43,39 @@ export const signupAnswer = Type.Object({
   ),
 });
 
-/** Editable attributes of a signup. */
-export const editableSignupAttributes = Type.Object({
-  firstName: Nullable(Type.String({ maxLength: 255 }), {
-    description: "First name of the attendee. Null if not set yet.",
-  }),
-  lastName: Nullable(Type.String({ maxLength: 255 }), {
-    description: "Last name of the attendee. Null if not set yet.",
-  }),
-  // This does not have format: "email", as we validate it within updateSignup instead.
-  // If it was added, it would have to be unioned with Type.Literal("") to account for events without an email field.
-  // (Ideally, clients would send null instead of "" in those cases, but we don't want to break existing uses.)
-  email: Nullable(Type.String({ maxLength: 255 }), {
-    description: "Email of the attendee. Null if not set yet.",
-  }),
-  namePublic,
-  answers: Type.Array(signupAnswer, {
-    description: "Answers to the questions of the event.",
-  }),
-});
-
 /** Editable attributes of a signup with non-public information removed. */
 export const publicEditableSignupAttributes = Type.Object({
   firstName: Nullable(Type.String({ maxLength: 255 }), {
     description: "First name of the attendee. Null if not set yet or not public.",
   }),
   lastName: Nullable(Type.String({ maxLength: 255 }), {
-    description: "Fast name of the attendee. Null if not set yet or not public.",
+    description: "Last name of the attendee. Null if not set yet or not public.",
   }),
   namePublic,
   answers: Type.Array(signupAnswer, {
-    description: "Answers to the public questions in the event.",
+    description: "Answers to the questions in the event.",
   }),
 });
 
-/** Non-editable, automatically updated signup attributes. */
-export const dynamicSignupAttributes = Type.Object({
+/** Editable attributes of a signup. */
+export const ownerEditableSignupAttributes = Type.Interface([publicEditableSignupAttributes], {
+  // This does not have format: "email", as we validate it within updateSignup instead.
+  // If it was added, it would have to be unioned with Type.Literal("") to account for events without an email field.
+  // (Ideally, clients would send null instead of "" in those cases, but we don't want to break existing uses.)
+  email: Nullable(Type.String({ maxLength: 255 }), {
+    description: "Email of the attendee. Null if not set yet.",
+  }),
+});
+
+/** Editable attributes of a signup for admins. */
+export const adminEditableSignupAttributes = Type.Interface([ownerEditableSignupAttributes], {
+  manualPaymentStatus: Nullable(Type.Enum(ManualPaymentStatus), {
+    description: "Payment status set manually by an admin, without creating a Payment record.",
+  }),
+});
+
+/** Non-editable, automatically updated signup attributes with non-public information removed. */
+export const publicDynamicSignupAttributes = Type.Object({
   status: Nullable(Type.Enum(SignupStatus, { title: "SignupStatus" }), {
     description: "Status of the signup. If null, the status has not been computed yet.",
   }),
@@ -92,3 +90,30 @@ export const dynamicSignupAttributes = Type.Object({
     description: "Whether the signup has been confirmed (saved).",
   }),
 });
+
+/** Non-editable, automatically updated signup attributes only returned for admins and the signup owner. */
+export const adminDynamicSignupAttributes = Type.Interface([publicDynamicSignupAttributes], {
+  price: Nullable(Type.Integer({ minimum: 0 }), {
+    description: "Total price of the signup in cents, calculated when it was last updated.",
+  }),
+  currency: Nullable(Type.String({ maxLength: 8 }), {
+    description: "The currency in which the price is denominated.",
+  }),
+  paymentStatus: Nullable(Type.Enum(SignupPaymentStatus), {
+    description: "Status of the payment for the signup, if applicable.",
+  }),
+  deletedAt: Nullable(Type.String({ format: "date-time" }), {
+    description: "The deletion date of the signup, if deleted.",
+  }),
+});
+
+/** Non-editable, automatically updated signup attributes only returned for the signup owner. */
+export const ownerDynamicSignupAttributes = Type.Interface(
+  [adminDynamicSignupAttributes],
+  // products is excluded for admins, because the JSON size would blow up unnecessarily.
+  {
+    products: Nullable(Type.Array(productSchema), {
+      description: "The product lines used to calculate the price.",
+    }),
+  },
+);

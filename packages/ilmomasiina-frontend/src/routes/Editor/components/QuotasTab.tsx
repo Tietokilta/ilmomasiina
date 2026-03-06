@@ -4,9 +4,10 @@ import { Form } from "react-bootstrap";
 import { UseFieldConfig } from "react-final-form";
 import { useTranslation } from "react-i18next";
 
-import { FieldRow } from "@tietokilta/ilmomasiina-components";
+import FieldRow from "../../../components/FieldRow";
 import useEditorErrors from "./errors";
 import { useFieldValue } from "./hooks";
+import LanguageSelect from "./LanguageSelect";
 import Quotas from "./Quotas";
 
 const numberConfig: UseFieldConfig<number | null> = {
@@ -19,6 +20,7 @@ const QuotasTab = () => {
   const formatError = useEditorErrors();
   return (
     <div>
+      <LanguageSelect />
       <Quotas />
       <FieldRow
         name="useOpenQuota"

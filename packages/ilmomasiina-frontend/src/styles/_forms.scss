@@ -1,0 +1,62 @@
+@use "definitions" as *;
+
+.ilmo--form {
+  .form-row.row {
+    @include media-breakpoint-down(sm) {
+      margin-bottom: $spacer * 0.5;
+    }
+
+    // Make forms look nicer when labels wrap in two column view
+    @include media-breakpoint-up(sm) {
+      margin-bottom: 0;
+
+      > :last-child {
+        margin-bottom: $spacer;
+      }
+    }
+  }
+
+  .form-text {
+    display: block;
+  }
+
+  label {
+    font-weight: 600;
+  }
+
+  label[data-required]:not([data-required="false"])::after {
+    content: "\00A0*";
+    color: $red;
+    font-weight: 600;
+  }
+
+  label.form-check-label {
+    font-weight: 400;
+  }
+
+  .ilmo--label-column {
+    @include media-breakpoint-up(sm) {
+      text-align: right;
+    }
+    // Make empty labels not consume the height of a text line in single column view
+    @include media-breakpoint-down(sm) {
+      label:empty {
+        display: block;
+      }
+    }
+  }
+
+  textarea {
+    max-width: 100%;
+  }
+
+  .btn[disabled] {
+    opacity: 0.35;
+  }
+
+  // We use custom feedback elements instead of the ones provided by react-bootstrap, as the
+  // latter don't work with checkbox/radio arrays.
+  .invalid-feedback {
+    display: none !important;
+  }
+}

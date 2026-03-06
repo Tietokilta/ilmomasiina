@@ -2,14 +2,13 @@ import React, { useEffect } from "react";
 
 import { Spinner } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
-import { shallowEqual } from "react-redux";
 import { Link } from "react-router-dom";
 
-import { errorDesc } from "@tietokilta/ilmomasiina-components/dist/utils/errorMessage";
+import { errorDesc } from "@tietokilta/ilmomasiina-client";
 import requireAuth from "../../containers/requireAuth";
-import { getAuditLogs, resetState } from "../../modules/auditLog/actions";
-import appPaths from "../../paths";
-import { useTypedDispatch, useTypedSelector } from "../../store/reducers";
+import type { TKey } from "../../i18n";
+import useStore from "../../modules/store";
+import paths from "../../paths";
 import AuditLogActionFilter from "./AuditLogActionFilter";
 import AuditLogFilter from "./AuditLogFilter";
 import AuditLogItem from "./AuditLogItem";
@@ -18,24 +17,19 @@ import AuditLogPagination, { LOGS_PER_PAGE } from "./AuditLogPagination";
 import "./AuditLog.scss";
 
 const AuditLog = () => {
-  const dispatch = useTypedDispatch();
-  const { auditLog, loadError } = useTypedSelector((state) => state.auditLog, shallowEqual);
+  const { auditLog, loadError, getAuditLogs, resetState } = useStore((state) => state.auditLog);
   const { t } = useTranslation();
 
   useEffect(() => {
-    dispatch(
-      getAuditLogs({
-        limit: LOGS_PER_PAGE,
-      }),
-    );
-    return () => {
-      resetState();
-    };
-  }, [dispatch]);
+    getAuditLogs({
+      limit: LOGS_PER_PAGE,
+    });
+    return () => resetState();
+  }, [getAuditLogs, resetState]);
 
   return (
     <>
-      <Link to={appPaths.adminEventsList}>&#8592; {t("auditLog.returnToEvents")}</Link>
+      <Link to={paths.adminEventsList}>&#8592; {t("auditLog.returnToEvents")}</Link>
       <h1>{t("auditLog.title")}</h1>
       <AuditLogPagination />
       <table className="table audit-log--table">
@@ -67,7 +61,7 @@ const AuditLog = () => {
         <tbody>
           {loadError && (
             <tr>
-              <td colSpan={4}>{errorDesc(t, loadError, "auditLog.loadError")}</td>
+              <td colSpan={4}>{t(errorDesc<TKey>(loadError, "auditLog.loadError"))}</td>
             </tr>
           )}
           {!loadError && !auditLog && (

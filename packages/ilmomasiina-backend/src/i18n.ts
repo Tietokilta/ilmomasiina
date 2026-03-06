@@ -1,23 +1,17 @@
 import i18n from "i18next";
 
-import config from "./config";
 import * as en from "./locales/en.json";
 import * as fi from "./locales/fi.json";
 
-export const resources = {
+const resources = {
   // this way we generate typescript errors if not exact match
-  en: en as typeof fi,
-  fi: fi as typeof en,
+  en: en satisfies typeof fi,
+  fi: fi satisfies typeof en,
 } as const;
 
-i18n.init({
-  lng: config.mailDefaultLang,
-  fallbackLng: config.mailDefaultLang,
+export type KnownLanguage = keyof typeof resources;
+export const knownLanguages = Object.keys(resources) as KnownLanguage[];
 
-  resources: {
-    fi,
-    en,
-  },
-});
+export { resources as i18nResources };
 
 export default i18n;

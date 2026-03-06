@@ -2,42 +2,48 @@ import React, { useMemo } from "react";
 
 import { Button, Col, Row } from "react-bootstrap";
 import { UseFieldConfig } from "react-final-form";
-import { FieldArrayRenderProps, useFieldArray } from "react-final-form-arrays";
 import { useTranslation } from "react-i18next";
-import { SortEnd } from "react-sortable-hoc";
 
-import { FieldRow } from "@tietokilta/ilmomasiina-components";
-import useEvent from "@tietokilta/ilmomasiina-components/dist/utils/useEvent";
-import useShallowMemo from "@tietokilta/ilmomasiina-components/dist/utils/useShallowMemo";
+import useShallowMemo from "@tietokilta/ilmomasiina-client/dist/utils/useShallowMemo";
+import { PaymentMode, QuotaLanguage } from "@tietokilta/ilmomasiina-models";
+import FieldRow from "../../../components/FieldRow";
 import { EditorQuota } from "../../../modules/editor/types";
+import useEvent from "../../../utils/useEvent";
 import useEditorErrors from "./errors";
+import { useFieldValue } from "./hooks";
+import LocalizedFieldRow from "./LocalizedFieldRow";
+import PriceField, { priceFieldConfig } from "./PriceField";
 import Sortable from "./Sortable";
+import useFieldArrayMap from "./useFieldArrayMap";
+import useLocalizedFieldArrayMutators from "./useLocalizedFieldArrayMutators";
 
 type QuotaRowProps = {
   name: string;
   index: number;
-  isOnly: boolean;
-  remove: FieldArrayRenderProps<EditorQuota, HTMLElement>["fields"]["remove"];
 };
 
 const numberConfig: UseFieldConfig<number | null> = {
   parse: (value) => (value ? Number(value) : null),
 };
 
-const QuotaRow = ({ name, index, isOnly, remove }: QuotaRowProps) => {
+const QuotaRow = ({ name, index }: QuotaRowProps) => {
   const { t } = useTranslation();
   const formatError = useEditorErrors();
+  const hasPayments = useFieldValue<PaymentMode>("payments") !== PaymentMode.DISABLED;
 
+  const { length } = useFieldArrayMap("quotas");
+  const { remove } = useLocalizedFieldArrayMutators<EditorQuota, QuotaLanguage>("quotas");
   const removeThis = useEvent(() => remove(index));
 
   return (
     <Row className="quota-body">
       <Col xs="12" sm="10">
-        <FieldRow
+        <LocalizedFieldRow
           name={`${name}.title`}
+          defaultAsPlaceholder
           label={t("editor.quotas.quotaName")}
           help={[
-            isOnly ? t("editor.quotas.quotaName.singleQuota") : "",
+            length === 1 ? t("editor.quotas.quotaName.singleQuota") : "",
             index === 0 ? t("editor.quotas.quotaName.reorder") : "",
           ]
             .filter(Boolean)
@@ -57,6 +63,16 @@ const QuotaRow = ({ name, index, isOnly, remove }: QuotaRowProps) => {
           config={numberConfig}
           formatError={formatError}
         />
+        {hasPayments && (
+          <FieldRow
+            name={`${name}.price`}
+            label={t("editor.quotas.price")}
+            as={PriceField}
+            config={priceFieldConfig}
+            help={t("editor.quotas.price.info")}
+            formatError={formatError}
+          />
+        )}
       </Col>
       {index > 0 && (
         <Col xs="12" sm="2" className="no-focus">
@@ -71,33 +87,36 @@ const QuotaRow = ({ name, index, isOnly, remove }: QuotaRowProps) => {
 
 const Quotas = () => {
   const { t } = useTranslation();
-
-  const { fields } = useFieldArray<EditorQuota>("quotas");
+  const quotas = useFieldValue<EditorQuota[]>("quotas");
+  const { map: mapFields } = useFieldArrayMap("quotas");
+  const { push, move } = useLocalizedFieldArrayMutators<EditorQuota, QuotaLanguage>("quotas");
 
   const addQuota = useEvent(() => {
-    fields.push({
-      key: `new-${Math.random()}`,
-      title: "",
-      size: null,
-    });
+    push(
+      {
+        key: `new-${Math.random()}`,
+        title: "",
+        size: null,
+        price: 0,
+      },
+      {
+        title: "",
+      },
+    );
   });
 
-  const updateOrder = useEvent(({ newIndex, oldIndex }: SortEnd) => fields.move(oldIndex, newIndex));
-
-  const keys = useShallowMemo(fields.value.map((item) => item.key));
+  const keys = useShallowMemo(quotas.map((item) => item.key));
+  // Generate objects to be passed to Sortable.
   const quotaItems = useMemo(
-    () =>
-      fields.map((name, i) => (
-        <QuotaRow key={keys[i]} name={name} index={i} remove={fields.remove} isOnly={fields.length === 1} />
-      )),
-    // This list only invalidates when the question positions or count change.
+    () => mapFields((name, i) => ({ name, id: keys[i] })),
+    // Actual quota data isn't included, so this list only invalidates when the question positions or count change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [keys],
   );
 
   return (
     <>
-      <Sortable collection="quotas" items={quotaItems} onSortEnd={updateOrder} useDragHandle />
+      <Sortable items={quotaItems} component={QuotaRow} move={move} />
       <div className="text-center mb-3">
         <Button type="button" variant="primary" onClick={addQuota}>
           {t("editor.quotas.addQuota")}

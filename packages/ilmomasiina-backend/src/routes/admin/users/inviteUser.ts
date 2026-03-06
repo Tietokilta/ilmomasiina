@@ -21,7 +21,7 @@ export async function createUser(
   params: UserCreateSchema,
   auditLogger: AuditLogger,
   transaction: Transaction,
-): Promise<UserSchema> {
+): Promise<User> {
   const existing = await User.findOne({
     where: { email: params.email },
     transaction,
@@ -38,17 +38,15 @@ export async function createUser(
     { transaction },
   );
 
-  const res = {
-    id: user.id,
-    email: user.email,
-  };
-
   await auditLogger(AuditEvent.CREATE_USER, {
-    extra: res,
+    extra: {
+      id: user.id,
+      email: user.email,
+    },
     transaction,
   });
 
-  return res;
+  return user;
 }
 
 /**
@@ -79,5 +77,8 @@ export default async function inviteUser(
   });
 
   reply.status(201);
-  return user;
+  return {
+    id: user.id,
+    email: user.email,
+  };
 }

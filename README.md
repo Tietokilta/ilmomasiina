@@ -8,11 +8,16 @@ Ilmomasiina is easy to [install](docs/installation.md) in various environments a
 is freely available for all organizations to use.
 [Migrating](docs/migration.md) from the Athene-made version is also supported.
 
-The latest reviewed development version is in the `dev` branch. You may want to check
-current PRs for somewhat stable feature additions.
+Releases are made as Git tags and follow semantic versioning. The current stable version is in the `2.x` branch,
+while the latest development version is in the `dev` branch.
 
-**Please note that the code is currently in alpha phase and may still have bugs.**
-Major features for 2.0 are mostly done and we expect to reach a stable beta in spring 2024.
+> [!IMPORTANT]
+> The `dev` branch is currently used for major changes upcoming to Ilmomasiina 3.0. Significant instability and
+> breaking changes are expected. If you maintain a fork of Ilmomasiina, we **strongly recommend** tracking `2.x` until
+> 3.0 is more stable.
+>
+> We expect to release a version of Ilmomasiina 2.x in 2026 that will allow making most customizations from the UI,
+> removing the need for most users to fork Ilmomasiina.
 
 ## Installation
 

@@ -1,4 +1,4 @@
-@use "@tietokilta/ilmomasiina-components/src/styles/definitions" as *;
+@use "definitions" as *;
 
 @use "bootstrap/scss/bootstrap" with (
   // Override Bootstrap theme colors
@@ -10,19 +10,18 @@
   $green: $green,
   $text-muted: $text-muted,
 
-  // Just for the sake of Athene legacy
-  $btn-border-radius-lg: 2px,
-
   // Typography
   $font-family-sans-serif: ("Open Sans", sans-serif),
   $line-height-base: 1.618,
+
   $h1-font-size: 2rem,
   $h2-font-size: 1.45rem,
   $h3-font-size: 1.15rem
 );
 
 @use "widgets";
-@use "@tietokilta/ilmomasiina-components/src/styles/all";
+@use "forms";
+@use "shared";
 
 // Global layout
 
@@ -36,7 +35,8 @@ html {
   flex-direction: column;
   min-height: 100vh;
 
-  > .container {
+  > .container,
+  > .ilmo--loading-container {
     flex: 1 0 auto;
   }
 }

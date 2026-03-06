@@ -1,4 +1,4 @@
-import { Type } from "@sinclair/typebox";
+import { Type } from "typebox";
 
 import { AuditEvent } from "../../enum";
 import { Nullable } from "../utils";

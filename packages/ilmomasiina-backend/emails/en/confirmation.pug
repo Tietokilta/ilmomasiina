@@ -1,6 +1,19 @@
 extends ../layout.pug
 
 block mainContent
+  if admin && type == "signup"
+    div.content-block
+      p.bodyText #[strong An administrator has signed you up to this event.]
+  if admin && type == "edit"
+    div.content-block
+      p.bodyText #[strong An administrator has edited your signup.]
+  if paymentStatus == "pending"
+    div.content-block
+      p.bodyText
+        strong Your signup is still pending payment!
+        if event.payments == "online"
+          |
+          | You can complete the payment on the #[a(href=cancelLink) signup page].
   if event.verificationEmail
     div.content-block
       p.bodyText #{event.verificationEmail}

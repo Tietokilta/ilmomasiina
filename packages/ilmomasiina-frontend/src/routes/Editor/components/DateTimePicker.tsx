@@ -1,7 +1,7 @@
 import React, { ComponentPropsWithoutRef } from "react";
 
-import enUS from "date-fns/locale/en-US";
-import fi from "date-fns/locale/fi";
+import { enUS } from "date-fns/locale/en-US";
+import { fi } from "date-fns/locale/fi";
 import DatePicker, { registerLocale } from "react-datepicker";
 import { useField } from "react-final-form";
 import { useTranslation } from "react-i18next";

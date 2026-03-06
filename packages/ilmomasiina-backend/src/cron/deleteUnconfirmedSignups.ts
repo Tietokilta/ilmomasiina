@@ -53,10 +53,10 @@ export default async function deleteUnconfirmedSignups() {
 
   console.info(`Deleting unconfirmed signups: ${signupIds.join(", ")}`);
   try {
+    // These cannot have payments, so we can just hard delete them.
+    // If they do, this will error due to foreign key constraints.
     await Signup.destroy({
       where: { id: signupIds },
-      // skip deletion grace period
-      force: true,
     });
     for (const event of uniqueEvents) {
       // Avoid doing many simultaneous transactions with this loop.

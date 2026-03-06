@@ -1,4 +1,4 @@
-@use "@tietokilta/ilmomasiina-components/src/styles/definitions" as *;
+@use "definitions" as *;
 
 // Map react-widgets variables to Bootstrap theme
 @use "react-widgets/scss/styles.scss" with (

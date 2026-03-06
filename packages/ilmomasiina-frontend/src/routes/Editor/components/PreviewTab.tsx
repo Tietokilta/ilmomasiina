@@ -2,97 +2,85 @@ import React, { useMemo, useState } from "react";
 
 import { Col, Row } from "react-bootstrap";
 import { useFormState } from "react-final-form";
+import { I18nextProvider, useTranslation } from "react-i18next";
 
 import {
   EditSignupContextProvider,
   EditSignupState,
+  getLocalizedEvent,
   SingleEventContextProvider,
   SingleEventState,
-} from "@tietokilta/ilmomasiina-components";
-import EditSignupForm from "@tietokilta/ilmomasiina-components/dist/routes/EditSignup/components/EditForm";
-import EventDescription from "@tietokilta/ilmomasiina-components/dist/routes/SingleEvent/components/EventDescription";
-import SignupCountdown from "@tietokilta/ilmomasiina-components/dist/routes/SingleEvent/components/SignupCountdown";
-import { SignupStatus } from "@tietokilta/ilmomasiina-models";
-import { editorEventToServer } from "../../../modules/editor/actions";
-import { EditorEvent } from "../../../modules/editor/types";
+} from "@tietokilta/ilmomasiina-client";
+import type { EditorEvent } from "../../../modules/editor/types";
+import useStore from "../../../modules/store";
+import EditSignupForm from "../../EditSignup/components/EditForm";
+import EventDescription from "../../SingleEvent/components/EventDescription";
+import SignupCountdown from "../../SingleEvent/components/SignupCountdown";
+import LanguageSelect from "./LanguageSelect";
+import { editorEventToUserEvent, previewDummySignup } from "./userComponentInterop";
 
 const PreviewTab = () => {
   const { values } = useFormState<EditorEvent>();
   const [previewingForm, setPreviewingForm] = useState(false);
+  const { i18n, t } = useTranslation();
+  const selectedLanguage = useStore((state) => state.editor.selectedLanguage);
+
+  const previewI18n = useMemo(() => i18n.cloneInstance({ lng: selectedLanguage }), [i18n, selectedLanguage]);
 
   // Render route contents with simulated state.
-  const singleEventCtx = useMemo((): SingleEventState => {
-    const converted = editorEventToServer(values);
-    return {
-      pending: false,
-      event: {
-        ...converted,
-        id: "preview",
-        quotas: converted.quotas.map((quota) => ({
-          ...quota,
-          id: quota.id ?? `preview${Math.random()}`,
-          signupCount: 0,
-          signups: [],
-        })),
-        questions: converted.questions.map((question) => ({
-          ...question,
-          id: question.id ?? `preview${Math.random()}`,
-        })),
-        registrationClosed: false,
-        millisTillOpening: Infinity,
+  const [singleEventCtx, editSignupCtx] = useMemo((): [SingleEventState, EditSignupState] => {
+    const convertedEvent = editorEventToUserEvent(values);
+    const localizedEvent = getLocalizedEvent(convertedEvent, selectedLanguage);
+    const signup = previewDummySignup(convertedEvent);
+    return [
+      {
+        pending: false,
+        event: convertedEvent,
+        localizedEvent,
+        preview: { setPreviewingForm },
       },
-      preview: { setPreviewingForm },
-    };
-  }, [values]);
-
-  const editSignupCtx = useMemo(
-    (): EditSignupState => ({
-      pending: false,
-      editToken: "",
-      isNew: true,
-      event: singleEventCtx.event,
-      signup: {
-        id: "preview",
-        firstName: null,
-        lastName: null,
-        email: null,
-        answers: [],
-        confirmed: false,
-        createdAt: new Date().toISOString(),
-        namePublic: false,
-        quota: singleEventCtx.event!.quotas[0] ?? {
-          id: `preview${Math.random()}`,
-          title: "\u2013",
-          size: 0,
-        },
-        status: SignupStatus.IN_QUOTA,
-        position: 1,
-        confirmableForMillis: 30 * 60 * 60 * 1000,
-        editableForMillis: 30 * 60 * 60 * 1000,
+      {
+        pending: false,
+        editToken: "",
+        isNew: true,
+        event: convertedEvent,
+        localizedEvent,
+        signup,
+        localizedSignup: signup, // No need for quota name localization
+        editingClosedOnLoad: false,
+        confirmableUntil: Date.now() + 30 * 60 * 60 * 1000,
+        editableUntil: Date.now() + 30 * 60 * 60 * 1000,
+        showPayment: false,
+        canEdit: true,
+        canEditNameAndEmail: true,
+        canEditPaidQuestions: true,
+        preview: { setPreviewingForm },
       },
-      editingClosedOnLoad: false,
-      confirmableUntil: Date.now() + 30 * 60 * 60 * 1000,
-      editableUntil: Date.now() + 30 * 60 * 60 * 1000,
-      preview: { setPreviewingForm },
-    }),
-    [singleEventCtx],
-  );
+    ];
+  }, [values, selectedLanguage]);
 
-  return previewingForm ? (
-    <EditSignupContextProvider value={editSignupCtx}>
-      <EditSignupForm />
-    </EditSignupContextProvider>
-  ) : (
-    <SingleEventContextProvider value={singleEventCtx}>
-      <Row className="event-editor--preview">
-        <Col sm={12} md={8}>
-          <EventDescription />
-        </Col>
-        <Col sm={12} md={4}>
-          <SignupCountdown />
-        </Col>
-      </Row>
-    </SingleEventContextProvider>
+  return (
+    <>
+      <LanguageSelect label={t("editor.selectedLanguage.preview")} />
+      <I18nextProvider i18n={previewI18n}>
+        {previewingForm ? (
+          <EditSignupContextProvider value={editSignupCtx}>
+            <EditSignupForm />
+          </EditSignupContextProvider>
+        ) : (
+          <SingleEventContextProvider value={singleEventCtx}>
+            <Row className="event-editor--preview">
+              <Col sm={12} md={8}>
+                <EventDescription />
+              </Col>
+              <Col sm={12} md={4}>
+                <SignupCountdown />
+              </Col>
+            </Row>
+          </SingleEventContextProvider>
+        )}
+      </I18nextProvider>
+    </>
   );
 };
 

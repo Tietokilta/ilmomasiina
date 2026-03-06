@@ -7,50 +7,48 @@ import AdminPasswordAuth from "../../authentication/adminPasswordAuth";
 import { User } from "../../models/user";
 import CustomError from "../../util/customError";
 
-export function adminLogin(session: AdminAuthSession) {
-  return async (
-    request: FastifyRequest<{ Body: AdminLoginBody }>,
-    reply: FastifyReply,
-  ): Promise<AdminLoginResponse> => {
-    // Verify user
-    const user = await User.findOne({
-      where: { email: request.body.email },
-      attributes: ["id", "password", "email"],
-    });
+export async function adminLogin(
+  this: FastifyInstance,
+  request: FastifyRequest<{ Body: AdminLoginBody }>,
+  reply: FastifyReply,
+): Promise<AdminLoginResponse> {
+  // Verify user
+  const user = await User.findOne({
+    where: { email: request.body.email },
+    attributes: ["id", "password", "email"],
+  });
 
-    // Verify password
-    if (!user || !AdminPasswordAuth.verifyHash(request.body.password, user.password)) {
-      // Mitigate user enumeration by timing: waste some time if we didn't actually verify a password
-      if (!user) AdminPasswordAuth.createHash("hunter2");
-      throw new Unauthorized("Invalid email or password");
-    }
+  // Verify password
+  if (!user || !AdminPasswordAuth.verifyHash(request.body.password, user.password)) {
+    // Mitigate user enumeration by timing: waste some time if we didn't actually verify a password
+    if (!user) AdminPasswordAuth.createHash("hunter2");
+    throw new Unauthorized("Invalid email or password");
+  }
 
-    // Authentication success -> generate auth token
-    const accessToken = session.createSession({
-      user: user.id,
-      email: user.email,
-    });
-    reply.status(200);
-    return { accessToken };
-  };
+  // Authentication success -> generate auth token
+  const accessToken = this.adminSession.createSession(user);
+  reply.status(200);
+  return { accessToken };
 }
 
-export function renewAdminToken(session: AdminAuthSession) {
-  return async (request: FastifyRequest, reply: FastifyReply): Promise<AdminLoginResponse | void> => {
-    // Verify existing token
-    const sessionData = session.verifySession(request);
+export async function renewAdminToken(
+  this: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<AdminLoginResponse | void> {
+  // Verify existing token
+  const sessionData = this.adminSession.verifySession(request);
 
-    // Verify that the user exists
-    const user = await User.findByPk(sessionData.user);
-    if (!user) {
-      throw new Unauthorized("User no longer exists");
-    }
+  // Verify that the user exists
+  const user = await User.findByPk(sessionData.user);
+  if (!user) {
+    throw new Unauthorized("User no longer exists");
+  }
 
-    // Create a new one
-    const accessToken = session.createSession(sessionData);
-    reply.status(200);
-    return { accessToken };
-  };
+  // Create a new one
+  const accessToken = this.adminSession.createSession(user);
+  reply.status(200);
+  return { accessToken };
 }
 
 /** Adds a request hook that verifies the user's session and raises a 401 error if invalid. */

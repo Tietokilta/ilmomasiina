@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { prettifyError, ZodError, ZodType } from "zod";
 
 /** Gets a boolean from the environment as true/false or 0/1. */
 export function envBoolean(name: string, defaultValue?: boolean) {
@@ -46,6 +47,25 @@ export function envString(name: string, defaultValue?: string | null) {
     return value;
   }
   throw new Error(`Env variable ${name} must be set`);
+}
+
+/** Gets a JSON value from the environment, parsed and validated with a Zod schema. */
+export function envJson<T>(name: string, schema: ZodType<T>, defaultValue: T): T {
+  const json = process.env[name];
+  if (json === undefined) {
+    return schema.parse(defaultValue);
+  }
+  let parsedJson;
+  try {
+    parsedJson = JSON.parse(json);
+  } catch (err) {
+    throw new Error(`Env variable ${name} must be valid JSON: ${(err as Error).message}`);
+  }
+  try {
+    return schema.parse(parsedJson);
+  } catch (err) {
+    throw new Error(`Env variable ${name} is invalid:\n${prettifyError(err as ZodError)}`);
+  }
 }
 
 /**

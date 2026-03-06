@@ -4,7 +4,7 @@
 # Node modules will be installed at the build phase and included in the container image.
 # Sources and other files are intended to be provided using bind mounts.
 
-FROM node:20-alpine
+FROM node:24-alpine
 
 WORKDIR /opt/ilmomasiina
 
@@ -17,10 +17,10 @@ COPY packages/ilmomasiina-frontend/package.json \
   packages/ilmomasiina-frontend/.eslint* \
   packages/ilmomasiina-frontend/
 
-COPY packages/ilmomasiina-components/package.json \
-  packages/ilmomasiina-components/tsconfig.json \
-  packages/ilmomasiina-components/.eslint* \
-  packages/ilmomasiina-components/
+COPY packages/ilmomasiina-client/package.json \
+  packages/ilmomasiina-client/tsconfig.json \
+  packages/ilmomasiina-client/.eslint* \
+  packages/ilmomasiina-client/
 
 COPY packages/ilmomasiina-backend/package.json \
   packages/ilmomasiina-backend/tsconfig.json \

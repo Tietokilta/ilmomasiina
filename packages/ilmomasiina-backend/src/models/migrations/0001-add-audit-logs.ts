@@ -13,7 +13,7 @@ export default defineMigration({
       "auditlog",
       {
         id: {
-          type: DataTypes.INTEGER.UNSIGNED,
+          type: DataTypes.INTEGER,
           autoIncrement: true,
           primaryKey: true,
         },

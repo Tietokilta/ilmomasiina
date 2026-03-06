@@ -1,6 +1,10 @@
 import { DataTypes, Model, Optional, Sequelize } from "sequelize";
 
-import type { UserAttributes } from "@tietokilta/ilmomasiina-models/dist/models";
+export interface UserAttributes {
+  id: number;
+  email: string;
+  password: string;
+}
 
 export interface UserCreationAttributes extends Optional<UserAttributes, "id"> {}
 
@@ -19,7 +23,7 @@ export default function setupUserModel(sequelize: Sequelize) {
   User.init(
     {
       id: {
-        type: DataTypes.INTEGER.UNSIGNED,
+        type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
       },

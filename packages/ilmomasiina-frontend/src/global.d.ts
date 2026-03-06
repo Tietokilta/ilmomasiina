@@ -17,3 +17,9 @@ declare const BRANDING_FOOTER_HOME_TEXT: string;
 declare const BRANDING_FOOTER_HOME_LINK: string;
 declare const BRANDING_LOGIN_PLACEHOLDER_EMAIL: string;
 declare const TIMEZONE: string;
+
+declare const DEFAULT_LANGUAGE: string;
+
+declare const CURRENCY: string;
+
+declare const FRONTEND_NAMES: string[];

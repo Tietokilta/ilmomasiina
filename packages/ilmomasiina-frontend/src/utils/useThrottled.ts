@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
  * Further calls during the wait period delay the call, and the latest args are used.
  */
 export default function useThrottled<T extends any[]>(callback: (...args: T) => void, ms: number) {
-  const ref = useRef<number | undefined>();
+  const ref = useRef<number | undefined>(undefined);
 
   // clear on unmount
   useEffect(() => () => clearTimeout(ref.current), []);

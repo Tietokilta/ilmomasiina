@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 
 import { Button, Container, Navbar } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
@@ -7,15 +7,14 @@ import { Link } from "react-router-dom";
 import logo from "../../assets/logo.svg";
 import branding from "../../branding";
 import i18n from "../../i18n";
-import { logout } from "../../modules/auth/actions";
-import appPaths from "../../paths";
-import { useTypedDispatch, useTypedSelector } from "../../store/reducers";
+import paths from "../../paths";
 
 import "./Header.scss";
 
+// Code-split Logout to avoid strong dependency on the store.
+const Logout = lazy(() => import("./Logout"));
+
 const Header = () => {
-  const dispatch = useTypedDispatch();
-  const loggedIn = useTypedSelector((state) => state.auth.loggedIn);
   const {
     i18n: { language },
     t,
@@ -23,8 +22,8 @@ const Header = () => {
 
   return (
     <Navbar>
-      <Container>
-        <Link to={appPaths.eventsList} className="navbar-brand mr-auto">
+      <Container className="gap-sm-2">
+        <Link to={paths.eventsList} className="navbar-brand">
           <img className="navbar-logo" src={logo} alt="Logo" />
           <span className="d-none d-sm-inline">{branding.headerTitle}</span>
           <span className="d-sm-none">{branding.headerTitleShort}</span>
@@ -35,7 +34,9 @@ const Header = () => {
         {language !== "en" && (
           <Button onClick={() => i18n.changeLanguage("en")}>{t("header.switchLanguage", { lng: "en" })}</Button>
         )}
-        {loggedIn && <Button onClick={() => dispatch(logout())}>{t("header.logout")}</Button>}
+        <Suspense>
+          <Logout />
+        </Suspense>
       </Container>
     </Navbar>
   );
