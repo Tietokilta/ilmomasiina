@@ -1,12 +1,15 @@
 import Email from "email-templates";
 import { existsSync } from "fs";
 import i18next from "i18next";
+import * as ics from "ics";
+import type Mail from "nodemailer/lib/mailer";
 import path from "path";
 
 import { SignupPaymentStatus } from "@tietokilta/ilmomasiina-models";
 import config, { adminUrl } from "../config";
 import i18n from "../i18n";
 import { Event } from "../models/event";
+import createIcalEventAttrs from "../util/ical";
 import mailTransporter from "./config";
 
 export interface ConfirmationMailParams {
@@ -77,13 +80,14 @@ const TEMPLATE_OPTIONS: Email.EmailConfig = {
 };
 
 export default class EmailService {
-  static send(to: string, subject: string, html: string) {
+  static send(to: string, subject: string, html: string, icalEvent?: Mail.IcalAttachment) {
     const msg = {
       to,
       from: config.mailFrom,
       subject,
       html,
-    };
+      icalEvent,
+    } satisfies Mail.Options;
 
     return mailTransporter.sendMail(msg);
   }
@@ -104,7 +108,21 @@ export default class EmailService {
         lng,
         event: params.event.title,
       });
-      await EmailService.send(to, subject, html);
+      let icalEvent: Mail.IcalAttachment | undefined;
+      const icalAttrs = createIcalEventAttrs(params.event);
+      if(icalAttrs) {
+        const {value, error} = ics.createEvent(icalAttrs)
+        if(error) {
+          console.error("Failed to create iCal event:", error);
+        } else {
+          icalEvent = {
+            content: value,
+            method: "PUBLISH",
+            filename: "invite.ics"
+          }
+        }
+      }
+      await EmailService.send(to, subject, html, icalEvent);
     } catch (error) {
       console.error(error);
     }

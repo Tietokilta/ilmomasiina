@@ -91,3 +91,27 @@ describe("getSignupForEdit", () => {
     expect(data.signup).toBe(undefined);
   });
 });
+
+describe("updateSignupAsUser", () => {
+  test("signup confirmation email includes iCalendar attachment", async () => {
+    const event = await testEvent({ questionCount: 0, hasDate: true }, { nameQuestion: true, emailQuestion: true });
+    const [signup] = await testSignups({ event, count: 1, confirmed: false });
+
+    const [, response] = await api.updateSignupAsUser(signup.id, {
+      firstName: "Test",
+      lastName: "User",
+      email: "test.user@example.com",
+      answers: [],
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(emailSend).toHaveBeenCalledOnce();
+
+    const icalEvent = emailSend.mock.calls[0][3];
+    expect(icalEvent).toMatchObject({
+      filename: "invite.ics",
+      method: "PUBLISH",
+      content: expect.stringContaining("BEGIN:VCALENDAR"),
+    });
+  });
+});
