@@ -13,10 +13,10 @@ import i18n, { TKey } from "../../i18n";
 import { loginToast } from "../../modules/auth";
 import useStore from "../../modules/store";
 import paths from "../../paths";
+import useDocumentTitle from "../../utils/useDocumentTitle";
 import useEvent from "../../utils/useEvent";
 
 import "./InitialSetup.scss";
-import useDocumentTitle from "src/utils/useDocumentTitle";
 
 type FormData = {
   email: string;
