@@ -5,6 +5,7 @@ import { testEvent, testSignups } from "test/testData";
 import { afterEach, beforeAll, beforeEach, describe, expect, Mock, test, vi } from "vitest";
 
 import {
+  AuditEvent,
   ErrorCode,
   PaymentMode,
   PaymentStatus,
@@ -44,6 +45,15 @@ function createMockCheckoutSession(): Stripe.Response<Stripe.Checkout.Session> {
   };
   mockCheckoutSessions.set(id, session);
   return session as Stripe.Response<Stripe.Checkout.Session>;
+}
+
+async function mockCheckoutSessionStatusUpdated(
+  sessionId: Stripe.Checkout.Session["id"],
+  status: Stripe.Checkout.Session.Status | null,
+) {
+  const auditLog = vi.fn();
+  await checkoutSessionStatusUpdated(sessionId, status, auditLog, false);
+  return auditLog;
 }
 
 beforeAll(async () => {
@@ -546,7 +556,7 @@ describe("payment and signup update locking", () => {
     await api.startPayment(signup.id);
     const payment = await Payment.findOne({ where: { signupId: signup.id } });
     // Mark payment as PAID via webhook simulation
-    await checkoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
+    await mockCheckoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
     await payment!.reload();
     expect(payment!.status).toBe(PaymentStatus.PAID);
 
@@ -610,7 +620,7 @@ describe("payment and signup update locking", () => {
     // Create and pay for initial signup
     await api.startPayment(signup.id);
     const payment = await Payment.findOne({ where: { signupId: signup.id } });
-    await checkoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
+    await mockCheckoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
 
     // Attempt to change answer to different price option - should fail
     const result = await api.updateSignupAsUser(signup.id, {
@@ -638,7 +648,7 @@ describe("payment and signup update locking", () => {
     await api.startPayment(signup.id);
     const payment = await Payment.findOne({ where: { signupId: signup.id } });
     // Mark payment as PAID via webhook simulation
-    await checkoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
+    await mockCheckoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
 
     // Verify user update is blocked when price changes
     const userResult = await api.updateSignupAsUser(signup.id, {
@@ -673,7 +683,7 @@ describe("payment and signup update locking", () => {
     const payment = await Payment.findOne({ where: { signupId: signup.id } });
 
     // Mark payment as PAID via webhook simulation
-    await checkoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
+    await mockCheckoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
     await payment!.reload();
     expect(payment!.status).toBe(PaymentStatus.PAID);
 
@@ -693,7 +703,7 @@ describe("payment and signup update locking", () => {
     const payment = await Payment.findOne({ where: { signupId: signup.id } });
 
     // Mark payment as PAID via webhook simulation
-    await checkoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
+    await mockCheckoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
     await payment!.reload();
     expect(payment!.status).toBe(PaymentStatus.PAID);
 
@@ -875,7 +885,7 @@ describe("getEventDetailsForAdmin", () => {
     // Create a payment and mark it as PAID
     await api.startPayment(signup.id);
     const payment = await Payment.findOne({ where: { signupId: signup.id } });
-    await checkoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
+    await mockCheckoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
 
     // Delete the signup
     const [, response] = await api.deleteSignupAsAdmin(signup.id);
@@ -911,7 +921,7 @@ describe("getEventDetailsForAdmin", () => {
     expect(data.quotas[0].signups[0].paymentStatus).toBe(SignupPaymentStatus.PENDING);
 
     // Mark payment as PAID
-    await checkoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
+    await mockCheckoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
 
     // Verify paymentStatus is PAID
     [data] = await api.fetchAdminEventDetails(event);
@@ -933,7 +943,7 @@ describe("getEventDetailsForAdmin", () => {
     expect(data.quotas[0].signups[0].paymentStatus).toBe(SignupPaymentStatus.REFUNDED);
 
     // Mark the new payment as PAID
-    await checkoutSessionStatusUpdated(newPayment!.stripeCheckoutSessionId!, "complete");
+    await mockCheckoutSessionStatusUpdated(newPayment!.stripeCheckoutSessionId!, "complete");
 
     // Verify paymentStatus is PAID again
     [data] = await api.fetchAdminEventDetails(event);
@@ -1058,7 +1068,7 @@ describe("completePayment", () => {
     session!.status = "complete";
 
     // Simulate webhook processing the payment first
-    await checkoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
+    await mockCheckoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
     await payment!.reload();
     expect(payment!.status).toBe(PaymentStatus.PAID);
 
@@ -1255,7 +1265,7 @@ describe("Stripe webhook", () => {
     const payment = await Payment.findOne({ where: { signupId: signup.id } });
 
     // Mark payment as PAID via webhook simulation
-    await checkoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
+    await mockCheckoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
     expect(emailSend).toHaveBeenCalledOnce();
 
     // Send webhook event for checkout.session.completed again
@@ -1357,24 +1367,62 @@ describe("expirePaymentForSignupUpdate", () => {
 });
 
 describe("checkoutSessionStatusUpdated", () => {
-  test.todo("transitions PENDING to PAID on complete status", async () => {
-    // TODO: Test that checkoutSessionStatusUpdated with "complete" status
-    // updates payment to PAID and sets completedAt
+  test("transitions PENDING to PAID on complete status", async () => {
+    const { signup } = await defaultTestEventAndSignup();
+    const session = createMockCheckoutSession();
+    const payment = await createMockPayment(signup, PaymentStatus.PENDING, session);
+
+    const auditLog = await mockCheckoutSessionStatusUpdated(payment.stripeCheckoutSessionId!, "complete");
+
+    await payment.reload();
+    expect(payment.status).toBe(PaymentStatus.PAID);
+    expect(payment.completedAt).toBeTruthy();
+    expect(auditLog).toHaveBeenCalledExactlyOnceWith(
+      AuditEvent.COMPLETE_PAYMENT,
+      expect.objectContaining({ signupId: signup.id, extra: { webhook: false } }),
+    );
   });
 
-  test.todo("transitions PENDING to EXPIRED on expired status", async () => {
-    // TODO: Test that checkoutSessionStatusUpdated with "expired" status
-    // updates payment to EXPIRED
+  test("transitions PENDING to EXPIRED on expired status", async () => {
+    const { signup } = await defaultTestEventAndSignup();
+    const session = createMockCheckoutSession();
+    const payment = await createMockPayment(signup, PaymentStatus.PENDING, session);
+
+    const auditLog = await mockCheckoutSessionStatusUpdated(payment.stripeCheckoutSessionId!, "expired");
+
+    await payment.reload();
+    expect(payment.status).toBe(PaymentStatus.EXPIRED);
+    expect(auditLog).toHaveBeenCalledExactlyOnceWith(
+      AuditEvent.EXPIRE_PAYMENT,
+      expect.objectContaining({ signupId: signup.id, extra: { webhook: false } }),
+    );
   });
 
-  test.todo("does nothing for open status", async () => {
-    // TODO: Test that checkoutSessionStatusUpdated with "open" status
-    // leaves payment unchanged
+  test("does nothing for open status", async () => {
+    const { signup } = await defaultTestEventAndSignup();
+    const session = createMockCheckoutSession();
+    const payment = await createMockPayment(signup, PaymentStatus.PENDING, session);
+
+    const auditLog = await mockCheckoutSessionStatusUpdated(payment.stripeCheckoutSessionId!, "open");
+
+    await payment.reload();
+    expect(payment.status).toBe(PaymentStatus.PENDING);
+    expect(auditLog).not.toHaveBeenCalled();
   });
 
-  test.todo("is idempotent when payment already transitioned", async () => {
-    // TODO: Test that calling checkoutSessionStatusUpdated multiple times
-    // for the same session only performs side effects once (0 rows updated on subsequent calls)
+  test("is idempotent when payment already transitioned", async () => {
+    const { signup } = await defaultTestEventAndSignup();
+    const session = createMockCheckoutSession();
+    const payment = await createMockPayment(signup, PaymentStatus.PENDING, session);
+
+    const auditLog1 = await mockCheckoutSessionStatusUpdated(payment.stripeCheckoutSessionId!, "complete");
+    expect(auditLog1).toHaveBeenCalledOnce();
+
+    const auditLog2 = await mockCheckoutSessionStatusUpdated(payment.stripeCheckoutSessionId!, "complete");
+    expect(auditLog2).not.toHaveBeenCalled();
+
+    await payment.reload();
+    expect(payment.status).toBe(PaymentStatus.PAID);
   });
 });
 
@@ -1508,7 +1556,7 @@ describe("preferredFrontend in payments", () => {
     const payment = await Payment.findOne({ where: { signupId: signup.id } });
 
     // Simulate payment completion via webhook
-    await checkoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
+    await mockCheckoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
 
     // Verify the email contains the alt frontend URL
     expect(emailSend).toHaveBeenCalledExactlyOnceWith(
@@ -1529,7 +1577,7 @@ describe("preferredFrontend in payments", () => {
     const payment = await Payment.findOne({ where: { signupId: signup.id } });
 
     // Simulate payment completion via webhook
-    await checkoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
+    await mockCheckoutSessionStatusUpdated(payment!.stripeCheckoutSessionId!, "complete");
 
     // Should use default frontend URL, not contain "nonexistent"
     expect(emailSend).toHaveBeenCalledExactlyOnceWith(
