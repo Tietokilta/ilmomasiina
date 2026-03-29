@@ -31,11 +31,11 @@ export default async function stripeWebhook(request: FastifyRequest, reply: Fast
 
   switch (event.type) {
     case "checkout.session.completed":
-      await checkoutSessionStatusUpdated(event.data.object.id, "complete");
+      await checkoutSessionStatusUpdated(event.data.object.id, "complete", request.logEvent, true);
       break;
 
     case "checkout.session.expired":
-      await checkoutSessionStatusUpdated(event.data.object.id, "expired");
+      await checkoutSessionStatusUpdated(event.data.object.id, "expired", request.logEvent, true);
       break;
 
     default:

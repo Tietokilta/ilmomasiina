@@ -73,6 +73,9 @@ export enum AuditEvent {
   DELETE_USER = "user.delete",
   RESET_PASSWORD = "user.resetpassword",
   CHANGE_PASSWORD = "user.changepassword",
+  START_PAYMENT = "payment.start",
+  COMPLETE_PAYMENT = "payment.complete",
+  EXPIRE_PAYMENT = "payment.expire",
 }
 
 export enum ErrorCode {

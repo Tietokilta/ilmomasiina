@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { Transaction } from "sequelize";
 
-import type { AuditEvent } from "@tietokilta/ilmomasiina-models";
+import type { AuditEvent, SignupID } from "@tietokilta/ilmomasiina-models";
 import { AuditLog } from "../models/auditlog";
 import type { Event } from "../models/event";
 import type { Signup } from "../models/signup";
@@ -19,10 +19,13 @@ function eventLogger(ipAddress: string, user?: () => string | null) {
       transaction,
       event,
       signup,
+      signupId,
       extra,
     }: {
       event?: Pick<Event, "id" | "title">;
       signup?: Signup;
+      /** Pass signupId directly when the full Signup model is not available. */
+      signupId?: SignupID;
       transaction?: Transaction;
       extra?: object;
     },
@@ -33,7 +36,7 @@ function eventLogger(ipAddress: string, user?: () => string | null) {
         action,
         eventId: event?.id || signup?.quota?.event?.id || null,
         eventName: event?.title || signup?.quota?.event?.title || null,
-        signupId: signup?.id || null,
+        signupId: signup?.id || signupId || null,
         signupName: signup?.firstName != null ? `${signup.firstName} ${signup.lastName}` : null,
         extra: extra ? JSON.stringify(extra) : null,
         ipAddress,
