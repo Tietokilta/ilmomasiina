@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 
-import { Button, Col, Row } from "react-bootstrap";
-import { UseFieldConfig } from "react-final-form";
+import { Alert, Button, Col, Row } from "react-bootstrap";
+import { UseFieldConfig, useFormState } from "react-final-form";
 import { useTranslation } from "react-i18next";
 
 import useShallowMemo from "@tietokilta/ilmomasiina-client/dist/utils/useShallowMemo";
@@ -87,9 +87,15 @@ const QuotaRow = ({ name, index }: QuotaRowProps) => {
 
 const Quotas = () => {
   const { t } = useTranslation();
+  const formatError = useEditorErrors();
   const quotas = useFieldValue<EditorQuota[]>("quotas");
   const { map: mapFields } = useFieldArrayMap("quotas");
   const { push, move } = useLocalizedFieldArrayMutators<EditorQuota, QuotaLanguage>("quotas");
+  const { errors } = useFormState({ subscription: { errors: true } });
+  const quotasError =
+    errors?.quotas && typeof errors.quotas === "object" && "message" in errors.quotas
+      ? formatError(errors.quotas)
+      : null;
 
   const addQuota = useEvent(() => {
     push(
@@ -116,6 +122,7 @@ const Quotas = () => {
 
   return (
     <>
+      {quotasError && <Alert variant="danger">{quotasError}</Alert>}
       <Sortable items={quotaItems} component={QuotaRow} move={move} />
       <div className="text-center mb-3">
         <Button type="button" variant="primary" onClick={addQuota}>

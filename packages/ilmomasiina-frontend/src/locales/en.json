@@ -167,6 +167,7 @@
     "editor.errors.negativePrice": "Price cannot be negative",
     "editor.errors.optionsTooLong": "The combined answer options are too long",
     "editor.errors.generic": "Invalid value: {{error}}",
+    "editor.errors.quotasRequired": "The event must have at least one quota",
     "editor.selectedLanguage": "Editing language:",
     "editor.selectedLanguage.preview": "Preview language:",
     "editor.selectedLanguage.default": "Default",
