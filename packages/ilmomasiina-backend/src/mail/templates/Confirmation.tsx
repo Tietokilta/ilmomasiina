@@ -53,7 +53,7 @@ export default function Confirmation({
         <PendingPaymentWarning event={event} signupLink={signupLink} />
       )}
       <VerificationEmail verificationEmail={event.verificationEmail} />
-      {queuePosition && (
+      {queuePosition != null && (
         <div className="content-block">
           <p className="bodyText">
             <strong>{t("emails.queuePosition", { position: queuePosition })}</strong> {t("emails.queueNotify")}
