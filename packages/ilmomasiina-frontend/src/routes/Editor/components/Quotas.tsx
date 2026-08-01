@@ -1,6 +1,6 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 
-import { Button, Col, Row } from "react-bootstrap";
+import { Button, Col, Modal, Row } from "react-bootstrap";
 import { UseFieldConfig } from "react-final-form";
 import { useTranslation } from "react-i18next";
 
@@ -8,6 +8,7 @@ import useShallowMemo from "@tietokilta/ilmomasiina-client/dist/utils/useShallow
 import { PaymentMode, QuotaLanguage } from "@tietokilta/ilmomasiina-models";
 import FieldRow from "../../../components/FieldRow";
 import { EditorQuota } from "../../../modules/editor/types";
+import useStore from "../../../modules/store";
 import useEvent from "../../../utils/useEvent";
 import useEditorErrors from "./errors";
 import { useFieldValue } from "./hooks";
@@ -20,68 +21,104 @@ import useLocalizedFieldArrayMutators from "./useLocalizedFieldArrayMutators";
 type QuotaRowProps = {
   name: string;
   index: number;
+  id: string;
 };
 
 const numberConfig: UseFieldConfig<number | null> = {
   parse: (value) => (value ? Number(value) : null),
 };
 
-const QuotaRow = ({ name, index }: QuotaRowProps) => {
+const QuotaRow = ({ name, index, id }: QuotaRowProps) => {
   const { t } = useTranslation();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const formatError = useEditorErrors();
   const hasPayments = useFieldValue<PaymentMode>("payments") !== PaymentMode.DISABLED;
+  const event = useStore((state) => state.editor.event);
 
   const { length } = useFieldArrayMap("quotas");
   const { remove } = useLocalizedFieldArrayMutators<EditorQuota, QuotaLanguage>("quotas");
   const removeThis = useEvent(() => remove(index));
+  const hasSignups = Boolean(
+    id && event?.quotas.find((quota) => quota.id === id)?.signupCount && event.quotas.find((quota) => quota.id === id)!.signupCount > 0,
+  );
+
+  const requestDelete = useEvent(() => {
+    if (hasSignups) {
+      setShowDeleteConfirm(true);
+      return;
+    }
+    removeThis();
+  });
+
+  const cancelDelete = useEvent(() => setShowDeleteConfirm(false));
+  const confirmDelete = useEvent(() => {
+    setShowDeleteConfirm(false);
+    removeThis();
+  });
 
   return (
-    <Row className="quota-body">
-      <Col xs="12" sm="10">
-        <LocalizedFieldRow
-          name={`${name}.title`}
-          defaultAsPlaceholder
-          label={t("editor.quotas.quotaName")}
-          help={[
-            length === 1 ? t("editor.quotas.quotaName.singleQuota") : "",
-            index === 0 ? t("editor.quotas.quotaName.reorder") : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-          type="text"
-          required
-          maxLength={255}
-          formatError={formatError}
-        />
-        <FieldRow
-          name={`${name}.size`}
-          label={t("editor.quotas.quotaSize")}
-          help={t("editor.quotas.quotaSize.info")}
-          type="number"
-          min={1}
-          placeholder={t("editor.quotas.quotaSize.unlimited")}
-          config={numberConfig}
-          formatError={formatError}
-        />
-        {hasPayments && (
-          <FieldRow
-            name={`${name}.price`}
-            label={t("editor.quotas.price")}
-            as={PriceField}
-            config={priceFieldConfig}
-            help={t("editor.quotas.price.info")}
+    <>
+      <Row className="quota-body">
+        <Col xs="12" sm="10">
+          <LocalizedFieldRow
+            name={`${name}.title`}
+            defaultAsPlaceholder
+            label={t("editor.quotas.quotaName")}
+            help={[
+              length === 1 ? t("editor.quotas.quotaName.singleQuota") : "",
+              index === 0 ? t("editor.quotas.quotaName.reorder") : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            type="text"
+            required
+            maxLength={255}
             formatError={formatError}
           />
-        )}
-      </Col>
-      {index > 0 && (
-        <Col xs="12" sm="2" className="no-focus">
-          <Button type="button" variant="danger" onClick={removeThis}>
-            {t("editor.quotas.deleteQuota")}
-          </Button>
+          <FieldRow
+            name={`${name}.size`}
+            label={t("editor.quotas.quotaSize")}
+            help={t("editor.quotas.quotaSize.info")}
+            type="number"
+            min={1}
+            placeholder={t("editor.quotas.quotaSize.unlimited")}
+            config={numberConfig}
+            formatError={formatError}
+          />
+          {hasPayments && (
+            <FieldRow
+              name={`${name}.price`}
+              label={t("editor.quotas.price")}
+              as={PriceField}
+              config={priceFieldConfig}
+              help={t("editor.quotas.price.info")}
+              formatError={formatError}
+            />
+          )}
         </Col>
-      )}
-    </Row>
+        {index > 0 && (
+          <Col xs="12" sm="2" className="no-focus">
+            <Button type="button" variant="danger" onClick={requestDelete}>
+              {t("editor.quotas.deleteQuota")}
+            </Button>
+          </Col>
+        )}
+      </Row>
+      <Modal show={showDeleteConfirm} onHide={cancelDelete}>
+        <Modal.Header>
+          <Modal.Title>{t("editor.quotas.delete.confirm.title")}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{t("editor.quotas.delete.confirm.body")}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={cancelDelete}>
+            {t("editor.quotas.delete.confirm.cancel")}
+          </Button>
+          <Button variant="danger" onClick={confirmDelete}>
+            {t("editor.quotas.delete.confirm.delete")}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 };
 
