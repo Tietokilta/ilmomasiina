@@ -98,22 +98,23 @@ async function createPayment(signupId: SignupID, event: Event, auditLogger: Audi
     throw error;
   }
 
-  // Transition to PENDING.
+  // Transition to PENDING and log audit event in same transaction.
   try {
-    await Payment.update(
-      { status: PaymentStatus.PENDING, stripeCheckoutSessionId: session.id },
-      // This can fail if a concurrent signup update has marked it CREATION_FAILED.
-      // Intentionally don't filter on current status so we can get a trigger error instead of a silent ignore.
-      { where: { id: payment.id } },
-    );
+    await getSequelize().transaction(async (transaction) => {
+      await Payment.update(
+        { status: PaymentStatus.PENDING, stripeCheckoutSessionId: session.id },
+        // This can fail if a concurrent signup update has marked it CREATION_FAILED.
+        // Intentionally don't filter on current status so we can get a trigger error instead of a silent ignore.
+        { where: { id: payment.id }, transaction },
+      );
+      await auditLogger(AuditEvent.START_PAYMENT, { signup, event, transaction });
+    });
   } catch (error) {
     if (error instanceof DatabaseError && (error.parent as PgDatabaseError).code === "P0001") {
       throw new PaymentInProgress("Payment creation failed due to concurrent update");
     }
     throw error;
   }
-
-  await auditLogger(AuditEvent.START_PAYMENT, { signup, event });
 
   return session.url!;
 }

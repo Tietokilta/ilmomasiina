@@ -7,6 +7,7 @@ import { AuditEvent, PaymentStatus, SignupID } from "@tietokilta/ilmomasiina-mod
 import type { AuditLogger } from "../../auditlog";
 import config, { completePaymentUrl } from "../../config";
 import { sendPaymentConfirmationMail } from "../../mail/signups";
+import { getSequelize } from "../../models";
 import { Payment } from "../../models/payment";
 import { Signup } from "../../models/signup";
 import { generateToken } from "../signups/editTokens";
@@ -92,18 +93,26 @@ export async function checkoutSessionStatusUpdated(
     case "complete": {
       // Payment completed but we haven't processed the webhook yet.
       // Use WHERE to ensure we only perform side effects once.
-      const [changed, updatedPayments] = await Payment.update(
-        { status: PaymentStatus.PAID, completedAt: new Date() },
-        {
-          where: { stripeCheckoutSessionId: sessionId, status: PaymentStatus.PENDING },
-          returning: true,
-        },
-      );
-      if (changed) {
-        const payment = updatedPayments[0];
-        // Side effects: send confirmation email
+      const payment = await getSequelize().transaction(async (transaction) => {
+        const [changed, updatedPayments] = await Payment.update(
+          { status: PaymentStatus.PAID, completedAt: new Date() },
+          {
+            where: { stripeCheckoutSessionId: sessionId, status: PaymentStatus.PENDING },
+            returning: true,
+            transaction,
+          },
+        );
+        if (!changed) return null;
+        await auditLogger(AuditEvent.COMPLETE_PAYMENT, {
+          signupId: updatedPayments[0].signupId,
+          extra: { webhook },
+          transaction,
+        });
+        return updatedPayments[0];
+      });
+      if (payment) {
+        // Side effects outside transaction: send confirmation email
         await sendPaymentConfirmationMail(payment);
-        await auditLogger(AuditEvent.COMPLETE_PAYMENT, { signupId: payment.signupId, extra: { webhook } });
       }
       break;
     }
@@ -111,19 +120,23 @@ export async function checkoutSessionStatusUpdated(
     case "expired": {
       // Payment expired but we haven't processed the webhook yet.
       // Use WHERE to ensure we only perform side effects once.
-      const [changed, updatedPayments] = await Payment.update(
-        { status: PaymentStatus.EXPIRED },
-        {
-          where: { stripeCheckoutSessionId: sessionId, status: PaymentStatus.PENDING },
-          returning: true,
-        },
-      );
-      if (changed) {
-        const payment = updatedPayments[0];
-        // Side effects: log audit event
-        await auditLogger(AuditEvent.EXPIRE_PAYMENT, { signupId: payment.signupId, extra: { webhook } });
+      await getSequelize().transaction(async (transaction) => {
+        const [changed, updatedPayments] = await Payment.update(
+          { status: PaymentStatus.EXPIRED },
+          {
+            where: { stripeCheckoutSessionId: sessionId, status: PaymentStatus.PENDING },
+            returning: true,
+            transaction,
+          },
+        );
+        if (!changed) return;
+        await auditLogger(AuditEvent.EXPIRE_PAYMENT, {
+          signupId: updatedPayments[0].signupId,
+          extra: { webhook },
+          transaction,
+        });
         // TODO: an option to expire the signup would be here
-      }
+      });
       break;
     }
 
