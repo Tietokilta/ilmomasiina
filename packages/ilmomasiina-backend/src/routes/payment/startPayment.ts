@@ -5,6 +5,7 @@ import { DatabaseError, Transaction, UniqueConstraintError } from "sequelize";
 import Stripe from "stripe";
 
 import {
+  AuditEvent,
   PaymentMode,
   PaymentStatus,
   SignupID,
@@ -12,6 +13,7 @@ import {
   SignupStatus,
   StartPaymentResponse,
 } from "@tietokilta/ilmomasiina-models";
+import type { AuditLogger } from "../../auditlog";
 import config from "../../config";
 import { getSequelize } from "../../models";
 import { Event } from "../../models/event";
@@ -42,7 +44,7 @@ function validateSignupStatusForPayment(signup: Signup) {
 }
 
 /** Create a new Payment and Stripe checkout session from the given signup. */
-async function createPayment(signupId: SignupID, event: Event): Promise<string> {
+async function createPayment(signupId: SignupID, event: Event, auditLogger: AuditLogger): Promise<string> {
   const expiresAt = moment().add(config.stripeCheckoutExpiryMins, "minutes");
   // Stripe requires at least 30 minutes expiry; add some buffer for making the request.
   if (config.stripeCheckoutExpiryMins === 30) expiresAt.add(30, "seconds");
@@ -96,14 +98,17 @@ async function createPayment(signupId: SignupID, event: Event): Promise<string> 
     throw error;
   }
 
-  // Transition to PENDING.
+  // Transition to PENDING and log audit event in same transaction.
   try {
-    await Payment.update(
-      { status: PaymentStatus.PENDING, stripeCheckoutSessionId: session.id },
-      // This can fail if a concurrent signup update has marked it CREATION_FAILED.
-      // Intentionally don't filter on current status so we can get a trigger error instead of a silent ignore.
-      { where: { id: payment.id } },
-    );
+    await getSequelize().transaction(async (transaction) => {
+      await Payment.update(
+        { status: PaymentStatus.PENDING, stripeCheckoutSessionId: session.id },
+        // This can fail if a concurrent signup update has marked it CREATION_FAILED.
+        // Intentionally don't filter on current status so we can get a trigger error instead of a silent ignore.
+        { where: { id: payment.id }, transaction },
+      );
+      await auditLogger(AuditEvent.START_PAYMENT, { signup, event, transaction });
+    });
   } catch (error) {
     if (error instanceof DatabaseError && (error.parent as PgDatabaseError).code === "P0001") {
       throw new PaymentInProgress("Payment creation failed due to concurrent update");
@@ -119,15 +124,20 @@ async function createPayment(signupId: SignupID, event: Event): Promise<string> 
  * Checks the Stripe session status and either returns the URL (pending) or marks the payment as paid/expired.
  * If expired, creates a new payment.
  */
-async function handlePendingPayment(signupId: SignupID, payment: Payment, event: Event): Promise<string> {
-  const session = await refreshCheckoutSession(payment);
+async function handlePendingPayment(
+  signupId: SignupID,
+  payment: Payment,
+  event: Event,
+  auditLogger: AuditLogger,
+): Promise<string> {
+  const session = await refreshCheckoutSession(payment, auditLogger);
 
   switch (session.status!) {
     case "complete":
       throw new SignupAlreadyPaid("This signup has already been paid");
     case "expired":
       // Try to create a new payment. Throws 409 in case requests race.
-      return createPayment(signupId, event);
+      return createPayment(signupId, event, auditLogger);
     case "open":
       // Session still valid, return its URL
       return session.url!;
@@ -139,7 +149,7 @@ async function handlePendingPayment(signupId: SignupID, payment: Payment, event:
 }
 
 /** Get or create a payment for the signup. Returns payment URL. */
-async function getOrCreatePayment(signupId: SignupID): Promise<string> {
+async function getOrCreatePayment(signupId: SignupID, auditLogger: AuditLogger): Promise<string> {
   // Load the signup with its active payment and event
   const signup = await Signup.scope("active").findByPk(signupId, {
     include: [
@@ -153,7 +163,7 @@ async function getOrCreatePayment(signupId: SignupID): Promise<string> {
         include: [
           {
             model: Event,
-            attributes: ["payments", "preferredFrontend"],
+            attributes: ["id", "title", "payments", "preferredFrontend"],
           },
         ],
       },
@@ -172,7 +182,7 @@ async function getOrCreatePayment(signupId: SignupID): Promise<string> {
 
   if (!signup.activePayment) {
     // No active payment - create a new one. Throws 409 in case requests race.
-    return createPayment(signupId, event);
+    return createPayment(signupId, event, auditLogger);
   }
 
   const payment = signup.activePayment;
@@ -181,7 +191,7 @@ async function getOrCreatePayment(signupId: SignupID): Promise<string> {
       throw new SignupAlreadyPaid("This signup has already been paid");
 
     case PaymentStatus.PENDING:
-      return handlePendingPayment(signupId, payment, event);
+      return handlePendingPayment(signupId, payment, event, auditLogger);
 
     case PaymentStatus.CREATING:
       // Another request is creating this payment - race condition.
@@ -206,7 +216,7 @@ export default async function startPayment(
 ): Promise<StartPaymentResponse> {
   // Fail fast if payments are globally disabled.
   getStripe();
-  const paymentUrl = await getOrCreatePayment(request.params.id);
+  const paymentUrl = await getOrCreatePayment(request.params.id, request.logEvent);
   reply.status(200);
   return { paymentUrl };
 }

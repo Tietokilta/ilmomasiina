@@ -3,9 +3,11 @@ import { DatabaseError as PgDatabaseError } from "pg";
 import { DatabaseError, Transaction } from "sequelize";
 import Stripe from "stripe";
 
-import { PaymentStatus, SignupID } from "@tietokilta/ilmomasiina-models";
+import { AuditEvent, PaymentStatus, SignupID } from "@tietokilta/ilmomasiina-models";
+import type { AuditLogger } from "../../auditlog";
 import config, { completePaymentUrl } from "../../config";
 import { sendPaymentConfirmationMail } from "../../mail/signups";
+import { getSequelize } from "../../models";
 import { Payment } from "../../models/payment";
 import { Signup } from "../../models/signup";
 import { generateToken } from "../signups/editTokens";
@@ -80,6 +82,8 @@ export async function createCheckoutSession(
 export async function checkoutSessionStatusUpdated(
   sessionId: Stripe.Checkout.Session["id"],
   status: Stripe.Checkout.Session.Status | null,
+  auditLogger: AuditLogger,
+  webhook: boolean,
 ): Promise<void> {
   // Be defensive; the sessionId comes directly from an API, so don't mess up the DB just
   // in case the TypeScript fails we end up with an undefined sessionId somehow.
@@ -89,16 +93,26 @@ export async function checkoutSessionStatusUpdated(
     case "complete": {
       // Payment completed but we haven't processed the webhook yet.
       // Use WHERE to ensure we only perform side effects once.
-      const [changed, updatedPayments] = await Payment.update(
-        { status: PaymentStatus.PAID, completedAt: new Date() },
-        {
-          where: { stripeCheckoutSessionId: sessionId, status: PaymentStatus.PENDING },
-          returning: true,
-        },
-      );
-      if (changed) {
-        // Side effects: send confirmation email
-        await sendPaymentConfirmationMail(updatedPayments[0]);
+      const payment = await getSequelize().transaction(async (transaction) => {
+        const [changed, updatedPayments] = await Payment.update(
+          { status: PaymentStatus.PAID, completedAt: new Date() },
+          {
+            where: { stripeCheckoutSessionId: sessionId, status: PaymentStatus.PENDING },
+            returning: true,
+            transaction,
+          },
+        );
+        if (!changed) return null;
+        await auditLogger(AuditEvent.COMPLETE_PAYMENT, {
+          signupId: updatedPayments[0].signupId,
+          extra: { webhook },
+          transaction,
+        });
+        return updatedPayments[0];
+      });
+      if (payment) {
+        // Side effects outside transaction: send confirmation email
+        await sendPaymentConfirmationMail(payment);
       }
       break;
     }
@@ -106,13 +120,23 @@ export async function checkoutSessionStatusUpdated(
     case "expired": {
       // Payment expired but we haven't processed the webhook yet.
       // Use WHERE to ensure we only perform side effects once.
-      const [changed] = await Payment.update(
-        { status: PaymentStatus.EXPIRED },
-        { where: { stripeCheckoutSessionId: sessionId, status: PaymentStatus.PENDING } },
-      );
-      if (changed) {
-        // TODO: Side effects: expire signup, etc?
-      }
+      await getSequelize().transaction(async (transaction) => {
+        const [changed, updatedPayments] = await Payment.update(
+          { status: PaymentStatus.EXPIRED },
+          {
+            where: { stripeCheckoutSessionId: sessionId, status: PaymentStatus.PENDING },
+            returning: true,
+            transaction,
+          },
+        );
+        if (!changed) return;
+        await auditLogger(AuditEvent.EXPIRE_PAYMENT, {
+          signupId: updatedPayments[0].signupId,
+          extra: { webhook },
+          transaction,
+        });
+        // TODO: an option to expire the signup would be here
+      });
       break;
     }
 
@@ -131,7 +155,10 @@ export async function checkoutSessionStatusUpdated(
  * Refresh the status of an existing payment in PENDING state.
  * Checks the Stripe session status marks the payment as paid/expired as applicable.
  */
-export async function refreshCheckoutSession(payment: Payment): Promise<Stripe.Checkout.Session> {
+export async function refreshCheckoutSession(
+  payment: Payment,
+  auditLogger: AuditLogger,
+): Promise<Stripe.Checkout.Session> {
   const stripe = getStripe();
   let session: Stripe.Checkout.Session;
   try {
@@ -142,7 +169,7 @@ export async function refreshCheckoutSession(payment: Payment): Promise<Stripe.C
     }
     throw err;
   }
-  await checkoutSessionStatusUpdated(session.id, session.status);
+  await checkoutSessionStatusUpdated(session.id, session.status, auditLogger, false);
   return session;
 }
 
