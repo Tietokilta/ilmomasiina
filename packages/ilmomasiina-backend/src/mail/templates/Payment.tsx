@@ -20,7 +20,14 @@ export default function Payment({ totalFormatted, products, event, signupLink }:
   return (
     <Layout>
       <div className="content-block">
-        <p className="bodyText">{t("emails.payment.received", { event: event.title })}</p>
+        <p className="bodyText">
+          <Trans t={t} i18nKey="emails.payment.received">
+            {"Your payment for "}
+            {/* @ts-ignore: ts-node-dev fails to understand allowObjectInHTMLChildren. TODO: remove ts-node-dev. */}
+            <strong>{{ event: event.title }}</strong>
+            {" has been received."}
+          </Trans>
+        </p>
       </div>
       <VerificationEmail verificationEmail={event.verificationEmail} />
       <div className="content-block">

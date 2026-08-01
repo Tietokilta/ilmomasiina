@@ -13,7 +13,7 @@
     "emails.queueNotify": "Jos saat paikan jonosta, sinulle lähetetään ilmoitus sähköpostitse.",
 
     "emails.payment.subject": "Maksuvahvistus: {{event}}",
-    "emails.payment.received": "Maksusi tapahtumaan {{event}} on vastaanotettu.",
+    "emails.payment.received": "Maksusi tapahtumaan <1>{{event}}</1> on vastaanotettu.",
     "emails.payment.purchaseDetails": "Maksun tiedot:",
     "emails.payment.total": "Yhteensä",
     "emails.payment.viewSignup": "Näet ilmoittautumisesi klikkaamalla <1>tätä linkkiä</1>.",
@@ -27,7 +27,7 @@
     "emails.resetPassword.newPassword": "Uusi salasana",
 
     "emails.queueMail.subject": "Pääsit varasijalta tapahtumaan {{event}}",
-    "emails.queueMail.accepted": "Olet päässyt mukaan tapahtumaan {{event}} varasijalta.",
+    "emails.queueMail.accepted": "Olet päässyt mukaan tapahtumaan <1>{{event}}</1> varasijalta.",
 
     "emails.eventDetails": "Tapahtuman tiedot:",
     "emails.event": "Tapahtuma",

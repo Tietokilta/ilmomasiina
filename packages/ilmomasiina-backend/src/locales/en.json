@@ -13,7 +13,7 @@
     "emails.queueNotify": "If you get accepted from the queue, you will be notified by email.",
 
     "emails.payment.subject": "Payment confirmation: {{event}}",
-    "emails.payment.received": "Your payment for {{event}} has been received.",
+    "emails.payment.received": "Your payment for <1>{{event}}</1> has been received.",
     "emails.payment.purchaseDetails": "Purchase details:",
     "emails.payment.total": "Total",
     "emails.payment.viewSignup": "To view your signup, click <1>this link</1>.",
@@ -27,7 +27,7 @@
     "emails.resetPassword.newPassword": "New password",
 
     "emails.queueMail.subject": "You got into {{event}} from the queue",
-    "emails.queueMail.accepted": "Your signup to {{event}} was accepted from the queue.",
+    "emails.queueMail.accepted": "Your signup to <1>{{event}}</1> was accepted from the queue.",
 
     "emails.eventDetails": "Event details:",
     "emails.event": "Event",

@@ -230,7 +230,7 @@ i18n.init({
   fallbackLng: config.defaultLanguage,
   resources: i18nResources,
   interpolation: {
-    // We only pass i18n strings to email subjects or Pug, which also does escaping
+    // for React
     escapeValue: false,
   },
 });
