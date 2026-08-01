@@ -4,7 +4,7 @@
 ------------------------------------- */
 * {
   margin: 0;
-  font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+  font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
   box-sizing: border-box;
   font-size: 14px;
 }
@@ -173,7 +173,6 @@ a {
 }
 
 .headerTitle {
-  font-family: 'Open Sans';
   font-size: 50px;
   font-weight: 800;
   text-transform: uppercase;
