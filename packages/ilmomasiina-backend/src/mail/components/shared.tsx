@@ -94,7 +94,6 @@ export function LoginLink() {
       <p className="bodyText">
         <Trans t={t} i18nKey="emails.login">
           {"You can log in at "}
-          {/* @ts-ignore: ts-node-dev fails to understand allowObjectInHTMLChildren. TODO: remove ts-node-dev. */}
           <a href={url}>{{ url }}</a>.
         </Trans>
       </p>

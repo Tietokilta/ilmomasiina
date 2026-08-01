@@ -23,8 +23,8 @@ The package dependencies are slighly complicated to manage properly, so that all
     - This allows us to import files from other packages as if they were already compiled, and the TypeScript compiler
       will automatically compile them on demand, even if the target `dist` doesn't exist already.
     - This also requires using `tsc --build` for both type checking and building.
-- `ts-node` (and by extension `ts-node-dev`), which we use for the backend, doesn't understand `references`.
-  Therefore, the cross-package imports are also defined in `paths` in `tsconfig.json`, which `ts-node` _does_ understand.
+- `tsx`, which we use to run the backend in development, doesn't understand `references`.
+  Therefore, the cross-package imports are also defined in `paths` in `tsconfig.json`, which `tsx` _does_ understand.
 - Vite (used for frontend builds) also doesn't understand `references`, so we use `paths` again, along with the
   `vite-tsconfig-paths` plugin.
 
