@@ -20,7 +20,6 @@ export default function QueueMail({ event, date, paymentStatus, signupLink }: Qu
         <p className="bodyText">
           <Trans t={t} i18nKey="emails.queueMail.accepted">
             {"Your signup to "}
-            {/* @ts-ignore: ts-node-dev fails to understand allowObjectInHTMLChildren. TODO: remove ts-node-dev. */}
             <strong>{{ event: event.title }}</strong>
             {" was accepted from the queue."}
           </Trans>

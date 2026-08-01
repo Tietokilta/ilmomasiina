@@ -24,7 +24,8 @@ async function main() {
   for (let i = 0; i < NUM_EVENTS; i++) {
     process.stderr.write(`\rCreating test events: ${i + 1}/${NUM_EVENTS}...`);
     const event = await testEvent();
-    await testSignups(event, {
+    await testSignups({
+      event,
       count: faker.number.int(NUM_SIGNUPS_PER_EVENT),
     });
   }
