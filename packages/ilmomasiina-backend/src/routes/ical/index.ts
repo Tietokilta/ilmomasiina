@@ -1,24 +1,9 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { createEvents, DateArray } from "ics";
+import * as ics from "ics";
 import { Op } from "sequelize";
 
-import config, { eventDetailsUrl } from "../../config";
 import { Event } from "../../models/event";
-
-function dateToArray(date: Date) {
-  return [
-    date.getUTCFullYear(),
-    date.getUTCMonth() + 1,
-    date.getUTCDate(),
-    date.getUTCHours(),
-    date.getUTCMinutes(),
-  ] as DateArray;
-}
-
-/** Domain name for generating iCalendar UIDs.
- * @see https://datatracker.ietf.org/doc/html/rfc5545#section-3.8.4.7
- */
-const uidDomain = config.icalUidDomain || new URL(config.baseUrl).hostname;
+import createIcalEventAttrs from "../../util/ical";
 
 export async function eventsAsICal() {
   const events = await Event.scope("user").findAll({
@@ -38,20 +23,9 @@ export async function eventsAsICal() {
     ],
   });
 
-  const { error, value } = createEvents(
-    events.map((event) => ({
-      calName: config.icalCalendarName,
-      uid: `${event.id}@${uidDomain}`,
-      start: dateToArray(event.date!),
-      startInputType: "utc",
-      end: dateToArray(new Date(event.endDate!)),
-      endInputType: "utc",
-      title: event.title,
-      description: event.description || undefined, // TODO convert markdown
-      location: event.location || undefined,
-      categories: event.category ? [event.category] : undefined,
-      url: eventDetailsUrl({ slug: event.slug, lang: config.defaultLanguage, frontend: event.preferredFrontend }),
-    })),
+  const { error, value } = ics.createEvents(events
+    .map(createIcalEventAttrs)
+    .filter(attrs => attrs !== undefined)
   );
 
   if (error !== null) throw new Error(`Failed to generate iCalendar: ${error}`);
