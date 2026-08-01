@@ -41,7 +41,7 @@
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "prettier": "^3.8.0",
-    "typescript": "~5.9.3"
+    "typescript": "~7.0.2"
   },
   "browserslist": {
     "production": [

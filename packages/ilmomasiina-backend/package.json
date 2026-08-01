@@ -102,7 +102,7 @@
     "@vitest/coverage-v8": "^4.0.17",
     "rimraf": "^6.1.2",
     "tsx": "^4.23.1",
-    "typescript": "~5.9.3",
+    "typescript": "~7.0.2",
     "vite-tsconfig-paths": "^6.0.4",
     "vitest": "^4.0.17"
   }

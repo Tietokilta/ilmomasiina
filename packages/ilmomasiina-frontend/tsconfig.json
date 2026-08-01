@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "target": "es2023",
+    "lib": ["dom", "dom.iterable", "es2023"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -17,7 +17,6 @@
     "incremental": true,
     "outDir": "dist",
     "rootDirs": ["src", "."],
-    "baseUrl": ".",
     "paths": {
       "@tietokilta/ilmomasiina-client": ["../ilmomasiina-client/src/index.ts"],
       "@tietokilta/ilmomasiina-client/dist/*": ["../ilmomasiina-client/src/*"],
