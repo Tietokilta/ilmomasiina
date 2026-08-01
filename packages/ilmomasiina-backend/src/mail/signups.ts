@@ -7,7 +7,7 @@ import { Event } from "../models/event";
 import { Payment } from "../models/payment";
 import { Signup } from "../models/signup";
 import { generateToken } from "../routes/signups/editTokens";
-import EmailService, { ConfirmationMailParams, PaymentMailParams, PromotedFromQueueMailParams } from ".";
+import EmailService, { ConfirmationMailParams, PaymentMailParams, QueueMailParams } from ".";
 
 /**
  * In test mode, we want to "send" emails synchronously so that we can verify the mock emails.
@@ -41,13 +41,13 @@ export const sendPromotedFromQueueMail = sendSynchronouslyInTest(async (signup: 
   const date = event.date && moment(event.date).tz(config.timezone).format(dateFormat);
 
   const editToken = generateToken(signup.id);
-  const cancelLink = editSignupUrl({ id: signup.id, editToken, lang, frontend: event.preferredFrontend });
+  const signupLink = editSignupUrl({ id: signup.id, editToken, lang, frontend: event.preferredFrontend });
 
-  const params: PromotedFromQueueMailParams = {
+  const params: QueueMailParams = {
     event,
     date,
     paymentStatus: signup.effectivePaymentStatus,
-    cancelLink,
+    signupLink,
   };
 
   await EmailService.sendPromotedFromQueueMail(signup.email, signup.language, params);
@@ -85,7 +85,7 @@ export const sendSignupConfirmationMail = sendSynchronouslyInTest(
     const date = event.date && moment(event.date).tz(config.timezone).format(dateFormat);
 
     const editToken = generateToken(signup.id);
-    const cancelLink = editSignupUrl({ id: signup.id, editToken, lang, frontend: event.preferredFrontend });
+    const signupLink = editSignupUrl({ id: signup.id, editToken, lang, frontend: event.preferredFrontend });
 
     const params: ConfirmationMailParams = {
       name: fullName,
@@ -98,7 +98,7 @@ export const sendSignupConfirmationMail = sendSynchronouslyInTest(
       admin,
       date,
       event,
-      cancelLink,
+      signupLink,
     };
 
     await EmailService.sendConfirmationMail(signup.email, signup.language, params);
@@ -117,7 +117,7 @@ export const sendPaymentConfirmationMail = sendSynchronouslyInTest(async (paymen
   const { event } = quota;
 
   const editToken = generateToken(signup.id);
-  const cancelLink = editSignupUrl({ id: signup.id, editToken, lang, frontend: event.preferredFrontend });
+  const signupLink = editSignupUrl({ id: signup.id, editToken, lang, frontend: event.preferredFrontend });
 
   const priceFormatter = new Intl.NumberFormat(i18n.t("currencyFormat.locale", { lng: lang }), {
     style: "currency",
@@ -129,13 +129,12 @@ export const sendPaymentConfirmationMail = sendSynchronouslyInTest(async (paymen
   const params: PaymentMailParams = {
     event,
     totalFormatted: priceFormatter.format(payment.amount / 100),
-    currency: payment.currency,
     products: payment.products.map((product) => ({
       name: product.name,
       amount: product.amount,
       unitPriceFormatted: priceFormatter.format(product.unitPrice / 100),
     })),
-    cancelLink,
+    signupLink,
   };
 
   await EmailService.sendPaymentConfirmationMail(signup.email, signup.language, params);

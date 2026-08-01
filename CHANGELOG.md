@@ -32,6 +32,7 @@
 - Added lots of backend tests
 - Improved validation of signup answers
 - Enabled hot reloading of locale files in development mode
+- Emails are now rendered with React instead of Pug, and styles are no longer inlined
 
 ## 2.1.0-beta.3
 
