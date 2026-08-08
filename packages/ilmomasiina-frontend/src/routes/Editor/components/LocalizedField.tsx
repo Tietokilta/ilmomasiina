@@ -6,11 +6,11 @@ import { useField, UseFieldConfig } from "react-final-form";
 
 import useLocalizedFieldProps, { FieldLocalizationOptions } from "./useLocalizedFieldProps";
 
-type BaseProps = Pick<UseFieldConfig<any>, "type"> & {
+type BaseProps = Pick<UseFieldConfig<unknown>, "type"> & {
   /** The name of the field in the data. */
   name: string;
   /** useField() config. */
-  config?: UseFieldConfig<any>;
+  config?: UseFieldConfig<unknown>;
   /** Whether the field is required. */
   required?: boolean;
 } & FieldLocalizationOptions;
@@ -27,7 +27,7 @@ type PropsWithFormControl = BaseProps & {
   as?: undefined;
 } & Omit<FormControlProps & InputProps, keyof BaseProps | "as">;
 
-type As = keyof JSX.IntrinsicElements | ComponentType<any>;
+type As = keyof JSX.IntrinsicElements | ComponentType;
 
 // Props with a custom `as` component.
 type PropsWithAs<C extends As> = BaseProps & {
@@ -63,6 +63,9 @@ export default function LocalizedField<C extends As>({
     parse: identity,
     ...config,
   });
-  const Component = (as ?? Form.Control) as ComponentType<any>;
+  // Pretend we can safely stuff all these props into whatever Component is.
+  type InjectedProps = typeof input &
+    typeof props & { isInvalid?: boolean; required?: boolean; placeholder?: string | undefined };
+  const Component = (as ?? Form.Control) as ComponentType<InjectedProps>;
   return <Component isInvalid={invalid} required={required} {...placeholder} {...props} {...input} />;
 }

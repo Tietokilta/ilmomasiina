@@ -14,8 +14,6 @@ type RawAnswer = {
   type: string;
 };
 
-/* eslint-disable no-await-in-loop */
-
 export default defineMigration({
   name: "0004-answers-to-json",
   async up({ context: { sequelize, transaction } }) {
@@ -32,6 +30,7 @@ export default defineMigration({
       if (row.type === "checkbox" || row.type === "select") {
         optionsJson = row.options ? JSON.stringify(row.options.split(";")) : JSON.stringify([""]);
       }
+      // eslint-disable-next-line no-await-in-loop
       await query.bulkUpdate("question", { options: optionsJson }, { id: row.id }, { transaction });
     }
     // Convert answers to JSON
@@ -47,6 +46,7 @@ export default defineMigration({
       // Empty answer to checkbox question -> []
       const answer = row.type === "checkbox" ? row.answer.split(";").filter(Boolean) : row.answer;
       const answerJson = JSON.stringify(answer);
+      // eslint-disable-next-line no-await-in-loop
       await query.bulkUpdate("answer", { answer: answerJson }, { id: row.id }, { transaction });
     }
   },

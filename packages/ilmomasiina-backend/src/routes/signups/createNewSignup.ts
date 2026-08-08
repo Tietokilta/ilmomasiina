@@ -60,7 +60,7 @@ export default async function createSignup(
 
   // Refresh signup positions. Ignore errors, but wait for this to complete, so that the user
   // gets a status on their signup before it being returned.
-  await refreshSignupPositions(event).catch((error) => console.error(error));
+  await refreshSignupPositions(event).catch((error: unknown) => console.error(error));
 
   const editToken = generateToken(newSignup.id);
 

@@ -32,9 +32,9 @@ const Editor = ({ copy = false }: Props) => {
     if (urlIsNew) {
       newEvent();
     } else if (copy) {
-      getEvent(urlEventId, true);
+      void getEvent(urlEventId, true);
     } else {
-      getEvent(urlEventId);
+      void getEvent(urlEventId);
     }
     return () => {
       resetState();

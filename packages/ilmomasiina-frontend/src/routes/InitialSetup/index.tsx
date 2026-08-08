@@ -64,7 +64,7 @@ const InitialSetup = () => {
     try {
       await createInitialUser(email, password);
       loginToast("success", t("initialSetup.success"), 2000);
-      navigate(paths.adminEventsList);
+      void navigate(paths.adminEventsList);
       return undefined;
     } catch (err) {
       return { [FORM_ERROR]: err };
@@ -89,18 +89,30 @@ const InitialSetup = () => {
                   type="email"
                   required
                   placeholder={branding.loginPlaceholderEmail}
-                  isInvalid={touched && error}
+                  isInvalid={touched && !!error}
                 />
               )}
             </FieldFormGroup>
             <FieldFormGroup name="password" required label={t("initialSetup.password")}>
               {({ input, meta: { touched, error } }) => (
-                <FormControl {...input} type="password" required placeholder="••••••••" isInvalid={touched && error} />
+                <FormControl
+                  {...input}
+                  type="password"
+                  required
+                  placeholder="••••••••"
+                  isInvalid={touched && !!error}
+                />
               )}
             </FieldFormGroup>
             <FieldFormGroup name="passwordVerify" required label={t("initialSetup.passwordVerify")}>
               {({ input, meta: { touched, error } }) => (
-                <FormControl {...input} type="password" required placeholder="••••••••" isInvalid={touched && error} />
+                <FormControl
+                  {...input}
+                  type="password"
+                  required
+                  placeholder="••••••••"
+                  isInvalid={touched && !!error}
+                />
               )}
             </FieldFormGroup>
             <Button type="submit" variant="secondary" disabled={submitting}>

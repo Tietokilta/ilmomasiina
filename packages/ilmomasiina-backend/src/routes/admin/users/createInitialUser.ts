@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file */
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { Transaction } from "sequelize";
 

@@ -1,5 +1,6 @@
 import { Trans, useTranslation } from "react-i18next";
 
+import { PaymentMode } from "@tietokilta/ilmomasiina-models";
 import { adminUrl } from "../../config";
 import type { Event } from "../../models/event";
 
@@ -112,7 +113,7 @@ export function PendingPaymentWarning({ event, signupLink }: PendingPaymentWarni
     <div className="content-block">
       <p className="bodyText">
         <strong>{t("emails.pendingPayment")}</strong>
-        {event.payments === "online" && (
+        {event.payments === PaymentMode.ONLINE && (
           <>
             {" "}
             <Trans t={t} i18nKey="emails.completePayment">

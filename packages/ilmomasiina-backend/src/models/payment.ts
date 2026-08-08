@@ -45,7 +45,7 @@ export class Payment extends Model<PaymentAttributes, PaymentCreateAttributes> i
 
   public signupId!: string;
   public signup?: Signup | null;
-  public getSignup!: HasOneGetAssociationMixin<Signup>;
+  public getSignup!: HasOneGetAssociationMixin<Signup | null>;
   public setSignup!: HasOneSetAssociationMixin<Signup, Signup["id"]>;
   public createSignup!: HasOneCreateAssociationMixin<Signup>;
 }

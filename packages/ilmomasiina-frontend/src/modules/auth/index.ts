@@ -34,14 +34,13 @@ function getTokenExpiry(jwt: string): number {
   const parts = jwt.split(".");
 
   try {
-    const payload = JSON.parse(window.atob(parts[1]));
+    const payload = JSON.parse(window.atob(parts[1])) as { exp?: number };
 
     if (payload.exp) {
       return payload.exp * 1000;
     }
   } catch {
-    // eslint-disable-next-line no-console
-    console.error("Invalid jwt token received!");
+    console.error("Invalid JWT received!");
   }
 
   return 0;
@@ -119,10 +118,8 @@ export const authSlice = storeSlice<Root>()("auth", (set, get, store, getSlice, 
         body: { accessToken },
         headers: { Authorization: accessToken.token },
       });
-      if (sessionResponse) {
-        getSlice().loginSucceeded(sessionResponse.accessToken);
-      }
-    } catch (err) {
+      getSlice().loginSucceeded(sessionResponse.accessToken);
+    } catch {
       // Ignore errors from login renewal - loginExpired() will trigger via requireAuth.
     }
   },

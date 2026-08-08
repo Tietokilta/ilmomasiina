@@ -30,7 +30,7 @@ const AdminEventListItem = ({ event }: Props) => {
 
   async function onDelete(e: MouseEvent) {
     e.preventDefault();
-    // eslint-disable-next-line no-alert
+    // TODO: Use a proper modal instead of window.confirm
     const confirmed = window.confirm(t("adminEvents.action.delete.confirm"));
     if (confirmed) {
       try {
@@ -40,7 +40,7 @@ const AdminEventListItem = ({ event }: Props) => {
           autoClose: 2000,
         });
       } finally {
-        getAdminEvents();
+        void getAdminEvents();
       }
     }
   }

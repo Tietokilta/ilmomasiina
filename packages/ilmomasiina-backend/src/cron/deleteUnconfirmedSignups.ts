@@ -59,8 +59,7 @@ export default async function deleteUnconfirmedSignups() {
       where: { id: signupIds },
     });
     for (const event of uniqueEvents) {
-      // Avoid doing many simultaneous transactions with this loop.
-      // eslint-disable-next-line no-await-in-loop
+      // eslint-disable-next-line no-await-in-loop -- avoid doing many simultaneous transactions with this loop
       await refreshSignupPositions(event);
     }
     debugLog("Unconfirmed signups deleted");

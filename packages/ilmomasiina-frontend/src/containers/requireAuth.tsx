@@ -7,7 +7,7 @@ import { loginToast } from "../modules/auth";
 import useStore from "../modules/store";
 import paths from "../paths";
 
-export default function requireAuth<P extends {}>(WrappedComponent: ComponentType<P>) {
+export default function requireAuth<P extends object>(WrappedComponent: ComponentType<P>) {
   const RequireAuth = (props: P) => {
     const navigate = useNavigate();
     const { t } = useTranslation();
@@ -21,10 +21,10 @@ export default function requireAuth<P extends {}>(WrappedComponent: ComponentTyp
       if (expired) {
         resetAuth();
         loginToast("error", t("auth.loginExpired"), 10000);
-        navigate(paths.adminLogin);
+        void navigate(paths.adminLogin);
       } else if (needLogin) {
         resetAuth();
-        navigate(paths.adminLogin);
+        void navigate(paths.adminLogin);
       }
     }, [needLogin, expired, resetAuth, navigate, t]);
 

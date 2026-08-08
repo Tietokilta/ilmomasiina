@@ -132,7 +132,7 @@ async function handlePendingPayment(
 ): Promise<string> {
   const session = await refreshCheckoutSession(payment, auditLogger);
 
-  switch (session.status!) {
+  switch (session.status) {
     case "complete":
       throw new SignupAlreadyPaid("This signup has already been paid");
     case "expired":
@@ -144,7 +144,7 @@ async function handlePendingPayment(
     case null:
       throw new Error("Stripe session has null status");
     default:
-      throw new Error(`Unhandled Stripe session status: ${session.status! satisfies never}`);
+      throw new Error(`Unhandled Stripe session status: ${session.status satisfies never}`);
   }
 }
 

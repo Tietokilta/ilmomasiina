@@ -1,16 +1,21 @@
 import { useCallback } from "react";
 
-import { DefaultNamespace, ParseKeys } from "i18next";
 import { useTranslation } from "react-i18next";
-import * as z from "zod";
+import { z } from "zod";
 
-export default function useEditorErrors(): (issue: z.core.$ZodIssue) => string {
+import { TKey } from "../../../i18n";
+
+export default function useEditorErrors(): (error: unknown) => string {
   const { t } = useTranslation();
   return useCallback(
-    (issue) => {
+    (error) => {
+      if (!error || typeof error !== "object" || !("code" in error)) {
+        return t("editor.errors.generic", { error: error as string });
+      }
+      const issue = error as z.core.$ZodIssue;
       // Handle one-off custom error messages by passing the i18n key directly in .message
       if (issue.message.startsWith("editor.errors.")) {
-        return t(issue.message as ParseKeys<DefaultNamespace>, issue.code === "custom" ? issue.params : {});
+        return t(issue.message as TKey, issue.code === "custom" ? issue.params : {});
       }
       // Custom messages for the errors that should be possible to input with the form elements
       switch (issue.code) {

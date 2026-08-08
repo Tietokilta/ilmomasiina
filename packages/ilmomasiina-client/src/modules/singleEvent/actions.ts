@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import type { QuotaID, SignupCreateResponse } from "@tietokilta/ilmomasiina-models";
 import { apiFetch } from "../../api";
 

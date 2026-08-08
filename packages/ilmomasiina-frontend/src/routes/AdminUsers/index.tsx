@@ -21,7 +21,7 @@ const AdminUsersList = () => {
   useBrandedDocumentTitle(t("adminUsers.title"));
 
   useEffect(() => {
-    getUsers();
+    void getUsers();
     return () => resetState();
   }, [getUsers, resetState]);
 

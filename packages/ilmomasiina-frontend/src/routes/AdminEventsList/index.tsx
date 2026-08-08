@@ -27,7 +27,7 @@ const AdminEventsList = () => {
   }, []);
 
   useEffect(() => {
-    getAdminEvents();
+    void getAdminEvents();
     return () => resetState();
   }, [getAdminEvents, resetState]);
 

@@ -312,6 +312,7 @@ export default function setupEventModel(sequelize: Sequelize) {
         allowNull: false,
         // The default value used for this depends on config, so we can't set it in the database easily.
         get(): string {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- sequelize mistyping
           return this.getDataValue("defaultLanguage") ?? config.defaultLanguage;
         },
       },
@@ -350,6 +351,7 @@ export default function setupEventModel(sequelize: Sequelize) {
           }
         },
         noDuplicateDefaultLanguage(this: Event) {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- indexing may fail
           if (this.languages != null && this.languages[this.defaultLanguage]) {
             throw new EventValidationError("defaultLanguage may not be present in languages");
           }

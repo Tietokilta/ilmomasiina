@@ -70,17 +70,17 @@ const ChangePasswordForm = () => {
         <BsForm className="ilmo--form" onSubmit={handleSubmit}>
           <FieldFormGroup name="oldPassword" required label={t("adminUsers.changePassword.oldPassword")}>
             {({ input, meta: { touched, error } }) => (
-              <FormControl {...input} type="password" required isInvalid={touched && error} placeholder="••••••••" />
+              <FormControl {...input} type="password" required isInvalid={touched && !!error} placeholder="••••••••" />
             )}
           </FieldFormGroup>
           <FieldFormGroup name="newPassword" required label={t("adminUsers.changePassword.newPassword")}>
             {({ input, meta: { touched, error } }) => (
-              <FormControl {...input} type="password" required isInvalid={touched && error} placeholder="••••••••" />
+              <FormControl {...input} type="password" required isInvalid={touched && !!error} placeholder="••••••••" />
             )}
           </FieldFormGroup>
           <FieldFormGroup name="newPasswordVerify" required label={t("adminUsers.changePassword.newPasswordVerify")}>
             {({ input, meta: { touched, error } }) => (
-              <FormControl {...input} type="password" required isInvalid={touched && error} placeholder="••••••••" />
+              <FormControl {...input} type="password" required isInvalid={touched && !!error} placeholder="••••••••" />
             )}
           </FieldFormGroup>
           <Button type="submit" variant="secondary" disabled={submitting}>

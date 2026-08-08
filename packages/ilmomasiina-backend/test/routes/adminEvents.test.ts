@@ -116,7 +116,7 @@ describe("GET /api/admin/events/:id", () => {
     const event = await testEvent({ questionCount: 3 });
     const [before] = await fetchAdminEventDetails(event);
 
-    expect(before.questions.map((q) => q.id)).toEqual(sortBy(event.questions!, "order").map((q) => q.id));
+    expect(before.questions.map((q) => q.id)).toEqual(sortBy(event.questions, "order").map((q) => q.id));
 
     await event.questions!.at(-1)!.update({ order: 0 });
     await event.questions![0].update({ order: event.questions!.length - 1 });
@@ -124,14 +124,14 @@ describe("GET /api/admin/events/:id", () => {
     const [after] = await fetchAdminEventDetails(event);
 
     expect(before.questions.map((q) => q.id)).not.toEqual(after.questions.map((q) => q.id));
-    expect(after.questions.map((q) => q.id)).toEqual(sortBy(event.questions!, "order").map((q) => q.id));
+    expect(after.questions.map((q) => q.id)).toEqual(sortBy(event.questions, "order").map((q) => q.id));
   });
 
   test("returns quotas in correct order", async () => {
     const event = await testEvent({ quotaCount: 3 });
     const [before] = await fetchAdminEventDetails(event);
 
-    expect(before.quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, "order").map((q) => q.id));
+    expect(before.quotas.map((q) => q.id)).toEqual(sortBy(event.quotas, "order").map((q) => q.id));
 
     await event.quotas!.at(-1)!.update({ order: 0 });
     await event.quotas![0].update({ order: event.quotas!.length - 1 });
@@ -139,7 +139,7 @@ describe("GET /api/admin/events/:id", () => {
     const [after] = await fetchAdminEventDetails(event);
 
     expect(before.quotas.map((q) => q.id)).not.toEqual(after.quotas.map((q) => q.id));
-    expect(after.quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, "order").map((q) => q.id));
+    expect(after.quotas.map((q) => q.id)).toEqual(sortBy(event.quotas, "order").map((q) => q.id));
   });
 
   test("always returns signups with full data", async () => {
@@ -254,7 +254,7 @@ describe("GET /api/admin/events", () => {
     const event = await testEvent({ quotaCount: 3 });
     const [before] = await fetchAdminEventList();
 
-    expect(before[0].quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, "order").map((q) => q.id));
+    expect(before[0].quotas.map((q) => q.id)).toEqual(sortBy(event.quotas, "order").map((q) => q.id));
 
     await event.quotas!.at(-1)!.update({ order: 0 });
     await event.quotas![0].update({ order: event.quotas!.length - 1 });
@@ -262,7 +262,7 @@ describe("GET /api/admin/events", () => {
     const [after] = await fetchAdminEventList();
 
     expect(before[0].quotas.map((q) => q.id)).not.toEqual(after[0].quotas.map((q) => q.id));
-    expect(after[0].quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, "order").map((q) => q.id));
+    expect(after[0].quotas.map((q) => q.id)).toEqual(sortBy(event.quotas, "order").map((q) => q.id));
   });
 });
 
@@ -622,11 +622,11 @@ describe("POST /api/admin/events", () => {
     // languages options normalization
     expect(event!.languages.fi).toBeTruthy();
     expect(event!.languages.fi.questions).toHaveLength(5);
-    expect(event!.languages.fi.questions![0].options).toBe(null);
-    expect(event!.languages.fi.questions![1].options).toEqual(localizedOptions);
-    expect(event!.languages.fi.questions![2].options).toBe(null);
-    expect(event!.languages.fi.questions![3].options).toBe(null);
-    expect(event!.languages.fi.questions![4].options).toEqual(localizedOptions);
+    expect(event!.languages.fi.questions[0].options).toBe(null);
+    expect(event!.languages.fi.questions[1].options).toEqual(localizedOptions);
+    expect(event!.languages.fi.questions[2].options).toBe(null);
+    expect(event!.languages.fi.questions[3].options).toBe(null);
+    expect(event!.languages.fi.questions[4].options).toEqual(localizedOptions);
   });
 
   test("audit logs creations", async () => {
@@ -944,11 +944,11 @@ describe("PATCH /api/admin/events/:id", () => {
     // Verify language normalization
     expect(dbEvent!.languages.fi).toBeTruthy();
     expect(dbEvent!.languages.fi.questions).toHaveLength(5);
-    expect(dbEvent!.languages.fi.questions![0].options).toBe(null);
-    expect(dbEvent!.languages.fi.questions![1].options).toBe(null);
-    expect(dbEvent!.languages.fi.questions![2].options).toBe(null);
-    expect(dbEvent!.languages.fi.questions![3].options).toEqual(localizedOptions);
-    expect(dbEvent!.languages.fi.questions![4].options).toEqual(localizedOptions);
+    expect(dbEvent!.languages.fi.questions[0].options).toBe(null);
+    expect(dbEvent!.languages.fi.questions[1].options).toBe(null);
+    expect(dbEvent!.languages.fi.questions[2].options).toBe(null);
+    expect(dbEvent!.languages.fi.questions[3].options).toEqual(localizedOptions);
+    expect(dbEvent!.languages.fi.questions[4].options).toEqual(localizedOptions);
   });
 
   test("does not allow duplicate slugs", async () => {
@@ -1013,6 +1013,8 @@ describe("PATCH /api/admin/events/:id", () => {
       updatedAt,
     });
     expect(response.statusCode).toBe(200);
+
+    void updatedAt; // keep linter happy and code consistent
   });
 
   test("checks updatedAt for conflicts", async () => {
@@ -1046,6 +1048,7 @@ describe("PATCH /api/admin/events/:id", () => {
       draft: true,
       updatedAt,
     });
+    void updatedAt; // keep linter happy and code consistent
 
     const logs = await AuditLog.findAll({ order: [["createdAt", "ASC"]] });
     expect(logs.length).toBe(3);

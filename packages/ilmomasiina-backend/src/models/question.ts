@@ -54,7 +54,7 @@ export class Question extends Model<QuestionAttributes, QuestionCreationAttribut
 
   public eventId!: Event["id"];
   public event?: Event;
-  public getEvent!: HasOneGetAssociationMixin<Event>;
+  public getEvent!: HasOneGetAssociationMixin<Event | null>;
   public setEvent!: HasOneSetAssociationMixin<Event, Event["id"]>;
   public createEvent!: HasOneCreateAssociationMixin<Event>;
 

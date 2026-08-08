@@ -29,7 +29,7 @@ const GenerateSlug = () => {
   const touched = useFieldTouched("slug");
 
   useEffect(() => {
-    if (isNew && !touched && title !== undefined) {
+    if (isNew && !touched) {
       const generatedSlug = title
         .normalize("NFD") // converts e.g. ä to a + umlaut
         .replace(/[^A-Za-z0-9]+/g, "")
@@ -55,7 +55,7 @@ const SlugAvailability = () => {
     window.clearTimeout(checkDelay.current);
     checkDelay.current = window.setTimeout(() => {
       if (slug) {
-        checkSlugAvailability(slug);
+        void checkSlugAvailability(slug);
       }
     }, SLUG_CHECK_DELAY);
   }, [slug, checkSlugAvailability, checkingSlugAvailability]);
@@ -89,7 +89,7 @@ const BasicDetailsTab = () => {
   const registrationEndDate = useFieldValue<Date | null>("registrationEndDate");
 
   useEffect(() => {
-    loadCategories();
+    void loadCategories();
   }, [loadCategories]);
 
   return (

@@ -5,6 +5,8 @@ import { FrontendsConfig, frontendsSchema, stripeBrandingSchema } from "./config
 import i18n, { i18nResources, knownLanguages } from "./i18n";
 import { envBoolean, envEnum, envInteger, envJson, envString, frontendFilesPath } from "./util/config";
 
+/* eslint-disable @typescript-eslint/no-unnecessary-condition  -- many false positives with Record indexing */
+
 // Vite/Vitest sets BASE_URL. This conflicts with our config, but isn't used
 // in tests, so just overwrite it.
 if (process.env.VITEST) {
@@ -225,7 +227,7 @@ if (config.stripeSecretKey && !config.stripeWebhookSecret) {
   console.warn("STRIPE_WEBHOOK_SECRET is not configured - ignoring webhooks.");
 }
 
-i18n.init({
+void i18n.init({
   lng: config.defaultLanguage,
   fallbackLng: config.defaultLanguage,
   resources: i18nResources,

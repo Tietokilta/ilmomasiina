@@ -14,7 +14,7 @@ interface Options<A, K, R> {
   /** If set, used to log cache usage statistics. */
   logName?: string;
   /** The actual implementation of the cached function. */
-  get(key: A): Promise<R>;
+  get: (key: A) => Promise<R>;
   /** If set, used to convert arguments to a cache key. */
   formatKey?: (key: A) => K;
 }
@@ -27,7 +27,7 @@ interface Ongoing<R> {
 
 interface CachedGet<A, R> {
   (key: A): Promise<R>;
-  invalidate(key?: A): void;
+  invalidate: (key?: A) => void;
 }
 
 /**
@@ -86,7 +86,7 @@ export default function createCache<A, K, R>({
           newGet.state = "success";
           return result;
         },
-        (error) => {
+        (error: unknown) => {
           newGet.state = "error";
           throw error;
         },

@@ -110,10 +110,10 @@ const EditableUntil = () => {
   const duration = useDurationFormatter();
 
   // Rerender every second
-  const [, refresh] = useState({});
+  const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (editingClosedOnLoad) return undefined;
-    const timer = window.setInterval(() => refresh({}), 1000);
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, [editingClosedOnLoad]);
 
@@ -126,7 +126,6 @@ const EditableUntil = () => {
     return null;
   }
 
-  const now = Date.now();
   if (signup!.confirmed) {
     return <p>{t("editSignup.editable.confirmed", { duration: duration(Math.max(editableUntil! - now)) })}</p>;
   }
@@ -191,17 +190,13 @@ const EditFormBody = ({ handleSubmit, processing, onDelete, onPay }: BodyProps) 
       <NarrowContainer>
         {showPayment && <Payment onPay={onPay} disabled={submitting || processing} />}
         <h2>
-          {
-            // eslint-disable-next-line no-nested-ternary
-            preview
-              ? t("editSignup.title.preview")
-              : // eslint-disable-next-line no-nested-ternary
-                !canEdit
-                ? t("editSignup.title.view")
-                : isNew
-                  ? t("editSignup.title.signup")
-                  : t("editSignup.title.edit")
-          }
+          {preview
+            ? t("editSignup.title.preview")
+            : !canEdit
+              ? t("editSignup.title.view")
+              : isNew
+                ? t("editSignup.title.signup")
+                : t("editSignup.title.edit")}
         </h2>
         <SignupStatusAndPosition />
         <EditableUntil />
@@ -241,7 +236,6 @@ const EditForm = () => {
     try {
       const updated = await updateSignup({ ...update, language });
       toast.update(progressToast, {
-        // eslint-disable-next-line no-nested-ternary
         render: isNew
           ? updated.paymentStatus != null
             ? t("editSignup.status.signupSuccess.needPayment")
@@ -255,7 +249,7 @@ const EditForm = () => {
       });
       // If this was a new signup and no payment is needed, go to event details.
       if (isNew && updated.paymentStatus == null) {
-        navigate(paths.eventDetails(event!.slug));
+        void navigate(paths.eventDetails(event!.slug));
       }
       return undefined;
     } catch (error) {
@@ -288,7 +282,7 @@ const EditForm = () => {
         closeOnClick: true,
         isLoading: false,
       });
-      navigate(paths.eventDetails(event!.slug));
+      void navigate(paths.eventDetails(event!.slug));
     } catch (error) {
       toast.update(progressToast, {
         render: t(errorDesc<TKey>(error as ApiError, "editSignup.deleteError")),

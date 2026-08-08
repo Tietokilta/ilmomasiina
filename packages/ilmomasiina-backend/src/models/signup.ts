@@ -94,7 +94,7 @@ export class Signup extends Model<SignupAttributes, SignupCreationAttributes> im
 
   public quotaId!: Quota["id"];
   public quota?: Quota;
-  public getQuota!: HasOneGetAssociationMixin<Quota>;
+  public getQuota!: HasOneGetAssociationMixin<Quota | null>;
   public setQuota!: HasOneSetAssociationMixin<Quota, Quota["id"]>;
   public createQuota!: HasOneCreateAssociationMixin<Quota>;
 
@@ -126,7 +126,7 @@ export class Signup extends Model<SignupAttributes, SignupCreationAttributes> im
   public createPayment!: HasManyCreateAssociationMixin<Payment>;
 
   public activePayment?: Payment | null;
-  public getActivePayment!: HasOneGetAssociationMixin<Payment>;
+  public getActivePayment!: HasOneGetAssociationMixin<Payment | null>;
   public setActivePayment!: HasOneSetAssociationMixin<Payment, Payment["id"]>;
   public createActivePayment!: HasOneCreateAssociationMixin<Payment>;
 

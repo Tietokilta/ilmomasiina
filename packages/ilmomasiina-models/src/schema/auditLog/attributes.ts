@@ -3,8 +3,6 @@ import { Type } from "typebox";
 import { AuditEvent } from "../../enum";
 import { Nullable } from "../utils";
 
-/* eslint-disable import/prefer-default-export */
-
 /** Schema for an audit log item. */
 export const auditLogItemAttributes = Type.Object({
   id: Type.Integer({

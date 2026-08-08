@@ -25,7 +25,7 @@ export default async function stripeWebhook(request: FastifyRequest, reply: Fast
   let event: Stripe.Event;
   try {
     event = stripe.webhooks.constructEvent(request.rawBody, signature, config.stripeWebhookSecret);
-  } catch (err) {
+  } catch {
     throw new BadRequest("Webhook signature verification failed");
   }
 

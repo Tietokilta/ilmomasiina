@@ -18,7 +18,7 @@ const AuditLogFilter = ({ name, ...props }: Props) => {
   const { t } = useTranslation();
 
   const onChange = useThrottled((e: React.ChangeEvent<HTMLInputElement>) => {
-    setAuditLogQueryField(name, e.target.value);
+    void setAuditLogQueryField(name, e.target.value);
   }, UPDATE_DELAY);
 
   return <Form.Control type="text" name={name} onChange={onChange} placeholder={t("auditLog.filter")} {...props} />;

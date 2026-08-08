@@ -8,8 +8,8 @@ import type { SignupFieldError } from "@tietokilta/ilmomasiina-models";
 export default function useFieldErrors() {
   const { t } = useTranslation();
   return useCallback(
-    (error?: SignupFieldError): string[] | string | undefined =>
-      error ? t([`editSignup.fieldError.${error}`, "editSignup.fieldError"]) : undefined,
+    (error?: unknown): string[] | string | undefined =>
+      error ? t([`editSignup.fieldError.${error as SignupFieldError}`, "editSignup.fieldError"]) : undefined,
     [t],
   );
 }

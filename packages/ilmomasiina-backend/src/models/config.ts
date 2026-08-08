@@ -1,8 +1,8 @@
 import { Options } from "sequelize";
 
-import appConfig from "../config";
+import config from "../config";
 
-const { dbHost, dbPort, dbSsl, dbDatabase, dbUser, dbPassword, debugDbLogging } = appConfig;
+const { dbHost, dbPort, dbSsl, dbDatabase, dbUser, dbPassword, debugDbLogging } = config;
 
 const sequelizeConfig: Options = {
   dialect: "postgres",

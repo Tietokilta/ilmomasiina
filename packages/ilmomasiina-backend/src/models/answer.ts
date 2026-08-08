@@ -28,13 +28,13 @@ export class Answer extends Model<AnswerAttributes, AnswerCreationAttributes> im
 
   public questionId!: Question["id"];
   public question?: Question;
-  public getQuestion!: HasOneGetAssociationMixin<Question>;
+  public getQuestion!: HasOneGetAssociationMixin<Question | null>;
   public setQuestion!: HasOneSetAssociationMixin<Question, Question["id"]>;
   public createQuestion!: HasOneCreateAssociationMixin<Question>;
 
   public signupId!: Signup["id"];
   public signup?: Signup;
-  public getSignup!: HasOneGetAssociationMixin<Signup>;
+  public getSignup!: HasOneGetAssociationMixin<Signup | null>;
   public setSignup!: HasOneSetAssociationMixin<Signup, Signup["id"]>;
   public createSignup!: HasOneCreateAssociationMixin<Signup>;
 

@@ -16,7 +16,7 @@ export default function Logout() {
   const logout = useCallback(() => {
     resetAuth();
     loginToast("success", t("auth.logoutSuccess"), 2000);
-    navigate(paths.adminLogin);
+    void navigate(paths.adminLogin);
   }, [resetAuth, navigate, t]);
 
   return loggedIn ? <Button onClick={logout}>{t("header.logout")}</Button> : null;

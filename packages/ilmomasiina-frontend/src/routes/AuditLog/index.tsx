@@ -24,7 +24,7 @@ const AuditLog = () => {
   useBrandedDocumentTitle(t("auditLog.title"));
 
   useEffect(() => {
-    getAuditLogs({
+    void getAuditLogs({
       limit: LOGS_PER_PAGE,
     });
     return () => resetState();

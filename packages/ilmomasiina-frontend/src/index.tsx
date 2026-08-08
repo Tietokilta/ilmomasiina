@@ -1,7 +1,7 @@
 import React from "react";
 
-import * as Sentry from "@sentry/browser";
-import ReactDOM from "react-dom/client";
+import Sentry from "@sentry/browser";
+import { createRoot } from "react-dom/client";
 
 import "./i18n";
 
@@ -16,5 +16,5 @@ if (PROD && SENTRY_DSN) {
 
 configureApi(apiUrl);
 
-const root = ReactDOM.createRoot(document.getElementById("root")!);
+const root = createRoot(document.getElementById("root")!);
 root.render(<AppContainer />);

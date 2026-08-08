@@ -2,10 +2,8 @@ import react from "@vitejs/plugin-react";
 import dotenvFlow from "dotenv-flow";
 import path from "path";
 import { defineConfig } from "vite";
-import checker from "vite-plugin-checker";
+import { checker } from "vite-plugin-checker";
 import tsconfigPaths from "vite-tsconfig-paths";
-
-/* eslint-disable no-console */
 
 // Load environment variables from .env files (from the root of repository)
 dotenvFlow.config({ path: path.resolve(__dirname, "../..") });

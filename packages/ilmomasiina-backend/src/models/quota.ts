@@ -28,7 +28,7 @@ export interface QuotaAttributes {
   title: string;
   size: number | null;
   eventId: Event["id"];
-  signupCount?: number;
+  signupCount?: number | string;
   price: number;
 }
 
@@ -43,7 +43,7 @@ export class Quota extends Model<QuotaAttributes, QuotaCreationAttributes> imple
 
   public eventId!: Event["id"];
   public event?: Event;
-  public getEvent!: HasOneGetAssociationMixin<Event>;
+  public getEvent!: HasOneGetAssociationMixin<Event | null>;
   public setEvent!: HasOneSetAssociationMixin<Event, Event["id"]>;
   public createEvent!: HasOneCreateAssociationMixin<Event>;
 
@@ -63,7 +63,8 @@ export class Quota extends Model<QuotaAttributes, QuotaCreationAttributes> imple
   public readonly updatedAt!: Date;
 
   // Virtual columns for some queries (TODO: is there a cleaner way?)
-  public readonly signupCount?: number;
+  // Postgres returns bigint from COUNT, which Sequelize returns as string...
+  public readonly signupCount?: number | string;
 }
 
 export default function setupQuotaModel(sequelize: Sequelize) {

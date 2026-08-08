@@ -36,7 +36,7 @@ const errorResponses = {
 };
 
 /** Setup admin routes (prefixed with '/admin') */
-async function setupAdminRoutes(fastifyInstance: FastifyInstance) {
+function setupAdminRoutes(fastifyInstance: FastifyInstance) {
   // Add session validation hook:
   // All the following routes require a valid session. The route functions are called only if the session is valid.
   // For invalid sessions, the hook automatically responds with a proper error response.
@@ -45,9 +45,7 @@ async function setupAdminRoutes(fastifyInstance: FastifyInstance) {
   const server = fastifyInstance.withTypeProvider<TypeBoxTypeProvider>();
 
   /** Routes for categories */
-  server.get<{
-    /* Params: types.UserID */
-  }>(
+  server.get(
     "/categories",
     {
       schema: {
@@ -288,7 +286,7 @@ async function setupAdminRoutes(fastifyInstance: FastifyInstance) {
   );
 }
 
-async function setupPublicRoutes(fastifyInstance: FastifyInstance) {
+function setupPublicRoutes(fastifyInstance: FastifyInstance) {
   const server = fastifyInstance.withTypeProvider<TypeBoxTypeProvider>();
 
   // Routes that require a signup edit token
