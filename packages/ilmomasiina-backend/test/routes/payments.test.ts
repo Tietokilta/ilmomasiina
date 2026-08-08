@@ -21,7 +21,6 @@ import { Question } from "../../src/models/question";
 import { Signup } from "../../src/models/signup";
 import { checkoutSessionStatusUpdated, expirePaymentForSignupUpdate, getStripe } from "../../src/routes/payment/stripe";
 import { refreshSignupPositions } from "../../src/routes/signups/computeSignupPosition";
-import { deferred } from "../deferred";
 import * as api from "./api";
 
 // Mock Stripe API methods
@@ -720,8 +719,8 @@ describe("payment and signup update locking", () => {
   test("signup update blocks ongoing payment creation by marking as CREATION_FAILED", async () => {
     const { event, signup } = await defaultTestEventAndSignup();
 
-    const stripeMockRequest = deferred<void>();
-    const stripeMockResponse = deferred<void>();
+    const stripeMockRequest = Promise.withResolvers<void>();
+    const stripeMockResponse = Promise.withResolvers<void>();
     mockStripeCheckoutSessionCreate.mockImplementationOnce(async () => {
       // Let the test proceed when called, then wait for signal to continue
       stripeMockRequest.resolve();
@@ -759,8 +758,8 @@ describe("payment and signup update locking", () => {
   test("signup deletion blocks ongoing payment creation by marking as CREATION_FAILED", async () => {
     const { signup } = await defaultTestEventAndSignup();
 
-    const stripeMockRequest = deferred<void>();
-    const stripeMockResponse = deferred<void>();
+    const stripeMockRequest = Promise.withResolvers<void>();
+    const stripeMockResponse = Promise.withResolvers<void>();
     mockStripeCheckoutSessionCreate.mockImplementationOnce(async () => {
       // Let the test proceed when called, then wait for signal to continue
       stripeMockRequest.resolve();

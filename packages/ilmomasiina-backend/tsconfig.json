@@ -1,7 +1,15 @@
 {
   "compilerOptions": {
-    "target": "es2022",
-    "lib": ["dom", "dom.iterable", "es2022"],
+    // target/lib from https://github.com/tsconfig/bases/blob/main/bases/node24.json
+    "target": "es2024",
+    "lib": [
+      "es2024",
+      "ESNext.Array",
+      "ESNext.Collection",
+      "ESNext.Error",
+      "ESNext.Iterator",
+      "ESNext.Promise"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,

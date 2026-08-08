@@ -41,7 +41,7 @@ class BadEditToken extends CustomError {
  * When the token is not valid, replies with a 403 request with a generic `invalid token`-like error message.
  * The request processing ends here, and the actual route function won't be called.
  */
-export function requireValidEditToken(request: FastifyRequest<{ Params: SignupPathParams }>) {
+export async function requireValidEditToken(request: FastifyRequest<{ Params: SignupPathParams }>) {
   // Fastify converts header names into lower case
   const headers = request.headers[EDIT_TOKEN_HEADER.toLowerCase()];
   const header = Array.isArray(headers) ? headers[0] : headers;
