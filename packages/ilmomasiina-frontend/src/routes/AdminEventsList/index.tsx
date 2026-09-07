@@ -5,14 +5,13 @@ import { Trans, useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import { errorDesc, errorTitle } from "@tietokilta/ilmomasiina-client";
-import branding from "../../branding";
 import LinkButton from "../../components/LinkButton";
 import requireAuth from "../../containers/requireAuth";
 import type { TKey } from "../../i18n";
 import useStore from "../../modules/store";
 import paths from "../../paths";
 import { isEventInPast } from "../../utils/eventState";
-import useDocumentTitle from "../../utils/useDocumentTitle";
+import useBrandedDocumentTitle from "../../utils/useBrandedDocumentTitle";
 import AdminEventListItem from "./AdminEventListItem";
 
 const AdminEventsList = () => {
@@ -20,7 +19,7 @@ const AdminEventsList = () => {
   const [showPast, setShowPast] = useState(false);
   const { t } = useTranslation();
 
-  useDocumentTitle(`${t("adminEvents.title")} - ${branding.headerTitleShort}`);
+  useBrandedDocumentTitle(t("adminEvents.title"));
 
   const togglePast = useCallback((evt: BaseSyntheticEvent) => {
     evt.preventDefault();

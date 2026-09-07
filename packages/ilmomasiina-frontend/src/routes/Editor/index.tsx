@@ -5,12 +5,11 @@ import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 
 import { errorDesc, errorTitle } from "@tietokilta/ilmomasiina-client";
-import branding from "../../branding";
 import requireAuth from "../../containers/requireAuth";
 import type { TKey } from "../../i18n";
 import useStore from "../../modules/store";
 import paths from "../../paths";
-import useDocumentTitle from "../../utils/useDocumentTitle";
+import useBrandedDocumentTitle from "../../utils/useBrandedDocumentTitle";
 import EditForm from "./components/EditForm";
 
 import "./Editor.scss";
@@ -27,7 +26,7 @@ const Editor = ({ copy = false }: Props) => {
   const urlEventId = useParams<"id">().id!;
   const urlIsNew = urlEventId === "new";
 
-  useDocumentTitle(`${urlIsNew ? t("editor.title.new") : t("editor.title.edit")} - ${branding.headerTitleShort}`);
+  useBrandedDocumentTitle(urlIsNew ? t("editor.title.new") : t("editor.title.edit"));
 
   useEffect(() => {
     if (urlIsNew) {

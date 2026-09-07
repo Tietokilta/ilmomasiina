@@ -5,9 +5,8 @@ import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 
 import { EditSignupProvider, errorDesc, errorTitle, useEditSignupContext } from "@tietokilta/ilmomasiina-client";
-import branding from "../../branding";
 import type { TKey } from "../../i18n";
-import useDocumentTitle from "../../utils/useDocumentTitle";
+import useBrandedDocumentTitle from "../../utils/useBrandedDocumentTitle";
 import EditForm from "./components/EditForm";
 import NarrowContainer from "./components/NarrowContainer";
 
@@ -28,7 +27,7 @@ const EditSignupView = () => {
     return t("events.title");
   };
 
-  useDocumentTitle(`${getTitle()} - ${branding.headerTitleShort}`);
+  useBrandedDocumentTitle(getTitle());
 
   if (error) {
     return (

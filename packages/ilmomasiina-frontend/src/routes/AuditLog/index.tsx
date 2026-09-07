@@ -5,12 +5,11 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import { errorDesc } from "@tietokilta/ilmomasiina-client";
-import branding from "../../branding";
 import requireAuth from "../../containers/requireAuth";
 import type { TKey } from "../../i18n";
 import useStore from "../../modules/store";
 import paths from "../../paths";
-import useDocumentTitle from "../../utils/useDocumentTitle";
+import useBrandedDocumentTitle from "../../utils/useBrandedDocumentTitle";
 import AuditLogActionFilter from "./AuditLogActionFilter";
 import AuditLogFilter from "./AuditLogFilter";
 import AuditLogItem from "./AuditLogItem";
@@ -22,7 +21,7 @@ const AuditLog = () => {
   const { auditLog, loadError, getAuditLogs, resetState } = useStore((state) => state.auditLog);
   const { t } = useTranslation();
 
-  useDocumentTitle(`${t("auditLog.title")} - ${branding.headerTitleShort}`);
+  useBrandedDocumentTitle(t("auditLog.title"));
 
   useEffect(() => {
     getAuditLogs({

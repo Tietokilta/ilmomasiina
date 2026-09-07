@@ -13,7 +13,7 @@ import i18n, { TKey } from "../../i18n";
 import { loginToast } from "../../modules/auth";
 import useStore from "../../modules/store";
 import paths from "../../paths";
-import useDocumentTitle from "../../utils/useDocumentTitle";
+import useBrandedDocumentTitle from "../../utils/useBrandedDocumentTitle";
 import useEvent from "../../utils/useEvent";
 
 import "./InitialSetup.scss";
@@ -57,7 +57,7 @@ const InitialSetup = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  useDocumentTitle(`${t("initialSetup.title")} - ${branding.headerTitle}`);
+  useBrandedDocumentTitle(t("initialSetup.title"));
 
   const onSubmit = useEvent(async (data: FormData) => {
     const { email, password } = data;

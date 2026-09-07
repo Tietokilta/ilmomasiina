@@ -13,12 +13,11 @@ import {
 } from "@tietokilta/ilmomasiina-client";
 import { EventRow, eventsToRows, QuotaRow } from "@tietokilta/ilmomasiina-client/dist/utils/eventListUtils";
 import { ErrorCode } from "@tietokilta/ilmomasiina-models";
-import branding from "../../branding";
 import { TKey } from "../../i18n";
 import paths from "../../paths";
 import { useEventDateFormatter } from "../../utils/dateFormat";
 import { useSignupStateText } from "../../utils/signupStateText";
-import useDocumentTitle from "../../utils/useDocumentTitle";
+import useBrandedDocumentTitle from "../../utils/useBrandedDocumentTitle";
 import TableRow from "./components/TableRow";
 
 import "./EventList.scss";
@@ -54,7 +53,7 @@ const EventListView = () => {
   const { localizedEvents: events, error, pending } = useEventListContext();
   const { t } = useTranslation();
 
-  useDocumentTitle(`${t("events.title")} - ${branding.headerTitleShort}`);
+  useBrandedDocumentTitle(t("events.title"));
 
   const tableRows = useMemo(() => eventsToRows(events ?? []).filter((row) => row.type !== "waitlist"), [events]);
 
