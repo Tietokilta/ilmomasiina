@@ -9,6 +9,7 @@ import requireAuth from "../../containers/requireAuth";
 import type { TKey } from "../../i18n";
 import useStore from "../../modules/store";
 import paths from "../../paths";
+import useBrandedDocumentTitle from "../../utils/useBrandedDocumentTitle";
 import AdminUserListItem from "./AdminUserListItem";
 import ChangePasswordForm from "./ChangePasswordForm";
 import UserForm from "./UserForm";
@@ -16,6 +17,8 @@ import UserForm from "./UserForm";
 const AdminUsersList = () => {
   const { users, loadError, getUsers, resetState } = useStore((state) => state.adminUsers);
   const { t } = useTranslation();
+
+  useBrandedDocumentTitle(t("adminUsers.title"));
 
   useEffect(() => {
     getUsers();

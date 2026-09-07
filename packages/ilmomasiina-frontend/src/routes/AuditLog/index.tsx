@@ -9,6 +9,7 @@ import requireAuth from "../../containers/requireAuth";
 import type { TKey } from "../../i18n";
 import useStore from "../../modules/store";
 import paths from "../../paths";
+import useBrandedDocumentTitle from "../../utils/useBrandedDocumentTitle";
 import AuditLogActionFilter from "./AuditLogActionFilter";
 import AuditLogFilter from "./AuditLogFilter";
 import AuditLogItem from "./AuditLogItem";
@@ -19,6 +20,8 @@ import "./AuditLog.scss";
 const AuditLog = () => {
   const { auditLog, loadError, getAuditLogs, resetState } = useStore((state) => state.auditLog);
   const { t } = useTranslation();
+
+  useBrandedDocumentTitle(t("auditLog.title"));
 
   useEffect(() => {
     getAuditLogs({

@@ -17,6 +17,7 @@ import { TKey } from "../../i18n";
 import paths from "../../paths";
 import { useEventDateFormatter } from "../../utils/dateFormat";
 import { useSignupStateText } from "../../utils/signupStateText";
+import useBrandedDocumentTitle from "../../utils/useBrandedDocumentTitle";
 import TableRow from "./components/TableRow";
 
 import "./EventList.scss";
@@ -51,6 +52,8 @@ const ListQuotaRow = ({ row: { type, title, signupCount, quotaSize } }: { row: Q
 const EventListView = () => {
   const { localizedEvents: events, error, pending } = useEventListContext();
   const { t } = useTranslation();
+
+  useBrandedDocumentTitle(t("events.title"));
 
   const tableRows = useMemo(() => eventsToRows(events ?? []).filter((row) => row.type !== "waitlist"), [events]);
 
