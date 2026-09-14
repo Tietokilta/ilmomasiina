@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 
 import defaultLogo from "../../assets/logo.svg";
 import i18n from "../../i18n";
-import { useHeaderBranding } from "../../modules/branding";
+import { useEffectiveBranding } from "../../modules/branding";
 import paths from "../../paths";
 
 import "./Header.scss";
@@ -19,13 +19,18 @@ const Header = () => {
     i18n: { language },
     t,
   } = useTranslation();
-  const { headerTitle, headerTitleShort, logo } = useHeaderBranding();
+  const { headerTitle, headerTitleShort, logo, showLogo } = useEffectiveBranding();
+
+  // A custom logo is shown unless explicitly hidden; otherwise the build-time default applies.
+  let logoClass = "navbar-logo";
+  if (showLogo === false) logoClass += " navbar-logo-hidden";
+  else if (showLogo === true || logo) logoClass += " navbar-logo-shown";
 
   return (
     <Navbar>
       <Container className="gap-sm-2">
         <Link to={paths.eventsList} className="navbar-brand">
-          <img className={logo ? "navbar-logo navbar-logo-custom" : "navbar-logo"} src={logo ?? defaultLogo} alt="Logo" />
+          <img className={logoClass} src={logo ?? defaultLogo} alt="Logo" />
           <span className="d-none d-sm-inline">{headerTitle}</span>
           <span className="d-sm-none">{headerTitleShort}</span>
         </Link>

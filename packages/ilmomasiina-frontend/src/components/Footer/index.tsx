@@ -4,13 +4,14 @@ import { Container } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
-import branding from "../../branding";
+import { useEffectiveBranding } from "../../modules/branding";
 import paths from "../../paths";
 
 import "./Footer.scss";
 
 const Footer = () => {
   const { t } = useTranslation();
+  const branding = useEffectiveBranding();
   return (
     <footer>
       <Container>

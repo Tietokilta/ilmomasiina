@@ -1,7 +1,7 @@
-import React, { useMemo } from "react";
+import React from "react";
 
-import { Button, Form as BsForm, FormControl, FormText, Spinner } from "react-bootstrap";
-import { Form, useField } from "react-final-form";
+import { Button, Form as BsForm, FormControl, FormSelect, Spinner } from "react-bootstrap";
+import { Form } from "react-final-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 
@@ -19,109 +19,112 @@ import i18n, { TKey } from "../../i18n";
 import useStore from "../../modules/store";
 import { parseHexColor } from "../../utils/brandColor";
 import useEvent from "../../utils/useEvent";
+import ColorField from "./ColorField";
 import ImageField, { formatMaxSize } from "./ImageField";
+
+/** Text and color fields of the form. "" means "use default". */
+const textKeys = [
+  "headerTitle",
+  "headerTitleShort",
+  "footerGdprText",
+  "footerGdprLink",
+  "footerHomeText",
+  "footerHomeLink",
+  "loginPlaceholderEmail",
+  "icalCalendarName",
+  "mailFooterText",
+  "mailFooterLink",
+] as const;
+const colorKeys = ["brandColor", "secondaryColor", "successColor", "dangerColor"] as const;
+
+type TextKey = (typeof textKeys)[number];
+type ColorKey = (typeof colorKeys)[number];
 
 /** Form values. Text fields use "" instead of null for "use default".
  * Note that final-form turns empty strings into `undefined` when a field is cleared.
  */
-type FormData = {
-  headerTitle?: string;
-  headerTitleShort?: string;
-  brandColor?: string;
-  dangerColor?: string;
+type FormData = Partial<Record<TextKey | ColorKey, string>> & {
   logo: string | null;
+  /** "" (or undefined) for default, "show" or "hide". */
+  showLogo?: "" | "show" | "hide";
   favicon: string | null;
 };
 
+function showLogoToForm(showLogo: boolean | null): FormData["showLogo"] {
+  if (showLogo === null) return "";
+  return showLogo ? "show" : "hide";
+}
+
 function toFormData(branding: BrandingResponse): FormData {
-  return {
-    headerTitle: branding.headerTitle ?? "",
-    headerTitleShort: branding.headerTitleShort ?? "",
-    brandColor: branding.brandColor ?? "",
-    dangerColor: branding.dangerColor ?? "",
+  const data: FormData = {
     logo: branding.logo,
+    showLogo: showLogoToForm(branding.showLogo),
     favicon: branding.favicon,
   };
+  [...textKeys, ...colorKeys].forEach((key) => {
+    data[key] = branding[key] ?? "";
+  });
+  return data;
 }
 
 function toUpdateBody(data: FormData): BrandingUpdateBody {
-  return {
-    headerTitle: data.headerTitle?.trim() || null,
-    headerTitleShort: data.headerTitleShort?.trim() || null,
-    brandColor: data.brandColor?.trim().toLowerCase() || null,
-    dangerColor: data.dangerColor?.trim().toLowerCase() || null,
+  const body = {
     logo: data.logo,
+    showLogo: data.showLogo ? data.showLogo === "show" : null,
     favicon: data.favicon,
-  };
+  } as BrandingUpdateBody;
+  textKeys.forEach((key) => {
+    body[key] = data[key]?.trim() || null;
+  });
+  colorKeys.forEach((key) => {
+    body[key] = data[key]?.trim().toLowerCase() || null;
+  });
+  return body;
 }
 
 function validate(values: FormData) {
   const errors: Partial<Record<keyof FormData, string>> = {};
-  if (values.brandColor?.trim() && !parseHexColor(values.brandColor)) {
-    errors.brandColor = i18n.t("adminSettings.branding.color.invalid");
-  }
-  if (values.dangerColor?.trim() && !parseHexColor(values.dangerColor)) {
-    errors.dangerColor = i18n.t("adminSettings.branding.color.invalid");
-  }
+  colorKeys.forEach((key) => {
+    const value = values[key]?.trim();
+    if (value && !parseHexColor(value)) {
+      errors[key] = i18n.t("adminSettings.branding.color.invalid");
+    }
+  });
+  (["footerGdprLink", "footerHomeLink", "mailFooterLink"] as const).forEach((key) => {
+    const value = values[key]?.trim();
+    if (value && !/^(https?:\/\/|mailto:|\/)/.test(value)) {
+      errors[key] = i18n.t("adminSettings.branding.link.invalid");
+    }
+  });
   return errors;
 }
 
-/** Reads a compiled default color, exposed as a CSS variable in `styles/_branding.scss`. */
-function useDefaultColor(variable: string) {
-  return useMemo(() => {
-    const value = getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
-    return parseHexColor(value) ? value : "#000000";
-  }, [variable]);
-}
-
-type ColorFieldProps = {
-  name: "brandColor" | "dangerColor";
+type TextFieldProps = {
+  name: TextKey;
   label: string;
-  help: string;
-  /** CSS variable holding the compiled default color. */
-  defaultVariable: string;
+  placeholder?: string;
+  maxLength?: number;
+  help?: string;
+  type?: "text" | "url";
 };
 
-/** Color picker and hex text input for a theme color. */
-const ColorField = ({ name, label, help, defaultVariable }: ColorFieldProps) => {
-  const { input, meta } = useField<string | undefined>(name);
-  const { t } = useTranslation();
-  const defaultColor = useDefaultColor(defaultVariable);
-  const value = input.value ?? "";
-  const pickerValue = parseHexColor(value) ? value : defaultColor;
-  const invalid = meta.touched && !!meta.error;
-  return (
-    <BsForm.Group className="mb-3">
-      <BsForm.Label htmlFor={name}>{label}</BsForm.Label>
-      <div className="ilmo--branding-color">
-        <FormControl
-          type="color"
-          value={pickerValue}
-          onChange={(evt) => input.onChange(evt.target.value)}
-          onBlur={input.onBlur}
-          title={label}
-        />
+const TextField = ({ name, label, placeholder, maxLength = 200, help, type = "text" }: TextFieldProps) => (
+  <FieldFormGroup name={name} label={label}>
+    {({ input, meta: { touched, error } }) => (
+      <>
         <FormControl
           {...input}
-          id={name}
-          value={value}
-          type="text"
-          placeholder={defaultColor}
-          isInvalid={invalid}
-          spellCheck={false}
-          maxLength={7}
+          value={input.value ?? ""}
+          type={type}
+          maxLength={maxLength}
+          placeholder={placeholder}
+          isInvalid={touched && !!error}
         />
-        {value && (
-          <Button variant="outline-secondary" size="sm" onClick={() => input.onChange("")}>
-            {t("adminSettings.branding.color.reset")}
-          </Button>
-        )}
-      </div>
-      {invalid ? <FormText className="text-danger">{meta.error}</FormText> : null}
-      <FormText>{help}</FormText>
-    </BsForm.Group>
-  );
-};
+        {help && <BsForm.Text>{help}</BsForm.Text>}
+      </>
+    )}
+  </FieldFormGroup>
+);
 
 type Props = {
   branding: BrandingResponse;
@@ -144,16 +147,72 @@ const BrandingForm = ({ branding }: Props) => {
     <Form<FormData> initialValues={toFormData(branding)} onSubmit={onSubmit} validate={validate}>
       {({ submitting, handleSubmit }) => (
         <BsForm className="ilmo--form" onSubmit={handleSubmit}>
-          <FieldFormGroup name="headerTitle" label={t("adminSettings.branding.headerTitle")}>
-            {({ input }) => (
-              <FormControl {...input} type="text" maxLength={100} placeholder={defaultBranding.headerTitle} />
-            )}
-          </FieldFormGroup>
-          <FieldFormGroup name="headerTitleShort" label={t("adminSettings.branding.headerTitleShort")}>
-            {({ input }) => (
-              <FormControl {...input} type="text" maxLength={100} placeholder={defaultBranding.headerTitleShort} />
-            )}
-          </FieldFormGroup>
+          <h2>{t("adminSettings.texts.title")}</h2>
+          <TextField
+            name="headerTitle"
+            label={t("adminSettings.branding.headerTitle")}
+            placeholder={defaultBranding.headerTitle}
+            maxLength={100}
+            help={t("adminSettings.branding.headerTitle.help")}
+          />
+          <TextField
+            name="headerTitleShort"
+            label={t("adminSettings.branding.headerTitleShort")}
+            placeholder={defaultBranding.headerTitleShort}
+            maxLength={100}
+          />
+          <TextField
+            name="footerGdprText"
+            label={t("adminSettings.branding.footerGdprText")}
+            placeholder={defaultBranding.footerGdprText || t("adminSettings.branding.link.notShown")}
+          />
+          <TextField
+            name="footerGdprLink"
+            label={t("adminSettings.branding.footerGdprLink")}
+            placeholder={defaultBranding.footerGdprLink || "https://"}
+            maxLength={500}
+            type="url"
+          />
+          <TextField
+            name="footerHomeText"
+            label={t("adminSettings.branding.footerHomeText")}
+            placeholder={defaultBranding.footerHomeText || t("adminSettings.branding.link.notShown")}
+          />
+          <TextField
+            name="footerHomeLink"
+            label={t("adminSettings.branding.footerHomeLink")}
+            placeholder={defaultBranding.footerHomeLink || "https://"}
+            maxLength={500}
+            type="url"
+          />
+          <TextField
+            name="loginPlaceholderEmail"
+            label={t("adminSettings.branding.loginPlaceholderEmail")}
+            placeholder={defaultBranding.loginPlaceholderEmail}
+            maxLength={255}
+          />
+          <TextField
+            name="icalCalendarName"
+            label={t("adminSettings.branding.icalCalendarName")}
+            placeholder={t("adminSettings.branding.serverDefault")}
+            maxLength={100}
+          />
+          <TextField
+            name="mailFooterText"
+            label={t("adminSettings.branding.mailFooterText")}
+            placeholder={t("adminSettings.branding.serverDefault")}
+            maxLength={500}
+            help={t("adminSettings.branding.mailFooter.help")}
+          />
+          <TextField
+            name="mailFooterLink"
+            label={t("adminSettings.branding.mailFooterLink")}
+            placeholder={t("adminSettings.branding.serverDefault")}
+            maxLength={500}
+            type="url"
+          />
+
+          <h2>{t("adminSettings.colors.title")}</h2>
           <ColorField
             name="brandColor"
             label={t("adminSettings.branding.brandColor")}
@@ -161,11 +220,25 @@ const BrandingForm = ({ branding }: Props) => {
             defaultVariable="--ilmo-default-brand-color"
           />
           <ColorField
+            name="secondaryColor"
+            label={t("adminSettings.branding.secondaryColor")}
+            help={t("adminSettings.branding.secondaryColor.help")}
+            defaultVariable="--ilmo-default-secondary-color"
+          />
+          <ColorField
+            name="successColor"
+            label={t("adminSettings.branding.successColor")}
+            help={t("adminSettings.branding.successColor.help")}
+            defaultVariable="--ilmo-default-success-color"
+          />
+          <ColorField
             name="dangerColor"
             label={t("adminSettings.branding.dangerColor")}
             help={t("adminSettings.branding.dangerColor.help")}
             defaultVariable="--ilmo-default-danger-color"
           />
+
+          <h2>{t("adminSettings.images.title")}</h2>
           <ImageField
             name="logo"
             label={t("adminSettings.branding.logo")}
@@ -174,6 +247,15 @@ const BrandingForm = ({ branding }: Props) => {
             maxLength={BRANDING_LOGO_MAX_LENGTH}
             defaultPreview={defaultLogo}
           />
+          <FieldFormGroup name="showLogo" label={t("adminSettings.branding.showLogo")}>
+            {({ input }) => (
+              <FormSelect {...input} value={input.value ?? ""}>
+                <option value="">{t("adminSettings.branding.showLogo.default")}</option>
+                <option value="show">{t("adminSettings.branding.showLogo.show")}</option>
+                <option value="hide">{t("adminSettings.branding.showLogo.hide")}</option>
+              </FormSelect>
+            )}
+          </FieldFormGroup>
           <ImageField
             name="favicon"
             label={t("adminSettings.branding.favicon")}
@@ -182,6 +264,7 @@ const BrandingForm = ({ branding }: Props) => {
             maxLength={BRANDING_FAVICON_MAX_LENGTH}
             defaultPreview={`${PATH_PREFIX}/favicon-32x32.png`}
           />
+
           <Button type="submit" variant="secondary" disabled={submitting}>
             {submitting ? <Spinner animation="border" /> : t("adminSettings.branding.submit")}
           </Button>

@@ -29,16 +29,23 @@ export const useBrandingStore = create<BrandingState>()((set) => ({
   setBranding: (branding) => set({ branding }),
 }));
 
-/** Effective header branding, combining admin-configured values with build-time defaults. */
-export type HeaderBranding = {
+/** Effective branding, combining admin-configured values with build-time defaults. */
+export type EffectiveBranding = {
   headerTitle: string;
   headerTitleShort: string;
   /** Custom logo data URL, or `null` for the built-in logo. */
   logo: string | null;
+  /** Whether to show the header logo, or `null` for the build-time default. */
+  showLogo: boolean | null;
+  footerGdprText: string;
+  footerGdprLink: string;
+  footerHomeText: string;
+  footerHomeLink: string;
+  loginPlaceholderEmail: string;
 };
 
-/** Returns the effective header branding. */
-export function useHeaderBranding(): HeaderBranding {
+/** Returns the effective branding, with build-time defaults filled in for values not set by admins. */
+export function useEffectiveBranding(): EffectiveBranding {
   const branding = useBrandingStore((state) => state.branding);
   const headerTitle = branding?.headerTitle ?? defaultBranding.headerTitle;
   return {
@@ -47,5 +54,11 @@ export function useHeaderBranding(): HeaderBranding {
     headerTitleShort:
       branding?.headerTitleShort ?? (branding?.headerTitle ? headerTitle : defaultBranding.headerTitleShort),
     logo: branding?.logo ?? null,
+    showLogo: branding?.showLogo ?? null,
+    footerGdprText: branding?.footerGdprText ?? defaultBranding.footerGdprText,
+    footerGdprLink: branding?.footerGdprLink ?? defaultBranding.footerGdprLink,
+    footerHomeText: branding?.footerHomeText ?? defaultBranding.footerHomeText,
+    footerHomeLink: branding?.footerHomeLink ?? defaultBranding.footerHomeLink,
+    loginPlaceholderEmail: branding?.loginPlaceholderEmail ?? defaultBranding.loginPlaceholderEmail,
   };
 }

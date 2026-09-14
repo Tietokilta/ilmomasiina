@@ -19,7 +19,7 @@ import inviteUser from "./admin/users/inviteUser";
 import listUsers from "./admin/users/listUsers";
 import resetPassword from "./admin/users/resetPassword";
 import { adminLogin, renewAdminToken, requireAdmin } from "./authentication/adminLogin";
-import getBranding from "./branding/getBranding";
+import getBrandingRoute from "./branding/getBranding";
 import { getEventDetailsForAdmin, getEventDetailsForUser } from "./events/getEventDetails";
 import { getEventsListForAdmin, getEventsListForUser } from "./events/getEventsList";
 import { sendICalFeed } from "./ical";
@@ -495,7 +495,7 @@ async function setupPublicRoutes(fastifyInstance: FastifyInstance) {
         },
       },
     },
-    getBranding,
+    getBrandingRoute,
   );
 
   // Public route for initial admin user creation

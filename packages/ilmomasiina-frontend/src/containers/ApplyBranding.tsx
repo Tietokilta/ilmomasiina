@@ -5,10 +5,12 @@ import { computeThemeColorVariables, ThemeColorName } from "../utils/brandColor"
 
 /** Attribute marking the <link> element for a custom favicon. */
 const FAVICON_ATTRIBUTE = "data-ilmo-favicon";
+/** Attribute marking the <meta name="theme-color"> element we add. */
+const THEME_COLOR_ATTRIBUTE = "data-ilmo-theme-color";
 
 /** The icon <link> elements from index.html, removed from the DOM while a custom favicon is active. */
 let defaultIconLinks: HTMLLinkElement[] | null = null;
-const appliedColorVariables: Record<ThemeColorName, string[]> = { brand: [], danger: [] };
+const appliedColorVariables: Record<ThemeColorName, string[]> = { brand: [], secondary: [], success: [], danger: [] };
 const defaultTitle = document.title;
 
 /** Applies a theme color as CSS variables on <html>, or removes them if `color` is null.
@@ -28,6 +30,19 @@ function applyThemeColor(name: ThemeColorName, color: string | null) {
     root.setAttribute(attribute, "");
   } else {
     root.removeAttribute(attribute);
+  }
+}
+
+/** Sets the browser UI color (e.g. mobile address bar) to the brand color, or removes it. */
+function applyThemeColorMeta(brandColor: string | null) {
+  const { head } = document;
+  head.querySelectorAll(`meta[${THEME_COLOR_ATTRIBUTE}]`).forEach((meta) => meta.remove());
+  if (brandColor) {
+    const meta = document.createElement("meta");
+    meta.name = "theme-color";
+    meta.content = brandColor;
+    meta.setAttribute(THEME_COLOR_ATTRIBUTE, "");
+    head.appendChild(meta);
   }
 }
 
@@ -64,7 +79,11 @@ export default function ApplyBranding() {
   useEffect(() => {
     if (!branding) return;
     applyThemeColor("brand", branding.brandColor);
+    // Secondary follows the brand color unless separately set, as in the default theme.
+    applyThemeColor("secondary", branding.secondaryColor ?? branding.brandColor);
+    applyThemeColor("success", branding.successColor);
     applyThemeColor("danger", branding.dangerColor);
+    applyThemeColorMeta(branding.brandColor);
     applyFavicon(branding.favicon);
     document.title = branding.headerTitle ?? defaultTitle;
   }, [branding]);

@@ -26,10 +26,12 @@
 - Proper support for multiple frontends
   - Events can now specify a preferred frontend, and emails will use the correct URLs
 - **ilmomasiina-client:** Added payment support to EditSignup, including new state flags in context
-- Admins can now change the header title, header logo, favicon, brand color and danger color on the new Settings page
-  (`/admin/settings`), without rebuilding the frontend
+- Admins can now customize branding at runtime on the new Settings page (`/admin/settings`), without rebuilding
+  or forking the frontend: header title and logo, favicon, footer links, login email placeholder, brand, secondary,
+  success and danger colors, iCal calendar name and email footer
+  - Runtime settings override the build-time `BRANDING_*` values, which remain as defaults
   - New public API endpoint `GET /api/branding` and admin endpoint `PUT /api/admin/branding`
-  - New audit log event `branding.edit`
+  - New `setting` table and audit log event `branding.edit`
 
 **Bug fixes and improvements:**
 

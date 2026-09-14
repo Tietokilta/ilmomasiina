@@ -79,8 +79,10 @@ docker build \
 
 You can then use `docker push` to a host of your choice, or run the container locally.
 
-The header title, header logo, favicon, brand color and danger color can also be changed at runtime by admins on the
-Settings page of the admin UI. Those settings are stored in the database and override the build-time values.
+Most branding can also be changed at runtime by admins on the Settings page of the admin UI: header title and logo,
+favicon, footer links, login placeholder, theme colors, iCal calendar name and email footer.
+Those settings are stored in the database and override the build-time and environment variable values,
+so a stock build can be used without forking.
 
 ## Production
 
