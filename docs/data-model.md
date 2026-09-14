@@ -77,13 +77,14 @@ Each Answer has one **Signup** and one **Question**.
 Users are not related to any other models. This model is only used for local login, and can be enumerated, created
 and deleted by admins.
 
-### Branding
+### Setting
 
-**Branding** is a single-row table holding admin-editable branding settings: header title, header title for small
-screens, brand color, danger color, header logo and favicon. Images are stored as base64 data URLs. Each field may be `null`, meaning
-the built-in (build-time) default is used.
+**Setting** is a key-value table for admin-editable settings, with JSON values validated by the API schemas in
+`ilmomasiina-models`. Currently the only key is `branding`, which holds the runtime branding: header titles,
+footer links, login placeholder, iCal calendar name, email footer, theme colors, header logo and favicon. Images are stored as base64 data URLs. Each field may be `null`, meaning the built-in (build-time or
+environment variable) default is used.
 
-Branding is not related to any other models. It is readable publicly and editable by admins.
+Settings are not related to any other models. Branding is readable publicly and editable by admins.
 
 ## Paranoid mode
 

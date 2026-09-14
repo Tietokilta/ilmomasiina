@@ -2,33 +2,77 @@
 
 // Runtime theme color support.
 //
-// When an admin has configured a brand or danger color, ApplyBranding sets the data-ilmo-brand or
-// data-ilmo-danger attribute and the --ilmo-brand-* or --ilmo-danger-* CSS variables on <html>.
+// When an admin has configured a theme color (brand, secondary, success or danger), ApplyBranding sets
+// the data-ilmo-<name> attribute and the --ilmo-<name>-* CSS variables on <html>.
 // These rules then override the compiled Bootstrap colors.
-// Without the attributes, nothing here applies and the compiled $primary and $red are used.
+// Without the attributes, nothing here applies and the compiled Sass colors are used.
 
 :root {
   // Exposed so the admin UI can show the compiled default colors in the color pickers.
   --ilmo-default-brand-color: #{$primary};
+  --ilmo-default-secondary-color: #{$secondary};
+  --ilmo-default-success-color: #{$green};
   --ilmo-default-danger-color: #{$red};
 }
 
+// Solid button variables for a theme color.
+@mixin ilmo-button-variant($name) {
+  --bs-btn-color: var(--ilmo-#{$name}-contrast);
+  --bs-btn-bg: var(--ilmo-#{$name}-color);
+  --bs-btn-border-color: var(--ilmo-#{$name}-color);
+  --bs-btn-hover-color: var(--ilmo-#{$name}-contrast);
+  --bs-btn-hover-bg: var(--ilmo-#{$name}-hover-bg);
+  --bs-btn-hover-border-color: var(--ilmo-#{$name}-hover-border);
+  --bs-btn-focus-shadow-rgb: var(--ilmo-#{$name}-rgb);
+  --bs-btn-active-color: var(--ilmo-#{$name}-contrast);
+  --bs-btn-active-bg: var(--ilmo-#{$name}-active-bg);
+  --bs-btn-active-border-color: var(--ilmo-#{$name}-active-border);
+  --bs-btn-disabled-color: var(--ilmo-#{$name}-contrast);
+  --bs-btn-disabled-bg: var(--ilmo-#{$name}-color);
+  --bs-btn-disabled-border-color: var(--ilmo-#{$name}-color);
+}
+
+// Outline button variables for a theme color.
+@mixin ilmo-button-outline-variant($name) {
+  --bs-btn-color: var(--ilmo-#{$name}-color);
+  --bs-btn-border-color: var(--ilmo-#{$name}-color);
+  --bs-btn-hover-color: var(--ilmo-#{$name}-contrast);
+  --bs-btn-hover-bg: var(--ilmo-#{$name}-color);
+  --bs-btn-hover-border-color: var(--ilmo-#{$name}-color);
+  --bs-btn-focus-shadow-rgb: var(--ilmo-#{$name}-rgb);
+  --bs-btn-active-color: var(--ilmo-#{$name}-contrast);
+  --bs-btn-active-bg: var(--ilmo-#{$name}-color);
+  --bs-btn-active-border-color: var(--ilmo-#{$name}-color);
+  --bs-btn-disabled-color: var(--ilmo-#{$name}-color);
+  --bs-btn-disabled-border-color: var(--ilmo-#{$name}-color);
+}
+
+// Form validation state colors for a theme color.
+@mixin ilmo-validation-variant($name, $state) {
+  .form-control.is-#{$state},
+  .form-select.is-#{$state},
+  .was-validated .form-control:#{$state},
+  .was-validated .form-select:#{$state} {
+    border-color: var(--ilmo-#{$name}-color);
+
+    &:focus {
+      border-color: var(--ilmo-#{$name}-color);
+      box-shadow: 0 0 0 $focus-ring-width rgba(var(--ilmo-#{$name}-rgb), 0.25);
+    }
+  }
+
+  .#{$state}-feedback {
+    color: var(--ilmo-#{$name}-color);
+  }
+}
+
 :root[data-ilmo-brand] {
-  .btn-primary,
-  .btn-secondary {
-    --bs-btn-color: var(--ilmo-brand-contrast);
-    --bs-btn-bg: var(--ilmo-brand-color);
-    --bs-btn-border-color: var(--ilmo-brand-color);
-    --bs-btn-hover-color: var(--ilmo-brand-contrast);
-    --bs-btn-hover-bg: var(--ilmo-brand-hover-bg);
-    --bs-btn-hover-border-color: var(--ilmo-brand-hover-border);
-    --bs-btn-focus-shadow-rgb: var(--ilmo-brand-rgb);
-    --bs-btn-active-color: var(--ilmo-brand-contrast);
-    --bs-btn-active-bg: var(--ilmo-brand-active-bg);
-    --bs-btn-active-border-color: var(--ilmo-brand-active-border);
-    --bs-btn-disabled-color: var(--ilmo-brand-contrast);
-    --bs-btn-disabled-bg: var(--ilmo-brand-color);
-    --bs-btn-disabled-border-color: var(--ilmo-brand-color);
+  .btn-primary {
+    @include ilmo-button-variant(brand);
+  }
+
+  .btn-outline-primary {
+    @include ilmo-button-outline-variant(brand);
   }
 
   .form-control:focus,
@@ -44,50 +88,36 @@
   }
 }
 
+:root[data-ilmo-secondary] {
+  .btn-secondary {
+    @include ilmo-button-variant(secondary);
+  }
+
+  .btn-outline-secondary {
+    @include ilmo-button-outline-variant(secondary);
+  }
+}
+
+:root[data-ilmo-success] {
+  .btn-success {
+    @include ilmo-button-variant(success);
+  }
+
+  .btn-outline-success {
+    @include ilmo-button-outline-variant(success);
+  }
+
+  @include ilmo-validation-variant(success, valid);
+}
+
 :root[data-ilmo-danger] {
   .btn-danger {
-    --bs-btn-color: var(--ilmo-danger-contrast);
-    --bs-btn-bg: var(--ilmo-danger-color);
-    --bs-btn-border-color: var(--ilmo-danger-color);
-    --bs-btn-hover-color: var(--ilmo-danger-contrast);
-    --bs-btn-hover-bg: var(--ilmo-danger-hover-bg);
-    --bs-btn-hover-border-color: var(--ilmo-danger-hover-border);
-    --bs-btn-focus-shadow-rgb: var(--ilmo-danger-rgb);
-    --bs-btn-active-color: var(--ilmo-danger-contrast);
-    --bs-btn-active-bg: var(--ilmo-danger-active-bg);
-    --bs-btn-active-border-color: var(--ilmo-danger-active-border);
-    --bs-btn-disabled-color: var(--ilmo-danger-contrast);
-    --bs-btn-disabled-bg: var(--ilmo-danger-color);
-    --bs-btn-disabled-border-color: var(--ilmo-danger-color);
+    @include ilmo-button-variant(danger);
   }
 
   .btn-outline-danger {
-    --bs-btn-color: var(--ilmo-danger-color);
-    --bs-btn-border-color: var(--ilmo-danger-color);
-    --bs-btn-hover-color: var(--ilmo-danger-contrast);
-    --bs-btn-hover-bg: var(--ilmo-danger-color);
-    --bs-btn-hover-border-color: var(--ilmo-danger-color);
-    --bs-btn-focus-shadow-rgb: var(--ilmo-danger-rgb);
-    --bs-btn-active-color: var(--ilmo-danger-contrast);
-    --bs-btn-active-bg: var(--ilmo-danger-color);
-    --bs-btn-active-border-color: var(--ilmo-danger-color);
-    --bs-btn-disabled-color: var(--ilmo-danger-color);
-    --bs-btn-disabled-border-color: var(--ilmo-danger-color);
+    @include ilmo-button-outline-variant(danger);
   }
 
-  .form-control.is-invalid,
-  .form-select.is-invalid,
-  .was-validated .form-control:invalid,
-  .was-validated .form-select:invalid {
-    border-color: var(--ilmo-danger-color);
-
-    &:focus {
-      border-color: var(--ilmo-danger-color);
-      box-shadow: 0 0 0 $focus-ring-width rgba(var(--ilmo-danger-rgb), 0.25);
-    }
-  }
-
-  .invalid-feedback {
-    color: var(--ilmo-danger-color);
-  }
+  @include ilmo-validation-variant(danger, invalid);
 }

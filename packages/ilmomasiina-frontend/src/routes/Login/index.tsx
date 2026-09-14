@@ -7,10 +7,10 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { errorDesc } from "@tietokilta/ilmomasiina-client";
-import branding from "../../branding";
 import FieldFormGroup from "../../components/FieldFormGroup";
 import type { TKey } from "../../i18n";
 import { loginToast } from "../../modules/auth";
+import { useEffectiveBranding } from "../../modules/branding";
 import useStore from "../../modules/store";
 import paths from "../../paths";
 import useBrandedDocumentTitle from "../../utils/useBrandedDocumentTitle";
@@ -32,6 +32,7 @@ const Login = () => {
   const { login } = useStore((state) => state.auth);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const branding = useEffectiveBranding();
 
   useBrandedDocumentTitle(t("login.title"));
 

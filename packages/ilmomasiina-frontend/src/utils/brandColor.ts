@@ -87,7 +87,7 @@ function adjustLightness([r, g, b]: Rgb, amount: number): Rgb {
 export type ThemeColorVariables = Record<string, string>;
 
 /** Theme colors that can be customized at runtime. */
-export type ThemeColorName = "brand" | "danger";
+export type ThemeColorName = "brand" | "secondary" | "success" | "danger";
 
 /** Bootstrap variables that depend on each theme color. */
 function bootstrapVariables(name: ThemeColorName, color: Rgb, rgb: string): ThemeColorVariables {
@@ -103,13 +103,19 @@ function bootstrapVariables(name: ThemeColorName, color: Rgb, rgb: string): Them
       "--bs-link-hover-color-rgb": linkHover.map(Math.round).join(", "),
     };
   }
+  if (name === "secondary") {
+    return {
+      "--bs-secondary": toHex(color),
+      "--bs-secondary-rgb": rgb,
+    };
+  }
+  // Used by utilities like .text-success and by .alert-success (and the same for danger).
   return {
-    // Used by utilities like .text-danger and by .alert-danger.
-    "--bs-danger": toHex(color),
-    "--bs-danger-rgb": rgb,
-    "--bs-danger-text-emphasis": toHex(mix(color, BLACK, 0.6)),
-    "--bs-danger-bg-subtle": toHex(mix(color, WHITE, 0.8)),
-    "--bs-danger-border-subtle": toHex(mix(color, WHITE, 0.6)),
+    [`--bs-${name}`]: toHex(color),
+    [`--bs-${name}-rgb`]: rgb,
+    [`--bs-${name}-text-emphasis`]: toHex(mix(color, BLACK, 0.6)),
+    [`--bs-${name}-bg-subtle`]: toHex(mix(color, WHITE, 0.8)),
+    [`--bs-${name}-border-subtle`]: toHex(mix(color, WHITE, 0.6)),
   };
 }
 

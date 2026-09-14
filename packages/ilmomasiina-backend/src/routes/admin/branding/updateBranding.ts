@@ -1,9 +1,9 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 
 import type { BrandingResponse, BrandingSchema, BrandingUpdateBody } from "@tietokilta/ilmomasiina-models";
-import { AuditEvent } from "@tietokilta/ilmomasiina-models";
+import { AuditEvent, brandingKeys } from "@tietokilta/ilmomasiina-models";
+import { getBranding, setBranding } from "../../../branding";
 import { getSequelize } from "../../../models";
-import { Branding, BRANDING_ROW_ID, toBrandingSchema } from "../../../models/branding";
 
 /** Replaces the branding settings with the given ones. */
 export default async function updateBranding(
@@ -11,27 +11,16 @@ export default async function updateBranding(
   reply: FastifyReply,
 ): Promise<BrandingResponse> {
   const updated = await getSequelize().transaction(async (transaction) => {
-    const existing = await Branding.findByPk(BRANDING_ROW_ID, { transaction });
-    const previous = toBrandingSchema(existing);
+    const previous = await getBranding(transaction);
+    // Only pick known keys from the body, and normalize missing ones to null.
+    const values = Object.fromEntries(
+      brandingKeys.map((key) => [key, request.body[key] ?? null]),
+    ) as BrandingSchema;
 
-    const values: BrandingSchema = {
-      headerTitle: request.body.headerTitle,
-      headerTitleShort: request.body.headerTitleShort,
-      brandColor: request.body.brandColor,
-      dangerColor: request.body.dangerColor,
-      logo: request.body.logo,
-      favicon: request.body.favicon,
-    };
+    const branding = await setBranding(values, transaction);
 
-    let branding: Branding;
-    if (existing) {
-      branding = await existing.update(values, { transaction });
-    } else {
-      branding = await Branding.create({ id: BRANDING_ROW_ID, ...values }, { transaction });
-    }
-
-    // Log which fields changed. Image data is not logged, as it would bloat the audit log.
-    const changed = (Object.keys(values) as (keyof BrandingSchema)[]).filter((key) => previous[key] !== values[key]);
+    // Log which fields changed. Values are not logged, as images and CSS would bloat the audit log.
+    const changed = brandingKeys.filter((key) => previous[key] !== branding[key]);
     await request.logEvent(AuditEvent.EDIT_BRANDING, {
       extra: { changed },
       transaction,
@@ -41,5 +30,5 @@ export default async function updateBranding(
   });
 
   reply.status(200);
-  return toBrandingSchema(updated);
+  return updated;
 }

@@ -24,7 +24,6 @@ const AdminSettings = () => {
     <>
       <Link to={paths.adminEventsList}>&#8592; {t("adminSettings.returnToEvents")}</Link>
       <h1>{t("adminSettings.title")}</h1>
-      <h2>{t("adminSettings.branding.title")}</h2>
       <p>{t("adminSettings.branding.info")}</p>
       {branding ? <BrandingForm branding={branding} /> : <Spinner animation="border" />}
     </>
