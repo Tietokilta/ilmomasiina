@@ -4,13 +4,13 @@ import { Button, Form as BsForm, FormControl, FormText } from "react-bootstrap";
 import { useField } from "react-final-form";
 import { useTranslation } from "react-i18next";
 
-import { parseHexColor } from "../../utils/brandColor";
+import { isHexColor } from "../../utils/brandColor";
 
 /** Reads a compiled default color, exposed as a CSS variable in `styles/_branding.scss`. */
 function useDefaultColor(variable: string) {
   return useMemo(() => {
     const value = getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
-    return parseHexColor(value) ? value : "#000000";
+    return isHexColor(value) ? value : "#000000";
   }, [variable]);
 }
 
@@ -28,7 +28,7 @@ export default function ColorField({ name, label, help, defaultVariable }: Props
   const { t } = useTranslation();
   const defaultColor = useDefaultColor(defaultVariable);
   const value = input.value ?? "";
-  const pickerValue = parseHexColor(value) ? value : defaultColor;
+  const pickerValue = isHexColor(value) ? value : defaultColor;
   const invalid = meta.touched && !!meta.error;
   return (
     <BsForm.Group className="mb-3">
