@@ -24,7 +24,9 @@ const customBranding: BrandingUpdateBody = {
   brandColor: "#123abc",
   secondaryColor: "#abc123",
   successColor: "#00aa00",
+  warningColor: "#ffaa00",
   dangerColor: "#cc0000",
+  mutedColor: "#777777",
   logo: testImage,
   showLogo: true,
   favicon: testImage,
@@ -109,6 +111,8 @@ describe("PUT /api/admin/branding", () => {
     expect(await updateBranding({ ...defaultBranding, secondaryColor: "#12345g" })).toBeApiError(400);
     expect(await updateBranding({ ...defaultBranding, successColor: "green" })).toBeApiError(400);
     expect(await updateBranding({ ...defaultBranding, dangerColor: "red" })).toBeApiError(400);
+    expect(await updateBranding({ ...defaultBranding, warningColor: "#ff0" })).toBeApiError(400);
+    expect(await updateBranding({ ...defaultBranding, mutedColor: "gray" })).toBeApiError(400);
   });
 
   test("rejects invalid images", async () => {
