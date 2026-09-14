@@ -67,17 +67,12 @@ function applyFavicon(favicon: string | null) {
   }
 }
 
-/** Loads the admin-configured branding and applies the parts that live outside React: the theme colors
- * (as CSS variables), the favicon and the document title.
+/** Applies the parts of the branding that live outside React: the theme colors (as CSS variables), the favicon
+ * and the document title. The branding itself is loaded in index.tsx before the app is rendered.
  */
 export default function ApplyBranding() {
   const branding = useBrandingStore(selectShownBranding);
   const ready = useBrandingStore(selectBrandingReady);
-  const loadBranding = useBrandingStore((state) => state.loadBranding);
-
-  useEffect(() => {
-    loadBranding();
-  }, [loadBranding]);
 
   useEffect(() => {
     if (!ready) return;
