@@ -20,6 +20,7 @@
     "adminEvents.title": "Manage events",
     "adminEvents.title.past": "Past events",
     "adminEvents.loadError.default.description": "Failed to load events. $t(errors.contactAdmin)",
+    "adminEvents.nav.manage": "Manage",
     "adminEvents.nav.users": "Users",
     "adminEvents.nav.settings": "Settings",
     "adminEvents.nav.auditLog": "Audit log",

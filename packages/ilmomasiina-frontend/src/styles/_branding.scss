@@ -146,3 +146,8 @@
 .text-muted {
   color: var(--ilmo-muted-color) !important;
 }
+
+.dropdown-menu {
+  --bs-dropdown-link-active-bg: var(--ilmo-brand-color);
+  --bs-dropdown-link-active-color: var(--ilmo-brand-contrast);
+}

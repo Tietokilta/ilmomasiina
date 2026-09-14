@@ -20,6 +20,7 @@
     "adminEvents.title": "Hallinta",
     "adminEvents.title.past": "Menneet tapahtumat",
     "adminEvents.loadError.default.description": "Tapahtumien lataaminen epäonnistui. $t(errors.contactAdmin)",
+    "adminEvents.nav.manage": "Ylläpito",
     "adminEvents.nav.users": "Käyttäjät",
     "adminEvents.nav.settings": "Hallinta",
     "adminEvents.nav.auditLog": "Toimintoloki",
