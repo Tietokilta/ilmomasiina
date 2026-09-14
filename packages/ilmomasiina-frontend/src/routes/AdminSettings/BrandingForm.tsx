@@ -18,7 +18,7 @@ import FieldFormGroup from "../../components/FieldFormGroup";
 import i18n, { TKey } from "../../i18n";
 import { useBrandingStore } from "../../modules/branding";
 import useStore from "../../modules/store";
-import { parseHexColor } from "../../utils/brandColor";
+import { isHexColor } from "../../utils/brandColor";
 import useEvent from "../../utils/useEvent";
 import ColorField from "./ColorField";
 import ImageField, { formatMaxSize } from "./ImageField";
@@ -87,7 +87,7 @@ function validate(values: FormData) {
   const errors: Partial<Record<keyof FormData, string>> = {};
   colorKeys.forEach((key) => {
     const value = values[key]?.trim();
-    if (value && !parseHexColor(value)) {
+    if (value && !isHexColor(value)) {
       errors[key] = i18n.t("adminSettings.branding.color.invalid");
     }
   });
