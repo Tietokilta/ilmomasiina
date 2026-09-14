@@ -60,25 +60,11 @@
 
 @if $lighter-primary-hover {
   .btn-primary {
-    @include button-variant(
-      $primary,
-      $primary,
-      $hover-background: lighten($primary, 15%),
-      $hover-border: lighten($primary, 20%),
-      $active-background: lighten($primary, 20%),
-      $active-border: lighten($primary, 25%)
-    );
+    @include ilmo-primary-button-variant;
   }
 }
 @if $lighter-secondary-hover {
   .btn-secondary {
-    @include button-variant(
-      $primary,
-      $primary,
-      $hover-background: lighten($primary, 15%),
-      $hover-border: lighten($primary, 20%),
-      $active-background: lighten($primary, 20%),
-      $active-border: lighten($primary, 25%)
-    );
+    @include ilmo-secondary-button-variant;
   }
 }

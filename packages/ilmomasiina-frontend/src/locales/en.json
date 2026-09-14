@@ -80,7 +80,7 @@
     "adminSettings.title": "Settings",
     "adminSettings.returnToEvents": "Go back",
     "adminSettings.loadError.default.description": "Failed to load settings. $t(errors.contactAdmin)",
-    "adminSettings.branding.info": "These settings override the built-in defaults and take effect immediately for all users. Leave a field empty to use the default.",
+    "adminSettings.branding.info": "These settings override the built-in defaults. Changes are previewed on this page as you edit, but only take effect for other users when you save. Leave a field empty to use the default.",
     "adminSettings.texts.title": "Texts",
     "adminSettings.branding.headerTitle": "Name in header",
     "adminSettings.branding.headerTitle.help": "Also used as the browser tab title and in email headers.",

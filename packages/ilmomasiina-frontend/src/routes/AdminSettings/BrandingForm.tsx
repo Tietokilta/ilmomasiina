@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import { Button, Form as BsForm, FormControl, FormSelect, Spinner } from "react-bootstrap";
-import { Form } from "react-final-form";
+import { Form, FormSpy } from "react-final-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 
@@ -16,6 +16,7 @@ import defaultLogo from "../../assets/logo.svg";
 import defaultBranding from "../../branding";
 import FieldFormGroup from "../../components/FieldFormGroup";
 import i18n, { TKey } from "../../i18n";
+import { useBrandingStore } from "../../modules/branding";
 import useStore from "../../modules/store";
 import { parseHexColor } from "../../utils/brandColor";
 import useEvent from "../../utils/useEvent";
@@ -99,6 +100,16 @@ function validate(values: FormData) {
   return errors;
 }
 
+/** Converts form values to a branding for live preview, dropping values that fail validation. */
+function toPreviewBranding(data: FormData): BrandingUpdateBody {
+  const body = toUpdateBody(data);
+  const errors = validate(data);
+  (Object.keys(errors) as (keyof BrandingUpdateBody)[]).forEach((key) => {
+    body[key] = null as never;
+  });
+  return body;
+}
+
 type TextFieldProps = {
   name: TextKey;
   label: string;
@@ -126,17 +137,35 @@ const TextField = ({ name, label, placeholder, maxLength = 200, help, type = "te
   </FieldFormGroup>
 );
 
+type PreviewProps = {
+  values: FormData;
+};
+
+/** Previews the current form values on the page. Done in an effect, as FormSpy renders on every change. */
+const PreviewBranding = ({ values }: PreviewProps) => {
+  const previewBranding = useBrandingStore((state) => state.previewBranding);
+  useEffect(() => {
+    previewBranding(toPreviewBranding(values));
+  }, [values, previewBranding]);
+  return null;
+};
+
 type Props = {
   branding: BrandingResponse;
 };
 
 const BrandingForm = ({ branding }: Props) => {
   const updateBranding = useStore((state) => state.adminSettings.updateBranding);
+  const { setBranding, endPreview } = useBrandingStore();
   const { t } = useTranslation();
+
+  // Stop previewing when leaving the page, reverting to the saved branding.
+  useEffect(() => endPreview, [endPreview]);
 
   const onSubmit = useEvent(async (data: FormData) => {
     try {
-      await updateBranding(toUpdateBody(data));
+      const saved = await updateBranding(toUpdateBody(data));
+      setBranding(saved);
       toast.success(t("adminSettings.branding.success"), { autoClose: 2000 });
     } catch (err) {
       toast.error(t(errorDesc<TKey>(err as ApiError, "adminSettings.branding.errors")), { autoClose: 5000 });
@@ -146,7 +175,12 @@ const BrandingForm = ({ branding }: Props) => {
   return (
     <Form<FormData> initialValues={toFormData(branding)} onSubmit={onSubmit} validate={validate}>
       {({ submitting, handleSubmit }) => (
-        <BsForm className="ilmo--form" onSubmit={handleSubmit}>
+        <BsForm className="ilmo--form ilmo--theme-safe" onSubmit={handleSubmit}>
+          {/* Preview edits live on the page. The form itself opts out of theme colors (see _branding.scss),
+              so it stays usable even if the previewed colors are unreadable. */}
+          <FormSpy<FormData> subscription={{ values: true }}>
+            {({ values }) => <PreviewBranding values={values} />}
+          </FormSpy>
           <h2>{t("adminSettings.texts.title")}</h2>
           <TextField
             name="headerTitle"
