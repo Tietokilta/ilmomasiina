@@ -26,6 +26,10 @@
 - Proper support for multiple frontends
   - Events can now specify a preferred frontend, and emails will use the correct URLs
 - **ilmomasiina-client:** Added payment support to EditSignup, including new state flags in context
+- Admins can now change the header title, header logo, favicon, brand color and danger color on the new Settings page
+  (`/admin/settings`), without rebuilding the frontend
+  - New public API endpoint `GET /api/branding` and admin endpoint `PUT /api/admin/branding`
+  - New audit log event `branding.edit`
 
 **Bug fixes and improvements:**
 

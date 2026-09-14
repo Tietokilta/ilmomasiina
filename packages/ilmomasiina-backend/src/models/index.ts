@@ -4,6 +4,7 @@ import { SequelizeStorage, Umzug } from "umzug";
 
 import setupAnswerModel, { Answer } from "./answer";
 import setupAuditLogModel from "./auditlog";
+import setupBrandingModel from "./branding";
 import sequelizeConfig from "./config";
 import setupEventModel, { Event } from "./event";
 import migrations from "./migrations";
@@ -67,6 +68,7 @@ export default async function setupDatabase() {
   setupAnswerModel(sequelize);
   setupUserModel(sequelize);
   setupAuditLogModel(sequelize);
+  setupBrandingModel(sequelize);
 
   Event.hasMany(Question, {
     foreignKey: {

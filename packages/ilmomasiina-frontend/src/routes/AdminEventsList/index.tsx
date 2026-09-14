@@ -63,6 +63,9 @@ const AdminEventsList = () => {
           <LinkButton variant="secondary" to={paths.adminUsersList}>
             {t("adminEvents.nav.users")}
           </LinkButton>
+          <LinkButton variant="secondary" to={paths.adminSettings}>
+            {t("adminEvents.nav.settings")}
+          </LinkButton>
           <LinkButton variant="secondary" to={paths.adminAuditLog}>
             {t("adminEvents.nav.auditLog")}
           </LinkButton>

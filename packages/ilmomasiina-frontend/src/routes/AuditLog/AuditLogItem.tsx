@@ -29,6 +29,7 @@ const ACTION_STRINGS = {
   [AuditEvent.START_PAYMENT]: "auditLog.description.startPayment",
   [AuditEvent.COMPLETE_PAYMENT]: "auditLog.description.completePayment",
   [AuditEvent.EXPIRE_PAYMENT]: "auditLog.description.expirePayment",
+  [AuditEvent.EDIT_BRANDING]: "auditLog.description.editBranding",
 } as const;
 
 function useItemDescription(item: AuditLogItemSchema) {
@@ -79,6 +80,10 @@ function useItemDescription(item: AuditLogItemSchema) {
     case AuditEvent.DELETE_USER:
     case AuditEvent.RESET_PASSWORD:
       return t(ACTION_STRINGS[item.action], { user: extra.email });
+    case AuditEvent.EDIT_BRANDING:
+      return t(ACTION_STRINGS[item.action], {
+        changed: Array.isArray(extra.changed) ? extra.changed.join(", ") : "",
+      });
     default:
       return ACTION_STRINGS[item.action]
         ? t(ACTION_STRINGS[item.action])
