@@ -13,23 +13,17 @@ let defaultIconLinks: HTMLLinkElement[] | null = null;
 const appliedColorVariables: Record<ThemeColorName, string[]> = { brand: [], secondary: [], success: [], danger: [] };
 const defaultTitle = document.title;
 
-/** Applies a theme color as CSS variables on <html>, or removes them if `color` is null.
- *
- * Also sets the attribute `data-ilmo-<name>` on <html> while a custom color is active.
- * This is used by `styles/_branding.scss` to override compiled Bootstrap colors.
+/** Applies a theme color by overriding its CSS variables on <html>, or removes the overrides if `color` is
+ * null, returning to the compiled defaults declared in `styles/_branding.scss`.
  */
 function applyThemeColor(name: ThemeColorName, color: string | null) {
   const root = document.documentElement;
-  const attribute = `data-ilmo-${name}`;
   const variables = color ? computeThemeColorVariables(name, color) : null;
   appliedColorVariables[name].forEach((variable) => root.style.removeProperty(variable));
   appliedColorVariables[name] = [];
   if (variables) {
     Object.entries(variables).forEach(([variable, value]) => root.style.setProperty(variable, value));
     appliedColorVariables[name] = Object.keys(variables);
-    root.setAttribute(attribute, "");
-  } else {
-    root.removeAttribute(attribute);
   }
 }
 

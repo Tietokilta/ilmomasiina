@@ -31,39 +31,6 @@ $header-logo: true !default;
 @import "bootstrap/scss/variables";
 @import "bootstrap/scss/mixins";
 
-// Button styles for the compiled $primary/$secondary, honoring $lighter-*-hover.
-// Used for the default .btn-primary/.btn-secondary and for areas that opt out of runtime theme colors.
-
-@mixin ilmo-primary-button-variant {
-  @if $lighter-primary-hover {
-    @include button-variant(
-      $primary,
-      $primary,
-      $hover-background: lighten($primary, 15%),
-      $hover-border: lighten($primary, 20%),
-      $active-background: lighten($primary, 20%),
-      $active-border: lighten($primary, 25%)
-    );
-  } @else {
-    @include button-variant($primary, $primary);
-  }
-}
-
-@mixin ilmo-secondary-button-variant {
-  @if $lighter-secondary-hover {
-    @include button-variant(
-      $primary,
-      $primary,
-      $hover-background: lighten($primary, 15%),
-      $hover-border: lighten($primary, 20%),
-      $active-background: lighten($primary, 20%),
-      $active-border: lighten($primary, 25%)
-    );
-  } @else {
-    @include button-variant($secondary, $secondary);
-  }
-}
-
 // Colors for signup states. You can use Bootstrap variables here.
 
 $signup-state-not-opened: $body-color !default;

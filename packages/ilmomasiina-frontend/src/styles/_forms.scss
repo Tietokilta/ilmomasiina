@@ -26,7 +26,7 @@
 
   label[data-required]:not([data-required="false"])::after {
     content: "\00A0*";
-    color: var(--ilmo-danger-color, #{$red});
+    color: var(--ilmo-danger-color);
     font-weight: 600;
   }
 
