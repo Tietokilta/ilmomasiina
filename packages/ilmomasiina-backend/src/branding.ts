@@ -1,29 +1,64 @@
 import { Transaction } from "sequelize";
 
-import type { BrandingSchema } from "@tietokilta/ilmomasiina-models";
-import { brandingKeys, defaultBranding } from "@tietokilta/ilmomasiina-models";
+import type { BrandingResponse, BrandingSettings, BrandingTextDefaults } from "@tietokilta/ilmomasiina-models";
+import { brandingKeys, brandingTextKeys } from "@tietokilta/ilmomasiina-models";
+import config from "./config";
 import { Setting } from "./models/setting";
 
 /** Key of the branding settings in the setting table. */
 export const BRANDING_SETTING_KEY = "branding";
 
-/** Picks known branding keys from a stored value, filling in nulls for keys added after it was saved. */
-function toBrandingSchema(stored: object | undefined): BrandingSchema {
-  const values = (stored ?? {}) as Partial<BrandingSchema>;
-  return Object.fromEntries(brandingKeys.map((key) => [key, values[key] ?? null])) as BrandingSchema;
+/** Returns the defaults for the text settings, from the server configuration. */
+export function getBrandingDefaults(): BrandingTextDefaults {
+  return {
+    headerTitle: config.brandingHeaderTitle,
+    headerTitleShort: config.brandingHeaderTitleShort ?? config.brandingHeaderTitle,
+    footerGdprText: config.brandingFooterGdprText,
+    footerGdprLink: config.brandingFooterGdprLink,
+    footerHomeText: config.brandingFooterHomeText,
+    footerHomeLink: config.brandingFooterHomeLink,
+    loginPlaceholderEmail: config.brandingLoginPlaceholderEmail,
+    icalCalendarName: config.icalCalendarName,
+    mailFooterText: config.brandingMailFooterText,
+    mailFooterLink: config.brandingMailFooterLink,
+  };
 }
 
-/** Returns the current branding settings. All nulls mean "use built-in defaults". */
-export async function getBranding(transaction?: Transaction): Promise<BrandingSchema> {
+/** Picks known branding keys from a stored value, filling in nulls for keys added after it was saved. */
+function toBrandingSettings(stored: object | undefined): BrandingSettings {
+  const values = (stored ?? {}) as Partial<BrandingSettings>;
+  return Object.fromEntries(brandingKeys.map((key) => [key, values[key] ?? null])) as BrandingSettings;
+}
+
+/** Returns the stored branding settings. All nulls mean "use defaults". */
+export async function getBrandingSettings(transaction?: Transaction): Promise<BrandingSettings> {
   const setting = await Setting.findByPk(BRANDING_SETTING_KEY, { transaction });
-  return toBrandingSchema(setting?.value);
+  return toBrandingSettings(setting?.value);
+}
+
+/** Resolves branding settings to the effective branding by filling in the defaults for text settings. */
+export function resolveBranding(settings: BrandingSettings): BrandingResponse {
+  const defaults = getBrandingDefaults();
+  const texts = Object.fromEntries(brandingTextKeys.map((key) => [key, settings[key] ?? defaults[key]]));
+  return {
+    ...settings,
+    ...texts,
+    // If only a custom full title is set, use it on small screens too.
+    headerTitleShort: settings.headerTitleShort ?? settings.headerTitle ?? defaults.headerTitleShort,
+  } as BrandingResponse;
+}
+
+/** Returns the effective branding. */
+export async function getBranding(transaction?: Transaction): Promise<BrandingResponse> {
+  return resolveBranding(await getBrandingSettings(transaction));
 }
 
 /** Replaces the branding settings. */
-export async function setBranding(values: BrandingSchema, transaction?: Transaction): Promise<BrandingSchema> {
-  const branding = toBrandingSchema(values);
-  await Setting.upsert({ key: BRANDING_SETTING_KEY, value: branding }, { transaction });
-  return branding;
+export async function setBrandingSettings(
+  values: BrandingSettings,
+  transaction?: Transaction,
+): Promise<BrandingSettings> {
+  const settings = toBrandingSettings(values);
+  await Setting.upsert({ key: BRANDING_SETTING_KEY, value: settings }, { transaction });
+  return settings;
 }
-
-export { defaultBranding };

@@ -1,34 +1,34 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 
-import type { BrandingResponse, BrandingSchema, BrandingUpdateBody } from "@tietokilta/ilmomasiina-models";
+import type { BrandingResponse, BrandingSettings, BrandingUpdateBody } from "@tietokilta/ilmomasiina-models";
 import { AuditEvent, brandingKeys } from "@tietokilta/ilmomasiina-models";
-import { getBranding, setBranding } from "../../../branding";
+import { getBrandingSettings, resolveBranding, setBrandingSettings } from "../../../branding";
 import { getSequelize } from "../../../models";
 
-/** Replaces the branding settings with the given ones. */
+/** Replaces the branding settings with the given ones. Returns the effective branding. */
 export default async function updateBranding(
   request: FastifyRequest<{ Body: BrandingUpdateBody }>,
   reply: FastifyReply,
 ): Promise<BrandingResponse> {
-  const updated = await getSequelize().transaction(async (transaction) => {
-    const previous = await getBranding(transaction);
+  const settings = await getSequelize().transaction(async (transaction) => {
+    const previous = await getBrandingSettings(transaction);
     // Only pick known keys from the body, and normalize missing ones to null.
     const values = Object.fromEntries(
       brandingKeys.map((key) => [key, request.body[key] ?? null]),
-    ) as BrandingSchema;
+    ) as BrandingSettings;
 
-    const branding = await setBranding(values, transaction);
+    const saved = await setBrandingSettings(values, transaction);
 
-    // Log which fields changed. Values are not logged, as images and CSS would bloat the audit log.
-    const changed = brandingKeys.filter((key) => previous[key] !== branding[key]);
+    // Log which fields changed. Values are not logged, as images would bloat the audit log.
+    const changed = brandingKeys.filter((key) => previous[key] !== saved[key]);
     await request.logEvent(AuditEvent.EDIT_BRANDING, {
       extra: { changed },
       transaction,
     });
 
-    return branding;
+    return saved;
   });
 
   reply.status(200);
-  return updated;
+  return resolveBranding(settings);
 }

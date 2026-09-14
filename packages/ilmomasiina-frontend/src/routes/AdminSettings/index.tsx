@@ -4,30 +4,43 @@ import { Spinner } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
+import { errorDesc, errorTitle } from "@tietokilta/ilmomasiina-client";
 import requireAuth from "../../containers/requireAuth";
-import { useBrandingStore } from "../../modules/branding";
+import type { TKey } from "../../i18n";
+import useStore from "../../modules/store";
 import paths from "../../paths";
 import BrandingForm from "./BrandingForm";
 
 import "./AdminSettings.scss";
 
 const AdminSettings = () => {
-  // Use the saved branding (not a preview) as the form's initial values.
-  const branding = useBrandingStore((state) => state.branding);
-  const loadBranding = useBrandingStore((state) => state.loadBranding);
+  const { branding, loadError, getBranding, resetState } = useStore((state) => state.adminSettings);
   const { t } = useTranslation();
 
-  // Reload on entering the page, in case the branding was changed by another admin.
   useEffect(() => {
-    loadBranding();
-  }, [loadBranding]);
+    getBranding();
+    return () => resetState();
+  }, [getBranding, resetState]);
+
+  if (loadError) {
+    return (
+      <>
+        <h1>{t(errorTitle<TKey>(loadError, "adminSettings.loadError"))}</h1>
+        <p>{t(errorDesc<TKey>(loadError, "adminSettings.loadError"))}</p>
+      </>
+    );
+  }
 
   return (
     <>
       <Link to={paths.adminEventsList}>&#8592; {t("adminSettings.returnToEvents")}</Link>
       <h1>{t("adminSettings.title")}</h1>
       <p>{t("adminSettings.branding.info")}</p>
-      {branding ? <BrandingForm branding={branding} /> : <Spinner animation="border" />}
+      {branding ? (
+        <BrandingForm settings={branding.settings} defaults={branding.defaults} />
+      ) : (
+        <Spinner animation="border" />
+      )}
     </>
   );
 };

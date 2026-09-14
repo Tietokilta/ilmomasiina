@@ -96,7 +96,6 @@
     "adminSettings.branding.mailFooter.help": "Shown at the bottom of all emails sent by the system.",
     "adminSettings.branding.link.notShown": "(not shown)",
     "adminSettings.branding.link.invalid": "Enter a full URL starting with https://, or a path starting with /.",
-    "adminSettings.branding.serverDefault": "(server default)",
     "adminSettings.colors.title": "Colors",
     "adminSettings.branding.brandColor": "Brand color",
     "adminSettings.branding.brandColor.help": "Used for the header, buttons and links.",

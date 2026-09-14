@@ -1,7 +1,6 @@
 import type { PropsWithChildren } from "react";
 import { useTranslation } from "react-i18next";
 
-import config from "../../config";
 import { useBranding } from "./BrandingContext";
 
 export default function Layout({ children }: PropsWithChildren) {
@@ -9,9 +8,9 @@ export default function Layout({ children }: PropsWithChildren) {
     i18n: { language },
   } = useTranslation();
   const branding = useBranding();
-  const title = branding.headerTitle ?? "Ilmomasiina";
-  const footerText = branding.mailFooterText ?? config.brandingMailFooterText;
-  const footerLink = branding.mailFooterLink ?? config.brandingMailFooterLink;
+  const title = branding.headerTitle;
+  const footerText = branding.mailFooterText;
+  const footerLink = branding.mailFooterLink;
   return (
     <html lang={language}>
       <head>

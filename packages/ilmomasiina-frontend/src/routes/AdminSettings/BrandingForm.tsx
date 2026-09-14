@@ -10,10 +10,11 @@ import {
   BRANDING_FAVICON_MAX_LENGTH,
   BRANDING_LOGO_MAX_LENGTH,
   BrandingResponse,
+  BrandingSettings,
+  BrandingTextDefaults,
   BrandingUpdateBody,
 } from "@tietokilta/ilmomasiina-models";
 import defaultLogo from "../../assets/logo.svg";
-import defaultBranding from "../../branding";
 import FieldFormGroup from "../../components/FieldFormGroup";
 import i18n, { TKey } from "../../i18n";
 import { useBrandingStore } from "../../modules/branding";
@@ -56,7 +57,7 @@ function showLogoToForm(showLogo: boolean | null): FormData["showLogo"] {
   return showLogo ? "show" : "hide";
 }
 
-function toFormData(branding: BrandingResponse): FormData {
+function toFormData(branding: BrandingSettings): FormData {
   const data: FormData = {
     logo: branding.logo,
     showLogo: showLogoToForm(branding.showLogo),
@@ -100,14 +101,24 @@ function validate(values: FormData) {
   return errors;
 }
 
-/** Converts form values to a branding for live preview, dropping values that fail validation. */
-function toPreviewBranding(data: FormData): BrandingUpdateBody {
+/** Converts form values to the effective branding for live preview, dropping values that fail validation
+ * and resolving text defaults like the server does.
+ */
+function toPreviewBranding(data: FormData, defaults: BrandingTextDefaults): BrandingResponse {
   const body = toUpdateBody(data);
   const errors = validate(data);
   (Object.keys(errors) as (keyof BrandingUpdateBody)[]).forEach((key) => {
     body[key] = null as never;
   });
-  return body;
+  const texts = Object.fromEntries(
+    (Object.keys(defaults) as (keyof BrandingTextDefaults)[]).map((key) => [key, body[key] ?? defaults[key]]),
+  );
+  return {
+    ...body,
+    ...texts,
+    // If only a custom full title is set, use it on small screens too.
+    headerTitleShort: body.headerTitleShort ?? body.headerTitle ?? defaults.headerTitleShort,
+  } as BrandingResponse;
 }
 
 type TextFieldProps = {
@@ -139,22 +150,26 @@ const TextField = ({ name, label, placeholder, maxLength = 200, help, type = "te
 
 type PreviewProps = {
   values: FormData;
+  defaults: BrandingTextDefaults;
 };
 
 /** Previews the current form values on the page. Done in an effect, as FormSpy renders on every change. */
-const PreviewBranding = ({ values }: PreviewProps) => {
+const PreviewBranding = ({ values, defaults }: PreviewProps) => {
   const previewBranding = useBrandingStore((state) => state.previewBranding);
   useEffect(() => {
-    previewBranding(toPreviewBranding(values));
-  }, [values, previewBranding]);
+    previewBranding(toPreviewBranding(values, defaults));
+  }, [values, defaults, previewBranding]);
   return null;
 };
 
 type Props = {
-  branding: BrandingResponse;
+  /** Stored settings, used as initial values. */
+  settings: BrandingSettings;
+  /** Server defaults, shown as placeholders. */
+  defaults: BrandingTextDefaults;
 };
 
-const BrandingForm = ({ branding }: Props) => {
+const BrandingForm = ({ settings, defaults }: Props) => {
   const updateBranding = useStore((state) => state.adminSettings.updateBranding);
   const { setBranding, endPreview } = useBrandingStore();
   const { t } = useTranslation();
@@ -173,75 +188,75 @@ const BrandingForm = ({ branding }: Props) => {
   });
 
   return (
-    <Form<FormData> initialValues={toFormData(branding)} onSubmit={onSubmit} validate={validate}>
+    <Form<FormData> initialValues={toFormData(settings)} onSubmit={onSubmit} validate={validate}>
       {({ submitting, handleSubmit }) => (
         <BsForm className="ilmo--form ilmo--theme-safe" onSubmit={handleSubmit}>
           {/* Preview edits live on the page. The form itself opts out of theme colors (see _branding.scss),
               so it stays usable even if the previewed colors are unreadable. */}
           <FormSpy<FormData> subscription={{ values: true }}>
-            {({ values }) => <PreviewBranding values={values} />}
+            {({ values }) => <PreviewBranding values={values} defaults={defaults} />}
           </FormSpy>
           <h2>{t("adminSettings.texts.title")}</h2>
           <TextField
             name="headerTitle"
             label={t("adminSettings.branding.headerTitle")}
-            placeholder={defaultBranding.headerTitle}
+            placeholder={defaults.headerTitle}
             maxLength={100}
             help={t("adminSettings.branding.headerTitle.help")}
           />
           <TextField
             name="headerTitleShort"
             label={t("adminSettings.branding.headerTitleShort")}
-            placeholder={defaultBranding.headerTitleShort}
+            placeholder={defaults.headerTitleShort}
             maxLength={100}
           />
           <TextField
             name="footerGdprText"
             label={t("adminSettings.branding.footerGdprText")}
-            placeholder={defaultBranding.footerGdprText || t("adminSettings.branding.link.notShown")}
+            placeholder={defaults.footerGdprText || t("adminSettings.branding.link.notShown")}
           />
           <TextField
             name="footerGdprLink"
             label={t("adminSettings.branding.footerGdprLink")}
-            placeholder={defaultBranding.footerGdprLink || "https://"}
+            placeholder={defaults.footerGdprLink || "https://"}
             maxLength={500}
             type="url"
           />
           <TextField
             name="footerHomeText"
             label={t("adminSettings.branding.footerHomeText")}
-            placeholder={defaultBranding.footerHomeText || t("adminSettings.branding.link.notShown")}
+            placeholder={defaults.footerHomeText || t("adminSettings.branding.link.notShown")}
           />
           <TextField
             name="footerHomeLink"
             label={t("adminSettings.branding.footerHomeLink")}
-            placeholder={defaultBranding.footerHomeLink || "https://"}
+            placeholder={defaults.footerHomeLink || "https://"}
             maxLength={500}
             type="url"
           />
           <TextField
             name="loginPlaceholderEmail"
             label={t("adminSettings.branding.loginPlaceholderEmail")}
-            placeholder={defaultBranding.loginPlaceholderEmail}
+            placeholder={defaults.loginPlaceholderEmail}
             maxLength={255}
           />
           <TextField
             name="icalCalendarName"
             label={t("adminSettings.branding.icalCalendarName")}
-            placeholder={t("adminSettings.branding.serverDefault")}
+            placeholder={defaults.icalCalendarName}
             maxLength={100}
           />
           <TextField
             name="mailFooterText"
             label={t("adminSettings.branding.mailFooterText")}
-            placeholder={t("adminSettings.branding.serverDefault")}
+            placeholder={defaults.mailFooterText || t("adminSettings.branding.link.notShown")}
             maxLength={500}
             help={t("adminSettings.branding.mailFooter.help")}
           />
           <TextField
             name="mailFooterLink"
             label={t("adminSettings.branding.mailFooterLink")}
-            placeholder={t("adminSettings.branding.serverDefault")}
+            placeholder={defaults.mailFooterLink || "https://"}
             maxLength={500}
             type="url"
           />

@@ -1,28 +1,40 @@
-import { Static } from "typebox";
+import { Static, Type } from "typebox";
 
-import { brandingAttributes } from "./attributes";
+import { brandingResponse, brandingSettings, brandingTextDefaults, brandingTextSettings } from "./attributes";
 
 export {
   BRANDING_FAVICON_MAX_LENGTH,
   BRANDING_IMAGE_DATA_URL_PATTERN,
   BRANDING_LOGO_MAX_LENGTH,
+  brandingResponse,
+  brandingSettings,
+  brandingTextDefaults,
 } from "./attributes";
 
-/** Response schema for fetching the current branding. */
-export const brandingResponse = brandingAttributes;
+/** Request body for updating the branding settings. */
+export const brandingUpdateBody = brandingSettings;
 
-/** Request body for updating the branding. */
-export const brandingUpdateBody = brandingAttributes;
+/** Response schema for fetching the branding settings as an admin. */
+export const adminBrandingResponse = Type.Object({
+  settings: brandingSettings,
+  defaults: brandingTextDefaults,
+});
 
-/** Schema for the current branding. */
-export type BrandingSchema = Static<typeof brandingAttributes>;
-/** Response schema for fetching the current branding. */
+/** Editable branding settings, as stored. `null` always means "use the default". */
+export type BrandingSettings = Static<typeof brandingSettings>;
+/** Server defaults for the text settings. */
+export type BrandingTextDefaults = Static<typeof brandingTextDefaults>;
+/** Effective branding, with text settings resolved to their defaults. */
 export type BrandingResponse = Static<typeof brandingResponse>;
-/** Request body for updating the branding. */
+/** Response schema for fetching the branding settings as an admin. */
+export type AdminBrandingResponse = Static<typeof adminBrandingResponse>;
+/** Request body for updating the branding settings. */
 export type BrandingUpdateBody = Static<typeof brandingUpdateBody>;
 
 /** All editable branding keys. */
-export const brandingKeys = Object.keys(brandingAttributes.properties) as (keyof BrandingSchema)[];
+export const brandingKeys = Object.keys(brandingSettings.properties) as (keyof BrandingSettings)[];
+/** Text setting keys, which have server defaults. */
+export const brandingTextKeys = Object.keys(brandingTextSettings) as (keyof BrandingTextDefaults)[];
 
-/** Branding with all values set to null, i.e. built-in defaults everywhere. */
-export const defaultBranding = Object.fromEntries(brandingKeys.map((key) => [key, null])) as BrandingSchema;
+/** Branding settings with all values set to null, i.e. defaults everywhere. */
+export const emptyBrandingSettings = Object.fromEntries(brandingKeys.map((key) => [key, null])) as BrandingSettings;

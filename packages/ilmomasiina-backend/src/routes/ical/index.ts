@@ -39,7 +39,7 @@ export async function eventsAsICal() {
     ],
   });
 
-  const calendarName = (await getBranding()).icalCalendarName ?? config.icalCalendarName;
+  const calendarName = (await getBranding()).icalCalendarName;
 
   const { error, value } = createEvents(
     events.map((event) => ({

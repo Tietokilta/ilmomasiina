@@ -6,6 +6,7 @@ import * as schema from "@tietokilta/ilmomasiina-models";
 import { addLogEventHook } from "../auditlog";
 import getRawBody from "../util/rawBody";
 import getAuditLogItems from "./admin/auditlog/getAuditLogs";
+import getAdminBranding from "./admin/branding/getAdminBranding";
 import updateBranding from "./admin/branding/updateBranding";
 import getCategoriesList from "./admin/categories/getCategoriesList";
 import createEvent from "./admin/events/createEvent";
@@ -218,7 +219,20 @@ async function setupAdminRoutes(fastifyInstance: FastifyInstance) {
     getAuditLogItems,
   );
 
-  /** Admin route for branding settings */
+  /** Admin routes for branding settings */
+  server.get(
+    "/branding",
+    {
+      schema: {
+        response: {
+          ...errorResponses,
+          200: schema.adminBrandingResponse,
+        },
+      },
+    },
+    getAdminBranding,
+  );
+
   server.put<{ Body: schema.BrandingUpdateBody }>(
     "/branding",
     {
