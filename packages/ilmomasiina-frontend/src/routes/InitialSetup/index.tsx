@@ -10,7 +10,7 @@ import { errorDesc } from "@tietokilta/ilmomasiina-client";
 import FieldFormGroup from "../../components/FieldFormGroup";
 import i18n, { TKey } from "../../i18n";
 import { loginToast } from "../../modules/auth";
-import { useEffectiveBranding } from "../../modules/branding";
+import { useBranding } from "../../modules/branding";
 import useStore from "../../modules/store";
 import paths from "../../paths";
 import useEvent from "../../utils/useEvent";
@@ -55,7 +55,7 @@ const InitialSetup = () => {
   const { createInitialUser } = useStore((state) => state.auth);
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const branding = useEffectiveBranding();
+  const branding = useBranding();
 
   const onSubmit = useEvent(async (data: FormData) => {
     const { email, password } = data;
