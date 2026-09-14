@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import { ApiError, errorDesc } from "@tietokilta/ilmomasiina-client";
 import FieldFormGroup from "../../components/FieldFormGroup";
 import type { TKey } from "../../i18n";
-import { useEffectiveBranding } from "../../modules/branding";
+import { useBranding } from "../../modules/branding";
 import useStore from "../../modules/store";
 
 type FormData = {
@@ -19,7 +19,7 @@ type FormData = {
 const UserForm = () => {
   const { getUsers, createUser } = useStore((state) => state.adminUsers);
   const { t } = useTranslation();
-  const branding = useEffectiveBranding();
+  const branding = useBranding();
 
   const onSubmit = async (data: FormData, form: FormApi<FormData>) => {
     try {

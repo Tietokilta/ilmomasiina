@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { selectShownBranding, useBrandingStore } from "../modules/branding";
+import { selectBrandingReady, selectShownBranding, useBrandingStore } from "../modules/branding";
 import { computeThemeColorVariables, ThemeColorName } from "../utils/brandColor";
 
 /** Attribute marking the <link> element for a custom favicon. */
@@ -72,6 +72,7 @@ function applyFavicon(favicon: string | null) {
  */
 export default function ApplyBranding() {
   const branding = useBrandingStore(selectShownBranding);
+  const ready = useBrandingStore(selectBrandingReady);
   const loadBranding = useBrandingStore((state) => state.loadBranding);
 
   useEffect(() => {
@@ -79,7 +80,7 @@ export default function ApplyBranding() {
   }, [loadBranding]);
 
   useEffect(() => {
-    if (!branding) return;
+    if (!ready) return;
     applyThemeColor("brand", branding.brandColor);
     applyThemeColor("secondary", branding.secondaryColor);
     applyThemeColor("success", branding.successColor);
@@ -88,8 +89,8 @@ export default function ApplyBranding() {
     applyThemeColor("muted", branding.mutedColor);
     applyThemeColorMeta(branding.brandColor);
     applyFavicon(branding.favicon);
-    document.title = branding.headerTitle ?? defaultTitle;
-  }, [branding]);
+    document.title = branding.headerTitle || defaultTitle;
+  }, [branding, ready]);
 
   return null;
 }

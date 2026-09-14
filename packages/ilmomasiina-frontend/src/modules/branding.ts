@@ -4,10 +4,35 @@ import { create } from "zustand";
 import { apiFetch } from "@tietokilta/ilmomasiina-client/dist/api";
 import type { BrandingResponse } from "@tietokilta/ilmomasiina-models";
 
-/** Branding values as configured by admins. `null` fields mean "use the build-time default". */
+/** Branding before it has been loaded from the server: empty texts, built-in images and colors. */
+export const unloadedBranding: BrandingResponse = {
+  headerTitle: "",
+  headerTitleShort: "",
+  footerGdprText: "",
+  footerGdprLink: "",
+  footerHomeText: "",
+  footerHomeLink: "",
+  loginPlaceholderEmail: "",
+  icalCalendarName: "",
+  mailFooterText: "",
+  mailFooterLink: "",
+  brandColor: null,
+  secondaryColor: null,
+  successColor: null,
+  warningColor: null,
+  dangerColor: null,
+  mutedColor: null,
+  logo: null,
+  showLogo: null,
+  favicon: null,
+};
+
+/** Branding as configured by admins, with text defaults resolved by the server. */
 export type BrandingState = {
-  /** Saved branding from the server, or `null` if not loaded yet. */
-  branding: BrandingResponse | null;
+  /** Saved branding from the server, or `unloadedBranding` until loaded. */
+  branding: BrandingResponse;
+  /** Whether the branding has been loaded from the server. */
+  loaded: boolean;
   /** Unsaved branding being previewed by an admin, or `null` if not previewing. Takes precedence over `branding`. */
   preview: BrandingResponse | null;
   /** Fetches the branding from the server. Failures are ignored, keeping the build-time defaults. */
@@ -23,50 +48,28 @@ export type BrandingState = {
 /** Selects the branding to show: the preview if active, otherwise the saved branding. */
 export const selectShownBranding = (state: BrandingState) => state.preview ?? state.branding;
 
+/** Selects whether there is a branding to show, i.e. a preview is active or the branding has loaded. */
+export const selectBrandingReady = (state: BrandingState) => state.preview !== null || state.loaded;
+
 /** A separate small store for branding, so that the header doesn't depend on the main (admin) store. */
 export const useBrandingStore = create<BrandingState>()((set) => ({
-  branding: null,
+  branding: unloadedBranding,
+  loaded: false,
   preview: null,
   loadBranding: async () => {
     try {
       const branding = await apiFetch<BrandingResponse>("branding");
-      set({ branding });
+      set({ branding, loaded: true });
     } catch {
       // Ignore errors: the build-time defaults will be used.
     }
   },
-  setBranding: (branding) => set({ branding }),
+  setBranding: (branding) => set({ branding, loaded: true }),
   previewBranding: (preview) => set({ preview }),
   endPreview: () => set({ preview: null }),
 }));
 
-/** Branding shown by the frontend. The server resolves text defaults; images and colors are null for built-in. */
-export type EffectiveBranding = {
-  headerTitle: string;
-  headerTitleShort: string;
-  /** Custom logo data URL, or `null` for the built-in logo. */
-  logo: string | null;
-  /** Whether to show the header logo, or `null` for the build-time default. */
-  showLogo: boolean | null;
-  footerGdprText: string;
-  footerGdprLink: string;
-  footerHomeText: string;
-  footerHomeLink: string;
-  loginPlaceholderEmail: string;
-};
-
-/** Returns the branding to show. Before the branding has loaded, texts are empty and images and colors default. */
-export function useEffectiveBranding(): EffectiveBranding {
-  const branding = useBrandingStore(selectShownBranding);
-  return {
-    headerTitle: branding?.headerTitle ?? "",
-    headerTitleShort: branding?.headerTitleShort ?? "",
-    logo: branding?.logo ?? null,
-    showLogo: branding?.showLogo ?? null,
-    footerGdprText: branding?.footerGdprText ?? "",
-    footerGdprLink: branding?.footerGdprLink ?? "",
-    footerHomeText: branding?.footerHomeText ?? "",
-    footerHomeLink: branding?.footerHomeLink ?? "",
-    loginPlaceholderEmail: branding?.loginPlaceholderEmail ?? "",
-  };
+/** Returns the branding to show on the page. */
+export function useBranding(): BrandingResponse {
+  return useBrandingStore(selectShownBranding);
 }

@@ -6,7 +6,7 @@ import { Link } from "react-router";
 
 import defaultLogo from "../../assets/logo.svg";
 import i18n from "../../i18n";
-import { useEffectiveBranding } from "../../modules/branding";
+import { useBranding } from "../../modules/branding";
 import paths from "../../paths";
 
 import "./Header.scss";
@@ -19,7 +19,7 @@ const Header = () => {
     i18n: { language },
     t,
   } = useTranslation();
-  const { headerTitle, headerTitleShort, logo, showLogo } = useEffectiveBranding();
+  const { headerTitle, headerTitleShort, logo, showLogo } = useBranding();
 
   // A custom logo is shown unless explicitly hidden; otherwise the build-time default applies.
   let logoClass = "navbar-logo";
