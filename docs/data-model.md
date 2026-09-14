@@ -77,6 +77,14 @@ Each Answer has one **Signup** and one **Question**.
 Users are not related to any other models. This model is only used for local login, and can be enumerated, created
 and deleted by admins.
 
+### Branding
+
+**Branding** is a single-row table holding admin-editable branding settings: header title, header title for small
+screens, brand color, danger color, header logo and favicon. Images are stored as base64 data URLs. Each field may be `null`, meaning
+the built-in (build-time) default is used.
+
+Branding is not related to any other models. It is readable publicly and editable by admins.
+
 ## Paranoid mode
 
 Tables other than **User** use Sequelize's paranoid mode by default. This means their data is not deleted immediately,

@@ -1,7 +1,9 @@
 @use "../../styles/definitions" as *;
 
+// The --ilmo-brand-* variables are set by ApplyBranding when an admin has configured a brand color.
+
 .navbar {
-  background: $primary;
+  background: var(--ilmo-brand-color, #{$primary});
   margin-bottom: 1.5rem;
   --bs-navbar-brand-margin-end: auto !important;
 }
@@ -9,7 +11,7 @@
 .navbar-brand {
   display: flex !important;
   align-items: center;
-  color: color-contrast($primary) !important;
+  color: var(--ilmo-brand-contrast, #{color-contrast($primary)}) !important;
   text-transform: uppercase;
   font-weight: 600;
   letter-spacing: 1px;
@@ -20,4 +22,10 @@
   height: 36px;
   margin-right: 1rem;
   display: if($header-logo, block, none);
+  object-fit: contain;
+}
+
+// An admin-configured logo is always shown, even if the built-in one is disabled.
+.navbar-logo-custom {
+  display: block;
 }

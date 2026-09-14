@@ -1,0 +1,50 @@
+@use "../../styles/definitions" as *;
+
+.ilmo--branding-color {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+
+  .form-control-color {
+    flex: 0 0 auto;
+  }
+
+  .form-control:not(.form-control-color) {
+    max-width: 10rem;
+  }
+}
+
+.ilmo--branding-image {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ilmo--branding-image-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: $font-size-sm;
+  color: $secondary-text-color;
+
+  img {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    padding: 0.5rem;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    // Checkerboard to make transparent and light images visible.
+    background:
+      repeating-conic-gradient($secondary-background 0% 25%, $white 0% 50%) 0 0 / 16px 16px;
+  }
+}
+
+.ilmo--branding-image-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1 1 16rem;
+}

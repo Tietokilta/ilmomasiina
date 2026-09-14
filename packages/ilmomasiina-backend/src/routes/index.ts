@@ -6,6 +6,7 @@ import * as schema from "@tietokilta/ilmomasiina-models";
 import { addLogEventHook } from "../auditlog";
 import getRawBody from "../util/rawBody";
 import getAuditLogItems from "./admin/auditlog/getAuditLogs";
+import updateBranding from "./admin/branding/updateBranding";
 import getCategoriesList from "./admin/categories/getCategoriesList";
 import createEvent from "./admin/events/createEvent";
 import deleteEvent from "./admin/events/deleteEvent";
@@ -18,6 +19,7 @@ import inviteUser from "./admin/users/inviteUser";
 import listUsers from "./admin/users/listUsers";
 import resetPassword from "./admin/users/resetPassword";
 import { adminLogin, renewAdminToken, requireAdmin } from "./authentication/adminLogin";
+import getBranding from "./branding/getBranding";
 import { getEventDetailsForAdmin, getEventDetailsForUser } from "./events/getEventDetails";
 import { getEventsListForAdmin, getEventsListForUser } from "./events/getEventsList";
 import { sendICalFeed } from "./ical";
@@ -214,6 +216,23 @@ async function setupAdminRoutes(fastifyInstance: FastifyInstance) {
       },
     },
     getAuditLogItems,
+  );
+
+  /** Admin route for branding settings */
+  server.put<{ Body: schema.BrandingUpdateBody }>(
+    "/branding",
+    {
+      // Allow larger bodies than the default, as the body may contain a logo and a favicon.
+      bodyLimit: 2 * 1024 * 1024,
+      schema: {
+        body: schema.brandingUpdateBody,
+        response: {
+          ...errorResponses,
+          200: schema.brandingResponse,
+        },
+      },
+    },
+    updateBranding,
   );
 
   /** Admin routes for user management */
@@ -462,6 +481,20 @@ async function setupPublicRoutes(fastifyInstance: FastifyInstance) {
 
   // Public route for iCal feed
   server.get("/ical", {}, sendICalFeed);
+
+  // Public route for branding settings
+  server.get(
+    "/branding",
+    {
+      schema: {
+        response: {
+          ...errorResponses,
+          200: schema.brandingResponse,
+        },
+      },
+    },
+    getBranding,
+  );
 
   // Public route for initial admin user creation
   server.post<{ Body: schema.UserCreateSchema }>(
