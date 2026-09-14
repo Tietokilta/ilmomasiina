@@ -1,6 +1,14 @@
 import { beforeEach, describe, expect, test } from "vitest";
 
-import { AuditEvent, BrandingResponse, BrandingUpdateBody, defaultBranding } from "@tietokilta/ilmomasiina-models";
+import {
+  AdminBrandingResponse,
+  AuditEvent,
+  BrandingResponse,
+  BrandingUpdateBody,
+  emptyBrandingSettings,
+} from "@tietokilta/ilmomasiina-models";
+import { getBrandingDefaults } from "../../src/branding";
+import config from "../../src/config";
 import { AuditLog } from "../../src/models/auditlog";
 import { Setting } from "../../src/models/setting";
 import { testEvent } from "../testData";
@@ -32,12 +40,24 @@ const customBranding: BrandingUpdateBody = {
   favicon: testImage,
 };
 
+/** Effective branding when nothing is customized. */
+const defaultBranding: BrandingResponse = { ...emptyBrandingSettings, ...getBrandingDefaults() };
+
 async function fetchBranding() {
   const response = await server.inject({
     method: "GET",
     url: "/api/branding",
   });
   return handleTestResponse<BrandingResponse>(response);
+}
+
+async function fetchAdminBranding(authenticated = true) {
+  const response = await server.inject({
+    method: "GET",
+    url: "/api/admin/branding",
+    headers: authenticated ? { authorization: adminToken } : {},
+  });
+  return handleTestResponse<AdminBrandingResponse>(response);
 }
 
 async function updateBranding(body: unknown, authenticated = true) {
@@ -55,10 +75,12 @@ beforeEach(async () => {
 });
 
 describe("GET /api/branding", () => {
-  test("returns defaults when nothing is customized", async () => {
+  test("returns server defaults when nothing is customized", async () => {
     const [data, response] = await fetchBranding();
     expect(response.statusCode).toBe(200);
     expect(data).toEqual(defaultBranding);
+    expect(data.headerTitle).toBe(config.brandingHeaderTitle);
+    expect(data.loginPlaceholderEmail).toBe(config.brandingLoginPlaceholderEmail);
   });
 
   test("returns customized branding", async () => {
@@ -72,7 +94,24 @@ describe("GET /api/branding", () => {
     // Simulate settings saved by an older version without some keys.
     await Setting.create({ key: "branding", value: { headerTitle: "Old" } });
     const [data] = await fetchBranding();
-    expect(data).toEqual({ ...defaultBranding, headerTitle: "Old" });
+    // A custom title without a short title is also used as the short title.
+    expect(data).toEqual({ ...defaultBranding, headerTitle: "Old", headerTitleShort: "Old" });
+  });
+});
+
+describe("GET /api/admin/branding", () => {
+  test("requires authentication", async () => {
+    expect(await fetchAdminBranding(false)).toBeApiError(401);
+  });
+
+  test("returns stored settings and server defaults", async () => {
+    await updateBranding({ ...emptyBrandingSettings, headerTitle: "Custom" });
+    const [data, response] = await fetchAdminBranding();
+    expect(response.statusCode).toBe(200);
+    expect(data).toEqual({
+      settings: { ...emptyBrandingSettings, headerTitle: "Custom" },
+      defaults: getBrandingDefaults(),
+    });
   });
 });
 
@@ -100,35 +139,39 @@ describe("PUT /api/admin/branding", () => {
 
   test("allows resetting to defaults", async () => {
     await updateBranding(customBranding);
-    const [data, response] = await updateBranding(defaultBranding);
+    const [data, response] = await updateBranding(emptyBrandingSettings);
     expect(response.statusCode).toBe(200);
     expect(data).toEqual(defaultBranding);
+    const [settings] = await fetchAdminBranding();
+    expect(settings.settings).toEqual(emptyBrandingSettings);
   });
 
   test("rejects invalid colors", async () => {
-    expect(await updateBranding({ ...defaultBranding, brandColor: "red" })).toBeApiError(400);
-    expect(await updateBranding({ ...defaultBranding, brandColor: "#fff" })).toBeApiError(400);
-    expect(await updateBranding({ ...defaultBranding, secondaryColor: "#12345g" })).toBeApiError(400);
-    expect(await updateBranding({ ...defaultBranding, successColor: "green" })).toBeApiError(400);
-    expect(await updateBranding({ ...defaultBranding, dangerColor: "red" })).toBeApiError(400);
-    expect(await updateBranding({ ...defaultBranding, warningColor: "#ff0" })).toBeApiError(400);
-    expect(await updateBranding({ ...defaultBranding, mutedColor: "gray" })).toBeApiError(400);
+    expect(await updateBranding({ ...emptyBrandingSettings, brandColor: "red" })).toBeApiError(400);
+    expect(await updateBranding({ ...emptyBrandingSettings, brandColor: "#fff" })).toBeApiError(400);
+    expect(await updateBranding({ ...emptyBrandingSettings, secondaryColor: "#12345g" })).toBeApiError(400);
+    expect(await updateBranding({ ...emptyBrandingSettings, successColor: "green" })).toBeApiError(400);
+    expect(await updateBranding({ ...emptyBrandingSettings, dangerColor: "red" })).toBeApiError(400);
+    expect(await updateBranding({ ...emptyBrandingSettings, warningColor: "#ff0" })).toBeApiError(400);
+    expect(await updateBranding({ ...emptyBrandingSettings, mutedColor: "gray" })).toBeApiError(400);
   });
 
   test("rejects invalid images", async () => {
-    expect(await updateBranding({ ...defaultBranding, logo: "https://example.com/logo.png" })).toBeApiError(400);
-    expect(await updateBranding({ ...defaultBranding, logo: "data:text/html;base64,PHNjcmlwdD4=" })).toBeApiError(400);
-    expect(await updateBranding({ ...defaultBranding, favicon: "data:image/png;base64,not base64!" })).toBeApiError(
+    expect(await updateBranding({ ...emptyBrandingSettings, logo: "https://example.com/logo.png" })).toBeApiError(400);
+    expect(await updateBranding({ ...emptyBrandingSettings, logo: "data:text/html;base64,PHNjcmlwdD4=" })).toBeApiError(
       400,
     );
+    expect(
+      await updateBranding({ ...emptyBrandingSettings, favicon: "data:image/png;base64,not base64!" }),
+    ).toBeApiError(400);
   });
 
   test("rejects invalid links and empty texts", async () => {
     // eslint-disable-next-line no-script-url
-    expect(await updateBranding({ ...defaultBranding, footerGdprLink: "javascript:alert(1)" })).toBeApiError(400);
-    expect(await updateBranding({ ...defaultBranding, footerHomeLink: "example.com" })).toBeApiError(400);
-    expect(await updateBranding({ ...defaultBranding, headerTitle: "" })).toBeApiError(400);
-    expect(await updateBranding({ ...defaultBranding, showLogo: "yes" })).toBeApiError(400);
+    expect(await updateBranding({ ...emptyBrandingSettings, footerGdprLink: "javascript:alert(1)" })).toBeApiError(400);
+    expect(await updateBranding({ ...emptyBrandingSettings, footerHomeLink: "example.com" })).toBeApiError(400);
+    expect(await updateBranding({ ...emptyBrandingSettings, headerTitle: "" })).toBeApiError(400);
+    expect(await updateBranding({ ...emptyBrandingSettings, showLogo: "yes" })).toBeApiError(400);
   });
 
   test("rejects missing fields", async () => {
@@ -136,7 +179,7 @@ describe("PUT /api/admin/branding", () => {
   });
 
   test("creates an audit log entry listing changed fields", async () => {
-    await updateBranding({ ...defaultBranding, headerTitle: "Changed", brandColor: "#000000" });
+    await updateBranding({ ...emptyBrandingSettings, headerTitle: "Changed", brandColor: "#000000" });
 
     const logs = await AuditLog.findAll({ where: { action: AuditEvent.EDIT_BRANDING } });
     expect(logs).toHaveLength(1);
@@ -149,9 +192,9 @@ describe("branding in other features", () => {
   test("iCal feed uses the configured calendar name", async () => {
     await testEvent();
     const before = await server.inject({ method: "GET", url: "/api/ical" });
-    expect(before.payload).toContain("X-WR-CALNAME:Ilmomasiina");
+    expect(before.payload).toContain(`X-WR-CALNAME:${config.icalCalendarName}`);
 
-    await updateBranding({ ...defaultBranding, icalCalendarName: "Test Guild Events" });
+    await updateBranding({ ...emptyBrandingSettings, icalCalendarName: "Test Guild Events" });
     const after = await server.inject({ method: "GET", url: "/api/ical" });
     expect(after.payload).toContain("X-WR-CALNAME:Test Guild Events");
   });

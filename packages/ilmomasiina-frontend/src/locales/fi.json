@@ -96,7 +96,6 @@
     "adminSettings.branding.mailFooter.help": "Näytetään kaikkien järjestelmän lähettämien sähköpostien lopussa.",
     "adminSettings.branding.link.notShown": "(ei näytetä)",
     "adminSettings.branding.link.invalid": "Syötä kokonainen osoite, joka alkaa https://, tai polku, joka alkaa /.",
-    "adminSettings.branding.serverDefault": "(palvelimen oletus)",
     "adminSettings.colors.title": "Värit",
     "adminSettings.branding.brandColor": "Tunnusväri",
     "adminSettings.branding.brandColor.help": "Käytetään otsikkopalkissa, painikkeissa ja linkeissä.",

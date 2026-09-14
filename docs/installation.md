@@ -67,22 +67,16 @@ Anything that *requires frontend rebuild* needs to be passed as a build arg and 
 
 ```
 docker build \
-  --build-arg BRANDING_HEADER_TITLE_TEXT='Kilta ry ilmomasiina' \
-  --build-arg BRANDING_HEADER_TITLE_TEXT_SHORT='Ilmomasiina' \
-  --build-arg BRANDING_FOOTER_GDPR_TEXT='Tietosuoja' \
-  --build-arg BRANDING_FOOTER_GDPR_LINK='https://example.com' \
-  --build-arg BRANDING_FOOTER_HOME_TEXT='Kotisivu' \
-  --build-arg BRANDING_FOOTER_HOME_LINK='https://example.com' \
-  --build-arg BRANDING_LOGIN_PLACEHOLDER_EMAIL='admin@example.com' \
+  --build-arg PATH_PREFIX='/ilmo' \
   -t ilmomasiina .
 ```
 
 You can then use `docker push` to a host of your choice, or run the container locally.
 
-Most branding can also be changed at runtime by admins on the Settings page of the admin UI: header title and logo,
+Branding no longer requires a rebuild: the `BRANDING_*` variables are read by the backend at runtime and act as
+defaults, and admins can override most branding on the Settings page of the admin UI: header title and logo,
 favicon, footer links, login placeholder, theme colors, iCal calendar name and email footer.
-Those settings are stored in the database and override the build-time and environment variable values,
-so a stock build can be used without forking.
+Those settings are stored in the database, so a stock build can be used without forking.
 
 ## Production
 

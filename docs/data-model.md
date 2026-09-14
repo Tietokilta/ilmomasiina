@@ -81,8 +81,9 @@ and deleted by admins.
 
 **Setting** is a key-value table for admin-editable settings, with JSON values validated by the API schemas in
 `ilmomasiina-models`. Currently the only key is `branding`, which holds the runtime branding: header titles,
-footer links, login placeholder, iCal calendar name, email footer, theme colors, header logo and favicon. Images are stored as base64 data URLs. Each field may be `null`, meaning the built-in (build-time or
-environment variable) default is used.
+footer links, login placeholder, iCal calendar name, email footer, theme colors, header logo and favicon. Images are stored as base64 data URLs. Each field may be `null`, meaning the default is used: text defaults come
+from the backend environment variables and are resolved by the API, while color and image defaults are compiled
+into the frontend.
 
 Settings are not related to any other models. Branding is readable publicly and editable by admins.
 

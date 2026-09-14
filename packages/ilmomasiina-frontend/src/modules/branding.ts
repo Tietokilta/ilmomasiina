@@ -3,7 +3,6 @@ import { create } from "zustand";
 // Import via full path to reduce entry chunk size.
 import { apiFetch } from "@tietokilta/ilmomasiina-client/dist/api";
 import type { BrandingResponse } from "@tietokilta/ilmomasiina-models";
-import defaultBranding from "../branding";
 
 /** Branding values as configured by admins. `null` fields mean "use the build-time default". */
 export type BrandingState = {
@@ -41,23 +40,33 @@ export const useBrandingStore = create<BrandingState>()((set) => ({
   endPreview: () => set({ preview: null }),
 }));
 
-/** Effective branding, combining admin-configured values with build-time defaults. *
+/** Branding shown by the frontend. The server resolves text defaults; images and colors are null for built-in. */
+export type EffectiveBranding = {
+  headerTitle: string;
+  headerTitleShort: string;
+  /** Custom logo data URL, or `null` for the built-in logo. */
+  logo: string | null;
+  /** Whether to show the header logo, or `null` for the build-time default. */
+  showLogo: boolean | null;
+  footerGdprText: string;
+  footerGdprLink: string;
+  footerHomeText: string;
+  footerHomeLink: string;
+  loginPlaceholderEmail: string;
+};
 
-/** Returns the effective branding, with build-time defaults filled in for values not set by admins. */
-export function useEffectiveBranding() {
+/** Returns the branding to show. Before the branding has loaded, texts are empty and images and colors default. */
+export function useEffectiveBranding(): EffectiveBranding {
   const branding = useBrandingStore(selectShownBranding);
-  const headerTitle = branding?.headerTitle ?? defaultBranding.headerTitle;
   return {
-    headerTitle,
-    // If only a custom full title is set, use it on small screens too.
-    headerTitleShort:
-      branding?.headerTitleShort ?? (branding?.headerTitle ? headerTitle : defaultBranding.headerTitleShort),
+    headerTitle: branding?.headerTitle ?? "",
+    headerTitleShort: branding?.headerTitleShort ?? "",
     logo: branding?.logo ?? null,
     showLogo: branding?.showLogo ?? null,
-    footerGdprText: branding?.footerGdprText ?? defaultBranding.footerGdprText,
-    footerGdprLink: branding?.footerGdprLink ?? defaultBranding.footerGdprLink,
-    footerHomeText: branding?.footerHomeText ?? defaultBranding.footerHomeText,
-    footerHomeLink: branding?.footerHomeLink ?? defaultBranding.footerHomeLink,
-    loginPlaceholderEmail: branding?.loginPlaceholderEmail ?? defaultBranding.loginPlaceholderEmail,
+    footerGdprText: branding?.footerGdprText ?? "",
+    footerGdprLink: branding?.footerGdprLink ?? "",
+    footerHomeText: branding?.footerHomeText ?? "",
+    footerHomeLink: branding?.footerHomeLink ?? "",
+    loginPlaceholderEmail: branding?.loginPlaceholderEmail ?? "",
   };
 }
