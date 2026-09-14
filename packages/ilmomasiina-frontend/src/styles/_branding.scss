@@ -2,17 +2,44 @@
 
 // Runtime theme color support.
 //
-// When an admin has configured a theme color (brand, secondary, success or danger), ApplyBranding sets
-// the data-ilmo-<name> attribute and the --ilmo-<name>-* CSS variables on <html>.
-// These rules then override the compiled Bootstrap colors.
-// Without the attributes, nothing here applies and the compiled Sass colors are used.
+// Theme colors (brand, secondary, success and danger) flow through --ilmo-<name>-* CSS variables. The defaults
+// are computed here from the compiled Sass variables, and ApplyBranding overrides the variables on <html>
+// when an admin has configured custom colors. Everything else uses the variables unconditionally.
+
+// Declares the variables for one theme color. `$lighter-hover` makes hover states lighter instead of darker.
+@mixin ilmo-theme-color-variables($name, $color, $lighter-hover) {
+  --ilmo-#{$name}-color: #{$color};
+  --ilmo-#{$name}-rgb: #{to-rgb($color)};
+  --ilmo-#{$name}-contrast: #{color-contrast($color)};
+  --ilmo-#{$name}-hover-bg: #{if($lighter-hover, lighten($color, 15%), shade-color($color, 15%))};
+  --ilmo-#{$name}-hover-border: #{if($lighter-hover, lighten($color, 20%), shade-color($color, 20%))};
+  --ilmo-#{$name}-active-bg: #{if($lighter-hover, lighten($color, 20%), shade-color($color, 20%))};
+  --ilmo-#{$name}-active-border: #{if($lighter-hover, lighten($color, 25%), shade-color($color, 25%))};
+  --ilmo-#{$name}-focus-border: #{tint-color($color, 50%)};
+}
+
+// Declares the default variables for all theme colors.
+@mixin ilmo-default-theme-colors {
+  @include ilmo-theme-color-variables(brand, $primary, $lighter-primary-hover);
+  @include ilmo-theme-color-variables(secondary, $secondary, $lighter-secondary-hover);
+  @include ilmo-theme-color-variables(success, $success, false);
+  @include ilmo-theme-color-variables(danger, $danger, false);
+}
 
 :root {
+  @include ilmo-default-theme-colors;
+
   // Exposed so the admin UI can show the compiled default colors in the color pickers.
   --ilmo-default-brand-color: #{$primary};
   --ilmo-default-secondary-color: #{$secondary};
-  --ilmo-default-success-color: #{$green};
-  --ilmo-default-danger-color: #{$red};
+  --ilmo-default-success-color: #{$success};
+  --ilmo-default-danger-color: #{$danger};
+}
+
+// Areas that must stay usable even with badly chosen theme colors, such as the settings form that previews
+// them, get the compiled defaults again. Variables cascade by DOM inheritance, so this overrides <html>.
+.ilmo--theme-safe {
+  @include ilmo-default-theme-colors;
 }
 
 // Solid button variables for a theme color.
@@ -66,124 +93,42 @@
   }
 }
 
-:root[data-ilmo-brand] {
-  .btn-primary {
-    @include ilmo-button-variant(brand);
-  }
-
-  .btn-outline-primary {
-    @include ilmo-button-outline-variant(brand);
-  }
-
-  .form-control:focus,
-  .form-select:focus,
-  .form-check-input:focus {
-    border-color: var(--ilmo-brand-focus-border);
-    box-shadow: 0 0 0 $focus-ring-width rgba(var(--ilmo-brand-rgb), 0.25);
-  }
-
-  .form-check-input:checked {
-    background-color: var(--ilmo-brand-color);
-    border-color: var(--ilmo-brand-color);
-  }
+.btn-primary {
+  @include ilmo-button-variant(brand);
+}
+.btn-outline-primary {
+  @include ilmo-button-outline-variant(brand);
+}
+.btn-secondary {
+  @include ilmo-button-variant(secondary);
+}
+.btn-outline-secondary {
+  @include ilmo-button-outline-variant(secondary);
+}
+.btn-success {
+  @include ilmo-button-variant(success);
+}
+.btn-outline-success {
+  @include ilmo-button-outline-variant(success);
+}
+.btn-danger {
+  @include ilmo-button-variant(danger);
+}
+.btn-outline-danger {
+  @include ilmo-button-outline-variant(danger);
 }
 
-:root[data-ilmo-secondary] {
-  .btn-secondary {
-    @include ilmo-button-variant(secondary);
-  }
-
-  .btn-outline-secondary {
-    @include ilmo-button-outline-variant(secondary);
-  }
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+  border-color: var(--ilmo-brand-focus-border);
+  box-shadow: 0 0 0 $focus-ring-width rgba(var(--ilmo-brand-rgb), 0.25);
 }
 
-:root[data-ilmo-success] {
-  .btn-success {
-    @include ilmo-button-variant(success);
-  }
-
-  .btn-outline-success {
-    @include ilmo-button-outline-variant(success);
-  }
-
-  @include ilmo-validation-variant(success, valid);
+.form-check-input:checked {
+  background-color: var(--ilmo-brand-color);
+  border-color: var(--ilmo-brand-color);
 }
 
-:root[data-ilmo-danger] {
-  .btn-danger {
-    @include ilmo-button-variant(danger);
-  }
-
-  .btn-outline-danger {
-    @include ilmo-button-outline-variant(danger);
-  }
-
-  @include ilmo-validation-variant(danger, invalid);
-}
-
-// Areas that must stay usable even with badly chosen theme colors, such as the settings form that previews
-// them, opt out of the runtime colors and use the compiled defaults. The selectors need to beat the
-// data-ilmo-* rules above in specificity.
-:root[data-ilmo-brand] .ilmo--theme-safe,
-:root[data-ilmo-secondary] .ilmo--theme-safe,
-:root[data-ilmo-success] .ilmo--theme-safe,
-:root[data-ilmo-danger] .ilmo--theme-safe {
-  .btn-primary {
-    @include ilmo-primary-button-variant;
-  }
-
-  .btn-secondary {
-    @include ilmo-secondary-button-variant;
-  }
-
-  .btn-outline-primary {
-    @include button-outline-variant($primary);
-  }
-
-  .btn-outline-secondary {
-    @include button-outline-variant($secondary);
-  }
-
-  .btn-success {
-    @include button-variant($success, $success);
-  }
-
-  .btn-danger {
-    @include button-variant($danger, $danger);
-  }
-
-  .btn-outline-danger {
-    @include button-outline-variant($danger);
-  }
-
-  .form-control:focus,
-  .form-select:focus,
-  .form-check-input:focus {
-    border-color: $input-focus-border-color;
-    box-shadow: $input-btn-focus-box-shadow;
-  }
-
-  .form-check-input:checked {
-    background-color: $form-check-input-checked-bg-color;
-    border-color: $form-check-input-checked-border-color;
-  }
-
-  .form-control.is-invalid,
-  .form-select.is-invalid {
-    border-color: $form-feedback-invalid-color;
-
-    &:focus {
-      border-color: $form-feedback-invalid-color;
-      box-shadow: 0 0 0 $focus-ring-width rgba($form-feedback-invalid-color, 0.25);
-    }
-  }
-
-  .text-danger {
-    color: $danger !important;
-  }
-
-  .text-success {
-    color: $success !important;
-  }
-}
+@include ilmo-validation-variant(success, valid);
+@include ilmo-validation-variant(danger, invalid);

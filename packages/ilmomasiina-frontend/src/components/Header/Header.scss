@@ -1,9 +1,9 @@
 @use "../../styles/definitions" as *;
 
-// The --ilmo-brand-* variables are set by ApplyBranding when an admin has configured a brand color.
+// The --ilmo-brand-* variables are defined in styles/_branding.scss and overridden at runtime by ApplyBranding.
 
 .navbar {
-  background: var(--ilmo-brand-color, #{$primary});
+  background: var(--ilmo-brand-color);
   margin-bottom: 1.5rem;
   --bs-navbar-brand-margin-end: auto !important;
 }
@@ -11,7 +11,7 @@
 .navbar-brand {
   display: flex !important;
   align-items: center;
-  color: var(--ilmo-brand-contrast, #{color-contrast($primary)}) !important;
+  color: var(--ilmo-brand-contrast) !important;
   text-transform: uppercase;
   font-weight: 600;
   letter-spacing: 1px;

@@ -57,14 +57,3 @@
   align-items: center;
   padding: 50px;
 }
-
-@if $lighter-primary-hover {
-  .btn-primary {
-    @include ilmo-primary-button-variant;
-  }
-}
-@if $lighter-secondary-hover {
-  .btn-secondary {
-    @include ilmo-secondary-button-variant;
-  }
-}
