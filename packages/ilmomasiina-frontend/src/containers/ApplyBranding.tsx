@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { useBrandingStore } from "../modules/branding";
+import { selectShownBranding, useBrandingStore } from "../modules/branding";
 import { computeThemeColorVariables, ThemeColorName } from "../utils/brandColor";
 
 /** Attribute marking the <link> element for a custom favicon. */
@@ -70,7 +70,8 @@ function applyFavicon(favicon: string | null) {
  * (as CSS variables), the favicon and the document title.
  */
 export default function ApplyBranding() {
-  const { branding, loadBranding } = useBrandingStore();
+  const branding = useBrandingStore(selectShownBranding);
+  const loadBranding = useBrandingStore((state) => state.loadBranding);
 
   useEffect(() => {
     loadBranding();

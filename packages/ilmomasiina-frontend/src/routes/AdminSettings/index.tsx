@@ -12,7 +12,9 @@ import BrandingForm from "./BrandingForm";
 import "./AdminSettings.scss";
 
 const AdminSettings = () => {
-  const { branding, loadBranding } = useBrandingStore();
+  // Use the saved branding (not a preview) as the form's initial values.
+  const branding = useBrandingStore((state) => state.branding);
+  const loadBranding = useBrandingStore((state) => state.loadBranding);
   const { t } = useTranslation();
 
   // Reload on entering the page, in case the branding was changed by another admin.

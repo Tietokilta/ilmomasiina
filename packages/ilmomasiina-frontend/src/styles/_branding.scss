@@ -121,3 +121,69 @@
 
   @include ilmo-validation-variant(danger, invalid);
 }
+
+// Areas that must stay usable even with badly chosen theme colors, such as the settings form that previews
+// them, opt out of the runtime colors and use the compiled defaults. The selectors need to beat the
+// data-ilmo-* rules above in specificity.
+:root[data-ilmo-brand] .ilmo--theme-safe,
+:root[data-ilmo-secondary] .ilmo--theme-safe,
+:root[data-ilmo-success] .ilmo--theme-safe,
+:root[data-ilmo-danger] .ilmo--theme-safe {
+  .btn-primary {
+    @include ilmo-primary-button-variant;
+  }
+
+  .btn-secondary {
+    @include ilmo-secondary-button-variant;
+  }
+
+  .btn-outline-primary {
+    @include button-outline-variant($primary);
+  }
+
+  .btn-outline-secondary {
+    @include button-outline-variant($secondary);
+  }
+
+  .btn-success {
+    @include button-variant($success, $success);
+  }
+
+  .btn-danger {
+    @include button-variant($danger, $danger);
+  }
+
+  .btn-outline-danger {
+    @include button-outline-variant($danger);
+  }
+
+  .form-control:focus,
+  .form-select:focus,
+  .form-check-input:focus {
+    border-color: $input-focus-border-color;
+    box-shadow: $input-btn-focus-box-shadow;
+  }
+
+  .form-check-input:checked {
+    background-color: $form-check-input-checked-bg-color;
+    border-color: $form-check-input-checked-border-color;
+  }
+
+  .form-control.is-invalid,
+  .form-select.is-invalid {
+    border-color: $form-feedback-invalid-color;
+
+    &:focus {
+      border-color: $form-feedback-invalid-color;
+      box-shadow: 0 0 0 $focus-ring-width rgba($form-feedback-invalid-color, 0.25);
+    }
+  }
+
+  .text-danger {
+    color: $danger !important;
+  }
+
+  .text-success {
+    color: $success !important;
+  }
+}
