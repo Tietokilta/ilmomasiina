@@ -2,7 +2,7 @@
 
 // Runtime theme color support.
 //
-// Theme colors (brand, secondary, success and danger) flow through --ilmo-<name>-* CSS variables. The defaults
+// Theme colors (brand, secondary, success, warning, danger and muted text) flow through --ilmo-<name>-* CSS variables. The defaults
 // are computed here from the compiled Sass variables, and ApplyBranding overrides the variables on <html>
 // when an admin has configured custom colors. Everything else uses the variables unconditionally.
 
@@ -23,7 +23,9 @@
   @include ilmo-theme-color-variables(brand, $primary, $lighter-primary-hover);
   @include ilmo-theme-color-variables(secondary, $secondary, $lighter-secondary-hover);
   @include ilmo-theme-color-variables(success, $success, false);
+  @include ilmo-theme-color-variables(warning, $warning, false);
   @include ilmo-theme-color-variables(danger, $danger, false);
+  @include ilmo-theme-color-variables(muted, $secondary-text-color, false);
 }
 
 :root {
@@ -33,7 +35,9 @@
   --ilmo-default-brand-color: #{$primary};
   --ilmo-default-secondary-color: #{$secondary};
   --ilmo-default-success-color: #{$success};
+  --ilmo-default-warning-color: #{$warning};
   --ilmo-default-danger-color: #{$danger};
+  --ilmo-default-muted-color: #{$secondary-text-color};
 }
 
 // Areas that must stay usable even with badly chosen theme colors, such as the settings form that previews
@@ -111,6 +115,12 @@
 .btn-outline-success {
   @include ilmo-button-outline-variant(success);
 }
+.btn-warning {
+  @include ilmo-button-variant(warning);
+}
+.btn-outline-warning {
+  @include ilmo-button-outline-variant(warning);
+}
 .btn-danger {
   @include ilmo-button-variant(danger);
 }
@@ -132,3 +142,7 @@
 
 @include ilmo-validation-variant(success, valid);
 @include ilmo-validation-variant(danger, invalid);
+
+.text-muted {
+  color: var(--ilmo-muted-color) !important;
+}

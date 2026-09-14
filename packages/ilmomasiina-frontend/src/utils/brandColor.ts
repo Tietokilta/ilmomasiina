@@ -18,7 +18,7 @@ export function isHexColor(value: string): boolean {
 export type ThemeColorVariables = Record<string, string>;
 
 /** Theme colors that can be customized at runtime. */
-export type ThemeColorName = "brand" | "secondary" | "success" | "danger";
+export type ThemeColorName = "brand" | "secondary" | "success" | "warning" | "danger" | "muted";
 
 const WHITE = "#ffffff";
 const BLACK = "#000000";
@@ -53,7 +53,11 @@ function bootstrapVariables(name: ThemeColorName, hex: string, rgb: string): The
       "--bs-secondary-rgb": rgb,
     };
   }
-  // Used by utilities like .text-success and by .alert-success (and the same for danger).
+  if (name === "muted") {
+    // Only used through --ilmo-muted-color.
+    return {};
+  }
+  // Used by utilities like .text-success and by .alert-success (and the same for warning and danger).
   return {
     [`--bs-${name}`]: hex,
     [`--bs-${name}-rgb`]: rgb,

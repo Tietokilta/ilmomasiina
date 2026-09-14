@@ -10,7 +10,14 @@ const THEME_COLOR_ATTRIBUTE = "data-ilmo-theme-color";
 
 /** The icon <link> elements from index.html, removed from the DOM while a custom favicon is active. */
 let defaultIconLinks: HTMLLinkElement[] | null = null;
-const appliedColorVariables: Record<ThemeColorName, string[]> = { brand: [], secondary: [], success: [], danger: [] };
+const appliedColorVariables: Record<ThemeColorName, string[]> = {
+  brand: [],
+  secondary: [],
+  success: [],
+  warning: [],
+  danger: [],
+  muted: [],
+};
 const defaultTitle = document.title;
 
 /** Applies a theme color by overriding its CSS variables on <html>, or removes the overrides if `color` is
@@ -74,10 +81,11 @@ export default function ApplyBranding() {
   useEffect(() => {
     if (!branding) return;
     applyThemeColor("brand", branding.brandColor);
-    // Secondary follows the brand color unless separately set, as in the default theme.
-    applyThemeColor("secondary", branding.secondaryColor ?? branding.brandColor);
+    applyThemeColor("secondary", branding.secondaryColor);
     applyThemeColor("success", branding.successColor);
+    applyThemeColor("warning", branding.warningColor);
     applyThemeColor("danger", branding.dangerColor);
+    applyThemeColor("muted", branding.mutedColor);
     applyThemeColorMeta(branding.brandColor);
     applyFavicon(branding.favicon);
     document.title = branding.headerTitle ?? defaultTitle;

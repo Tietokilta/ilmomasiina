@@ -48,9 +48,11 @@ export const brandingAttributes = Type.Object({
 
   // Colors
   brandColor: color("Brand (primary) color, used for the header, links and primary buttons"),
-  secondaryColor: color("Secondary color, used for secondary buttons. Defaults to the brand color if that is set"),
+  secondaryColor: color("Secondary color, used for secondary buttons"),
   successColor: color("Success color, used for open signups and success messages"),
+  warningColor: color("Warning color, used for warning buttons and messages"),
   dangerColor: color("Danger color, used for delete buttons, errors and closed signups"),
+  mutedColor: color("Muted text color, used for subheadings, help texts and the footer"),
 
   // Images
   logo: Nullable(Type.String({ pattern: BRANDING_IMAGE_DATA_URL_PATTERN, maxLength: BRANDING_LOGO_MAX_LENGTH }), {

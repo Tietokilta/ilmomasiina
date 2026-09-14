@@ -36,7 +36,7 @@ const textKeys = [
   "mailFooterText",
   "mailFooterLink",
 ] as const;
-const colorKeys = ["brandColor", "secondaryColor", "successColor", "dangerColor"] as const;
+const colorKeys = ["brandColor", "secondaryColor", "successColor", "warningColor", "dangerColor", "mutedColor"] as const;
 
 type TextKey = (typeof textKeys)[number];
 type ColorKey = (typeof colorKeys)[number];
@@ -266,10 +266,22 @@ const BrandingForm = ({ branding }: Props) => {
             defaultVariable="--ilmo-default-success-color"
           />
           <ColorField
+            name="warningColor"
+            label={t("adminSettings.branding.warningColor")}
+            help={t("adminSettings.branding.warningColor.help")}
+            defaultVariable="--ilmo-default-warning-color"
+          />
+          <ColorField
             name="dangerColor"
             label={t("adminSettings.branding.dangerColor")}
             help={t("adminSettings.branding.dangerColor.help")}
             defaultVariable="--ilmo-default-danger-color"
+          />
+          <ColorField
+            name="mutedColor"
+            label={t("adminSettings.branding.mutedColor")}
+            help={t("adminSettings.branding.mutedColor.help")}
+            defaultVariable="--ilmo-default-muted-color"
           />
 
           <h2>{t("adminSettings.images.title")}</h2>
