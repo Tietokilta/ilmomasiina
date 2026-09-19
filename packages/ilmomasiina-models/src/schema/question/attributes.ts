@@ -17,9 +17,17 @@ export const questionIdentity = Type.Object({
 // This was a practical limit before an explicit limitation was added, so seems reasonable to set it here.
 export const MAX_OPTIONS_PER_QUESTION = 64;
 
-const questionOptions = Nullable(Type.Array(Type.String({ maxLength: 255 }), { maxItems: MAX_OPTIONS_PER_QUESTION }), {
-  description: "For select or checkbox questions, the options available.",
-});
+// Options schema factory for creating required and optional variants
+const createQuestionOptionsSchema = (minLength: number = 0) =>
+  Nullable(Type.Array(Type.String({ minLength, maxLength: 255 }), { maxItems: MAX_OPTIONS_PER_QUESTION }), {
+    description: "For select or checkbox questions, the options available.",
+  });
+
+// Localized options (can be empty)
+const questionOptions = createQuestionOptionsSchema(0);
+
+// Default language options (must be non-empty)
+const questionOptionsRequired = createQuestionOptionsSchema(1);
 
 /** Editable attributes of a question language version. */
 export const questionLanguageAttributes = Type.Object({
@@ -42,7 +50,7 @@ export const questionAttributes = Type.Object({
     title: "QuestionType",
     description: "The type of answer expected.",
   }),
-  options: questionOptions,
+  options: questionOptionsRequired,
   prices: Nullable(
     Type.Array(
       Type.Integer({ minimum: 0 }),

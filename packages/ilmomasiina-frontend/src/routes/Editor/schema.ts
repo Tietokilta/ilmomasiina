@@ -8,20 +8,25 @@ import { EditorEvent, EditorEventType } from "../../modules/editor/types";
 // a manual validation schema for the rest of the cases, than attempt to map JSON schema errors back
 // to form field names.
 
-const questionOptionsSchema: ZodType<EditorEvent["questions"][number]["options"]> = z
-  .array(z.string().max(255))
-  .max(MAX_OPTIONS_PER_QUESTION)
-  // Validate that the stringified options list is short enough, due to current server limitations.
-  .superRefine((value, ctx) => {
-    if (JSON.stringify(value).length > 255) {
-      ctx.addIssue({
-        code: "custom",
-        message: "editor.errors.optionsTooLong",
-        // Add the error on the last option to make it look nice
-        path: [value.length - 1],
-      });
-    }
-  });
+// Schema factory for question options with optional requirement for non-empty strings
+const createQuestionOptionsSchema = (required: boolean = false): ZodType<EditorEvent["questions"][number]["options"]> =>
+  z
+    .array(required ? z.string().min(1).max(255) : z.string().max(255))
+    .max(MAX_OPTIONS_PER_QUESTION)
+    // Validate that the stringified options list is short enough, due to current server limitations.
+    .superRefine((value, ctx) => {
+      if (JSON.stringify(value).length > 255) {
+        ctx.addIssue({
+          code: "custom",
+          message: "editor.errors.optionsTooLong",
+          // Add the error on the last option to make it look nice
+          path: [value.length - 1],
+        });
+      }
+    });
+
+const questionOptionsSchema = createQuestionOptionsSchema(true);
+const questionOptionsSchemaLocalized = createQuestionOptionsSchema(false);
 
 const priceSchema = z
   .number({ error: "editor.errors.invalidPrice" })
@@ -75,7 +80,7 @@ const editorSchema: ZodType<EditorEvent> = z
         questions: z.array(
           z.object({
             question: z.string().max(255),
-            options: questionOptionsSchema,
+            options: questionOptionsSchemaLocalized,
           }),
         ),
       }),
