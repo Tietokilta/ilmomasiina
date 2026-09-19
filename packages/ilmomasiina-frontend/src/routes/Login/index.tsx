@@ -13,6 +13,7 @@ import type { TKey } from "../../i18n";
 import { loginToast } from "../../modules/auth";
 import useStore from "../../modules/store";
 import paths from "../../paths";
+import useBrandedDocumentTitle from "../../utils/useBrandedDocumentTitle";
 import useEvent from "../../utils/useEvent";
 
 import "./Login.scss";
@@ -31,6 +32,8 @@ const Login = () => {
   const { login } = useStore((state) => state.auth);
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  useBrandedDocumentTitle(t("login.title"));
 
   const onSubmit = useEvent(async (data: FormData) => {
     const { email, password } = data;

@@ -11,12 +11,15 @@ import type { TKey } from "../../i18n";
 import useStore from "../../modules/store";
 import paths from "../../paths";
 import { isEventInPast } from "../../utils/eventState";
+import useBrandedDocumentTitle from "../../utils/useBrandedDocumentTitle";
 import AdminEventListItem from "./AdminEventListItem";
 
 const AdminEventsList = () => {
   const { events, loadError, getAdminEvents, resetState } = useStore((state) => state.adminEvents);
   const [showPast, setShowPast] = useState(false);
   const { t } = useTranslation();
+
+  useBrandedDocumentTitle(t("adminEvents.title"));
 
   const togglePast = useCallback((evt: BaseSyntheticEvent) => {
     evt.preventDefault();
