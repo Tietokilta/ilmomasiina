@@ -4,8 +4,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { I18nextProvider } from "react-i18next";
 import inline from "web-resource-inliner";
 
+import { getBranding } from "../branding";
 import config from "../config";
 import i18n from "../i18n";
+import { BrandingContext } from "./components/BrandingContext";
 import mailTransporter from "./config";
 import Confirmation, { ConfirmationMailParams } from "./templates/Confirmation";
 import NewUser, { CredentialsMailParams } from "./templates/NewUser";
@@ -22,8 +24,13 @@ const DOCTYPE =
 
 async function renderEmail(element: ReactElement, language: string): Promise<string> {
   const i18nInstance = i18n.cloneInstance({ lng: language });
+  const branding = await getBranding();
 
-  const wrapped = <I18nextProvider i18n={i18nInstance}>{element}</I18nextProvider>;
+  const wrapped = (
+    <I18nextProvider i18n={i18nInstance}>
+      <BrandingContext.Provider value={branding}>{element}</BrandingContext.Provider>
+    </I18nextProvider>
+  );
   const html = renderToStaticMarkup(wrapped);
   const withDoctype = `${DOCTYPE}\n${html}`;
 

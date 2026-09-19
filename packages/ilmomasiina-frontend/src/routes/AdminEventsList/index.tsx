@@ -1,6 +1,6 @@
 import React, { BaseSyntheticEvent, useCallback, useEffect, useMemo, useState } from "react";
 
-import { Button, Spinner } from "react-bootstrap";
+import { Button, Dropdown, Spinner } from "react-bootstrap";
 import { Trans, useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
@@ -63,12 +63,20 @@ const AdminEventsList = () => {
           <Button variant="secondary" onClick={togglePast}>
             {showPast ? t("adminEvents.nav.upcoming") : t("adminEvents.nav.past")}
           </Button>
-          <LinkButton variant="secondary" to={paths.adminUsersList}>
-            {t("adminEvents.nav.users")}
-          </LinkButton>
-          <LinkButton variant="secondary" to={paths.adminAuditLog}>
-            {t("adminEvents.nav.auditLog")}
-          </LinkButton>
+          <Dropdown>
+            <Dropdown.Toggle variant="secondary">{t("adminEvents.nav.manage")}</Dropdown.Toggle>
+            <Dropdown.Menu align="end">
+              <Dropdown.Item as={Link} to={paths.adminUsersList}>
+                {t("adminEvents.nav.users")}
+              </Dropdown.Item>
+              <Dropdown.Item as={Link} to={paths.adminSettings}>
+                {t("adminEvents.nav.settings")}
+              </Dropdown.Item>
+              <Dropdown.Item as={Link} to={paths.adminAuditLog}>
+                {t("adminEvents.nav.auditLog")}
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
           <LinkButton variant="primary" to={paths.adminEditEvent("new")}>
             {t("adminEvents.nav.newEvent")}
           </LinkButton>

@@ -23,10 +23,10 @@ table.ilmo--event-list {
     color: $signup-state-not-opened;
   }
   tr.ilmo--signup-opened td.ilmo--signup-state {
-    color: $signup-state-opened;
+    color: var(--ilmo-success-color);
   }
   tr.ilmo--signup-closed td.ilmo--signup-state {
-    color: $signup-state-closed;
+    color: var(--ilmo-danger-color);
   }
   tr.ilmo--signup-disabled td.ilmo--signup-state {
     color: $signup-state-disabled;
