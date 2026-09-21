@@ -128,7 +128,8 @@ export const authSlice = storeSlice<Root>()("auth", (set, get, store, getSlice, 
     try {
       const { accessToken } = getSlice();
       if (!accessToken) {
-        throw new ApiError(401, { isUnauthenticated: true });
+        // Just redirect to login - it shouldn't be possible to even browse admin pages without login.
+        throw new ApiError(401, { code: ErrorCode.BAD_SESSION, message: "Not logged in" });
       }
       return await apiFetch<T>(uri, {
         ...opts,

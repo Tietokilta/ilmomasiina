@@ -6,9 +6,11 @@ import {
   AdminSignupUpdateBody,
   CategoriesResponse,
   CheckSlugResponse,
+  EditConflictError,
   ErrorCode,
   EventID,
   SignupID,
+  WouldMoveSignupsToQueueError,
 } from "@tietokilta/ilmomasiina-models";
 import storeSlice from "../../utils/storeSlice";
 import type { Root } from "../store";
@@ -147,11 +149,11 @@ export const editorSlice = storeSlice<Root>()("editor", (set, get, store, getSli
       return response;
     } catch (e) {
       if (e instanceof ApiError && e.code === ErrorCode.WOULD_MOVE_SIGNUPS_TO_QUEUE) {
-        setSlice({ moveToQueueModal: { count: e.response!.count } });
+        setSlice({ moveToQueueModal: { count: (e.response as WouldMoveSignupsToQueueError).count } });
         return null;
       }
       if (e instanceof ApiError && e.code === ErrorCode.EDIT_CONFLICT) {
-        setSlice({ editConflictModal: e.response! });
+        setSlice({ editConflictModal: e.response as EditConflictError });
         return null;
       }
       throw e;
