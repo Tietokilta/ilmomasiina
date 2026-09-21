@@ -33,10 +33,10 @@ const ACTION_STRINGS = {
 
 function useItemDescription(item: AuditLogItemSchema) {
   const { t } = useTranslation();
-  let extra: any = {};
+  let extra: Record<string, unknown> = {};
   try {
-    extra = JSON.parse(item.extra || "");
-  } catch (err) {
+    extra = JSON.parse(item.extra || "") as Record<string, unknown>;
+  } catch {
     /* ignore */
   }
   switch (item.action) {
@@ -49,7 +49,7 @@ function useItemDescription(item: AuditLogItemSchema) {
         <Trans t={t} i18nKey={ACTION_STRINGS[item.action]}>
           created event
           {item.eventId ? (
-            <Link to={paths.adminEditEvent(item.eventId as any)}>{{ event: item.eventName ?? "" }}</Link>
+            <Link to={paths.adminEditEvent(item.eventId)}>{{ event: item.eventName ?? "" }}</Link>
           ) : (
             { event: item.eventName ?? "" }
           )}
@@ -80,7 +80,7 @@ function useItemDescription(item: AuditLogItemSchema) {
     case AuditEvent.RESET_PASSWORD:
       return t(ACTION_STRINGS[item.action], { user: extra.email });
     default:
-      return ACTION_STRINGS[item.action]
+      return item.action in ACTION_STRINGS
         ? t(ACTION_STRINGS[item.action])
         : t("auditLog.description.unknown", { action: item.action });
   }

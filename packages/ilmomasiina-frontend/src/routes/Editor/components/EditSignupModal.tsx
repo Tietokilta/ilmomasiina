@@ -30,7 +30,6 @@ const QuotaField = (props: FieldInputProps<QuotaID>) => {
   return (
     <BsForm.Select {...props}>
       {quotas.map((quota) => (
-        // eslint-disable-next-line react/no-array-index-key
         <option key={quota.id} value={quota.id}>
           {quota.title}
         </option>
@@ -126,7 +125,7 @@ const EditSignupModal = () => {
       editToken: "",
       isNew: true,
       event: convertedEvent,
-      localizedEvent: getLocalizedEvent(convertedEvent, editedSignup?.language ?? values.defaultLanguage),
+      localizedEvent: getLocalizedEvent(convertedEvent, editedSignup.language ?? values.defaultLanguage),
       signup,
       localizedSignup: signup, // No need for quota name localization
       editingClosedOnLoad: false,

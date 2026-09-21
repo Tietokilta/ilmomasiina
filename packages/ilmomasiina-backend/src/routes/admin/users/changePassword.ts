@@ -21,7 +21,7 @@ export default async function changePassword(
 
   await getSequelize().transaction(async (transaction) => {
     // Try to fetch existing user
-    const existing = await User.findByPk(request.sessionData.user, {
+    const existing = await User.findByPk(request.sessionData!.user, {
       attributes: ["id", "email", "password"],
       transaction,
     });

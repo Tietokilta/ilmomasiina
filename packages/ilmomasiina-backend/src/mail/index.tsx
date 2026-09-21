@@ -38,7 +38,7 @@ async function renderEmail(element: ReactElement, language: string): Promise<str
         relativeTo: assetsDir,
         strict: true,
       },
-      (error: unknown, inlined: string) => (error ? reject(error) : resolve(inlined)),
+      (error: Error | null, inlined: string) => (error ? reject(error) : resolve(inlined)),
     );
   });
 }
@@ -47,8 +47,8 @@ function getLanguage(language: string | null): string {
   return language || config.defaultLanguage;
 }
 
-export default class EmailService {
-  static send(to: string, subject: string, html: string) {
+const EmailService = {
+  send(to: string, subject: string, html: string) {
     const msg = {
       to,
       from: config.mailFrom,
@@ -57,9 +57,9 @@ export default class EmailService {
     };
 
     return mailTransporter.sendMail(msg);
-  }
+  },
 
-  static async sendConfirmationMail(to: string, language: string | null, params: ConfirmationMailParams) {
+  sendConfirmationMail: async (to: string, language: string | null, params: ConfirmationMailParams) => {
     try {
       const lng = getLanguage(language);
       const subject = i18n.t(`emails.confirmation.${params.type}.subject`, { lng, event: params.event.title });
@@ -68,9 +68,9 @@ export default class EmailService {
     } catch (error) {
       console.error(error);
     }
-  }
+  },
 
-  static async sendPaymentConfirmationMail(to: string, language: string | null, params: PaymentMailParams) {
+  sendPaymentConfirmationMail: async (to: string, language: string | null, params: PaymentMailParams) => {
     try {
       const lng = getLanguage(language);
       const subject = i18n.t("emails.payment.subject", { lng, event: params.event.title });
@@ -79,9 +79,9 @@ export default class EmailService {
     } catch (error) {
       console.error(error);
     }
-  }
+  },
 
-  static async sendNewUserMail(to: string, language: string | null, params: CredentialsMailParams) {
+  sendNewUserMail: async (to: string, language: string | null, params: CredentialsMailParams) => {
     try {
       const lng = getLanguage(language);
       const subject = i18n.t("emails.newUser.subject", { lng });
@@ -90,9 +90,9 @@ export default class EmailService {
     } catch (error) {
       console.error(error);
     }
-  }
+  },
 
-  static async sendResetPasswordMail(to: string, language: string | null, params: CredentialsMailParams) {
+  sendResetPasswordMail: async (to: string, language: string | null, params: CredentialsMailParams) => {
     try {
       const lng = getLanguage(language);
       const subject = i18n.t("emails.resetPassword.subject", { lng });
@@ -101,9 +101,9 @@ export default class EmailService {
     } catch (error) {
       console.error(error);
     }
-  }
+  },
 
-  static async sendPromotedFromQueueMail(to: string, language: string | null, params: QueueMailParams) {
+  sendPromotedFromQueueMail: async (to: string, language: string | null, params: QueueMailParams) => {
     try {
       const lng = getLanguage(language);
       const subject = i18n.t("emails.queueMail.subject", { lng, event: params.event.title });
@@ -112,5 +112,7 @@ export default class EmailService {
     } catch (error) {
       console.error(error);
     }
-  }
-}
+  },
+};
+
+export default EmailService;

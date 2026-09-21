@@ -51,12 +51,12 @@ export default class AdminAuthSession {
       throw new BadSession("Missing Authorization header");
     }
 
-    const token = Array.isArray(header) ? header[0] : header;
+    const token = Array.isArray(header) ? (header[0] as string) : header;
 
     try {
       // Try to verify token
-      const data = this.verify(token);
-      return { user: parseInt(data.user), email: data.email || "" };
+      const data = this.verify(token) as AdminTokenData;
+      return { user: data.user, email: data.email || "" };
     } catch {
       throw new BadSession("Invalid session");
     }

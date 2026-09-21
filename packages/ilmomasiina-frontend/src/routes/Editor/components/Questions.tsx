@@ -140,7 +140,7 @@ const QuestionRow = ({ name, index }: QuestionProps) => {
                 hasPrices={hasPrices}
               />
             ))}
-            {optionFields.length! < MAX_OPTIONS_PER_QUESTION && (
+            {optionFields.length < MAX_OPTIONS_PER_QUESTION && (
               <Row>
                 <Col sm="3" />
                 <Col sm="9">

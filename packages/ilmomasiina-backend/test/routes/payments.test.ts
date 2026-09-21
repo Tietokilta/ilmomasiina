@@ -1,3 +1,4 @@
+import { maxBy } from "lodash";
 import moment from "moment";
 import { Op } from "sequelize";
 import Stripe from "stripe";
@@ -21,7 +22,6 @@ import { Question } from "../../src/models/question";
 import { Signup } from "../../src/models/signup";
 import { checkoutSessionStatusUpdated, expirePaymentForSignupUpdate, getStripe } from "../../src/routes/payment/stripe";
 import { refreshSignupPositions } from "../../src/routes/signups/computeSignupPosition";
-import { deferred } from "../deferred";
 import * as api from "./api";
 
 // Mock Stripe API methods
@@ -56,7 +56,7 @@ async function mockCheckoutSessionStatusUpdated(
   return auditLog;
 }
 
-beforeAll(async () => {
+beforeAll(() => {
   // Import the actual payment module to get access to the Stripe client
   const stripe = getStripe();
 
@@ -68,6 +68,7 @@ beforeAll(async () => {
 });
 
 beforeEach(() => {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (mockStripeCheckoutSessionCreate) {
     mockStripeCheckoutSessionCreate.mockClear();
     mockStripeCheckoutSessionExpire.mockClear();
@@ -170,10 +171,10 @@ describe("startPayment", () => {
         customer_email: signup.email!,
         success_url: expect.any(String),
         cancel_url: expect.any(String),
-        expires_at: moment(payment.expiresAt).unix(),
+        expires_at: moment(payment!.expiresAt).unix(),
         metadata: {
-          signupId: payment.signupId,
-          paymentId: String(payment.id),
+          signupId: payment!.signupId,
+          paymentId: String(payment!.id),
         },
       }),
     );
@@ -367,8 +368,8 @@ describe("startPayment", () => {
     );
 
     // Create two signups, first to fill the quota, then to place another in queue
-    await testSignups({ event, count: 1, confirmed: true });
-    const [queuedSignup] = await testSignups({ event, count: 1, confirmed: true });
+    const signups = await testSignups({ event, count: 2, confirmed: true });
+    const queuedSignup = maxBy(signups, "createdAt")!;
 
     // Refresh positions to assign statuses
     await refreshSignupPositions(event);
@@ -719,8 +720,8 @@ describe("payment and signup update locking", () => {
   test("signup update blocks ongoing payment creation by marking as CREATION_FAILED", async () => {
     const { event, signup } = await defaultTestEventAndSignup();
 
-    const stripeMockRequest = deferred<void>();
-    const stripeMockResponse = deferred<void>();
+    const stripeMockRequest = Promise.withResolvers<void>();
+    const stripeMockResponse = Promise.withResolvers<void>();
     mockStripeCheckoutSessionCreate.mockImplementationOnce(async () => {
       // Let the test proceed when called, then wait for signal to continue
       stripeMockRequest.resolve();
@@ -758,8 +759,8 @@ describe("payment and signup update locking", () => {
   test("signup deletion blocks ongoing payment creation by marking as CREATION_FAILED", async () => {
     const { signup } = await defaultTestEventAndSignup();
 
-    const stripeMockRequest = deferred<void>();
-    const stripeMockResponse = deferred<void>();
+    const stripeMockRequest = Promise.withResolvers<void>();
+    const stripeMockResponse = Promise.withResolvers<void>();
     mockStripeCheckoutSessionCreate.mockImplementationOnce(async () => {
       // Let the test proceed when called, then wait for signal to continue
       stripeMockRequest.resolve();
@@ -1452,12 +1453,12 @@ describe("preferredFrontend in payments", () => {
   beforeEach(() => {
     originalFrontends = { ...config.frontends };
     // Temporarily add an alternative frontend
-    (config.frontends as FrontendsConfig).alt = altFrontend;
+    config.frontends.alt = altFrontend;
   });
 
   afterEach(() => {
     // Restore original frontends config
-    delete (config.frontends as FrontendsConfig).alt;
+    delete config.frontends.alt;
     Object.assign(config.frontends, originalFrontends);
   });
 
@@ -1465,8 +1466,8 @@ describe("preferredFrontend in payments", () => {
     const { signup } = await defaultTestEventAndSignup();
     // Set the event's preferredFrontend to the alternative
     const quota = await signup.getQuota();
-    const event = await quota.getEvent();
-    await event.update({ preferredFrontend: "alt" });
+    const event = await quota!.getEvent();
+    await event!.update({ preferredFrontend: "alt" });
 
     const [data, response] = await api.startPayment(signup.id);
     expect(response.statusCode).toBe(200);
@@ -1485,8 +1486,8 @@ describe("preferredFrontend in payments", () => {
     const { signup } = await defaultTestEventAndSignup();
     // Ensure preferredFrontend is "default"
     const quota = await signup.getQuota();
-    const event = await quota.getEvent();
-    await event.update({ preferredFrontend: "default" });
+    const event = await quota!.getEvent();
+    await event!.update({ preferredFrontend: "default" });
 
     const [, response] = await api.startPayment(signup.id);
     expect(response.statusCode).toBe(200);
@@ -1504,8 +1505,8 @@ describe("preferredFrontend in payments", () => {
     const { signup } = await defaultTestEventAndSignup();
     // Set preferredFrontend to a name that doesn't exist in config
     const quota = await signup.getQuota();
-    const event = await quota.getEvent();
-    await event.update({ preferredFrontend: "nonexistent" });
+    const event = await quota!.getEvent();
+    await event!.update({ preferredFrontend: "nonexistent" });
 
     const [, response] = await api.startPayment(signup.id);
     expect(response.statusCode).toBe(200);
@@ -1522,8 +1523,8 @@ describe("preferredFrontend in payments", () => {
   test("completePayment sends email with preferredFrontend URL", async () => {
     const { signup } = await defaultTestEventAndSignup();
     const quota = await signup.getQuota();
-    const event = await quota.getEvent();
-    await event.update({ preferredFrontend: "alt" });
+    const event = await quota!.getEvent();
+    await event!.update({ preferredFrontend: "alt" });
 
     // Create a PENDING payment
     await api.startPayment(signup.id);
@@ -1548,8 +1549,8 @@ describe("preferredFrontend in payments", () => {
   test("payment confirmation email uses preferredFrontend URL", async () => {
     const { signup } = await defaultTestEventAndSignup();
     const quota = await signup.getQuota();
-    const event = await quota.getEvent();
-    await event.update({ preferredFrontend: "alt" });
+    const event = await quota!.getEvent();
+    await event!.update({ preferredFrontend: "alt" });
 
     // Create a PENDING payment
     await api.startPayment(signup.id);
@@ -1569,8 +1570,8 @@ describe("preferredFrontend in payments", () => {
   test("payment confirmation email falls back to default for unknown frontend name", async () => {
     const { signup } = await defaultTestEventAndSignup();
     const quota = await signup.getQuota();
-    const event = await quota.getEvent();
-    await event.update({ preferredFrontend: "nonexistent" });
+    const event = await quota!.getEvent();
+    await event!.update({ preferredFrontend: "nonexistent" });
 
     // Create a PENDING payment
     await api.startPayment(signup.id);

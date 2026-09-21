@@ -17,7 +17,7 @@ export const editorEventToUserEvent = (form: EditorEvent): UserEventResponse => 
       ...quota,
       id: quota.id ?? `preview${Math.random()}`,
       signupCount: 0,
-      price: quota.price ?? 0,
+      price: quota.price,
       signups: [],
     })),
     questions: serverEvent.questions.map((question) => ({

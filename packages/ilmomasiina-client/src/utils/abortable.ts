@@ -10,7 +10,7 @@ export function abortable(): [AbortSignal, () => void] {
 /** Like useEffect, but instead of accepting a cleanup function, provides an AbortSignal that is aborted
  * upon unmount or deps change.
  */
-export function useAbortableEffect(effect: (signal: AbortSignal) => void, deps?: any[]) {
+export function useAbortableEffect(effect: (signal: AbortSignal) => void, deps?: unknown[]) {
   useEffect(() => {
     const [signal, abort] = abortable();
     effect(signal);
@@ -32,14 +32,14 @@ export type PromiseState<R> =
     }
   | {
       result: undefined;
-      error: object;
+      error: unknown;
       pending: false;
     };
 
 /** Wraps a Promise, ignoring DOMExceptions with name='AbortError' as if the promise was left pending. */
 export function ignoreAbort<R>(promise: Promise<R>): Promise<R> {
   return new Promise((resolve, reject) => {
-    promise.then(resolve, (error) => {
+    promise.then(resolve, (error: unknown) => {
       if (error instanceof DOMException && error.name === "AbortError") return;
       reject(error);
     });
@@ -52,7 +52,7 @@ export function ignoreAbort<R>(promise: Promise<R>): Promise<R> {
  * DOMExceptions with name='AbortError' are ignored, as if the promise was left pending.
  * Unmounting or deps changes also return the state to pending.
  */
-export function useAbortablePromise<R>(effect: (signal: AbortSignal) => Promise<R>, deps?: any[]) {
+export function useAbortablePromise<R>(effect: (signal: AbortSignal) => Promise<R>, deps?: unknown[]) {
   const [state, setState] = useState<PromiseState<R>>({
     result: undefined,
     error: undefined,
@@ -73,7 +73,7 @@ export function useAbortablePromise<R>(effect: (signal: AbortSignal) => Promise<
           pending: false,
         });
       },
-      (error) => {
+      (error: unknown) => {
         if (pendingPromise.current !== promise) return;
         pendingPromise.current = undefined;
         setState({

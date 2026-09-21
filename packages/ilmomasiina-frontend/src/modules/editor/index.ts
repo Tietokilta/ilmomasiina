@@ -6,9 +6,11 @@ import {
   AdminSignupUpdateBody,
   CategoriesResponse,
   CheckSlugResponse,
+  EditConflictError,
   ErrorCode,
   EventID,
   SignupID,
+  WouldMoveSignupsToQueueError,
 } from "@tietokilta/ilmomasiina-models";
 import storeSlice from "../../utils/storeSlice";
 import type { Root } from "../store";
@@ -71,8 +73,6 @@ const blankSignup = {
   manualPaymentStatus: null,
 } satisfies Partial<EditorSignup>;
 
-/* eslint-disable no-param-reassign -- immer in use */
-
 export const editorSlice = storeSlice<Root>()("editor", (set, get, store, getSlice, setSlice, resetState) => ({
   ...initialState,
   resetState,
@@ -90,7 +90,7 @@ export const editorSlice = storeSlice<Root>()("editor", (set, get, store, getSli
     const { event } = getSlice();
     if (!event) return;
     getSlice().resetState();
-    getSlice().getEvent(event.id);
+    void getSlice().getEvent(event.id);
   },
   loaded: (event: AdminEventResponse | null, isNew: boolean) =>
     setSlice({
@@ -105,7 +105,7 @@ export const editorSlice = storeSlice<Root>()("editor", (set, get, store, getSli
     try {
       const response = await get().auth.adminApiFetch<CheckSlugResponse>(`admin/slugs/${slug}`);
       setSlice({ slugAvailability: response });
-    } catch (e) {
+    } catch {
       setSlice({ slugAvailability: null });
     }
   },
@@ -149,11 +149,11 @@ export const editorSlice = storeSlice<Root>()("editor", (set, get, store, getSli
       return response;
     } catch (e) {
       if (e instanceof ApiError && e.code === ErrorCode.WOULD_MOVE_SIGNUPS_TO_QUEUE) {
-        setSlice({ moveToQueueModal: { count: e.response!.count } });
+        setSlice({ moveToQueueModal: { count: (e.response as WouldMoveSignupsToQueueError).count } });
         return null;
       }
       if (e instanceof ApiError && e.code === ErrorCode.EDIT_CONFLICT) {
-        setSlice({ editConflictModal: e.response! });
+        setSlice({ editConflictModal: e.response as EditConflictError });
         return null;
       }
       throw e;
@@ -172,7 +172,7 @@ export const editorSlice = storeSlice<Root>()("editor", (set, get, store, getSli
     }),
   editNewSignup: (language: string) =>
     setSlice((state) => {
-      if (!state.event || !state.event.quotas.length) return state;
+      if (!state.event || state.event.quotas.length === 0) return state;
       return {
         ...state,
         editedSignup: {
@@ -190,7 +190,7 @@ export const editorSlice = storeSlice<Root>()("editor", (set, get, store, getSli
     try {
       await get().auth.adminApiFetch(`admin/signups/${id}`, { method: "DELETE" });
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   },

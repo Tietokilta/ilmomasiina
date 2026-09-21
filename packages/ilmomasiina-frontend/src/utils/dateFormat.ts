@@ -3,7 +3,7 @@ import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 /** Returns a formatter for event dates like "31.12.2024". */
-export function useEventDateFormatter() {
+export function useEventDateFormatter(): Intl.DateTimeFormat {
   const { t } = useTranslation();
   const locale = t("dateFormat.locale");
   return useMemo(
@@ -20,7 +20,7 @@ export function useEventDateFormatter() {
 }
 
 /** Returns a formatter for event datetimes like "su 31.12.2024 23:59". */
-export function useEventDateTimeFormatter() {
+export function useEventDateTimeFormatter(): Intl.DateTimeFormat {
   const { t } = useTranslation();
   const locale = t("dateFormat.locale");
   return useMemo(
@@ -40,7 +40,7 @@ export function useEventDateTimeFormatter() {
 }
 
 /** Returns a formatter for seconds-accurate datetimes like "31.12.2024 23:59:59". */
-export function useActionDateTimeFormatter() {
+export function useActionDateTimeFormatter(): Intl.DateTimeFormat {
   const { t } = useTranslation();
   const locale = t("dateFormat.locale");
   return useMemo(
@@ -60,7 +60,7 @@ export function useActionDateTimeFormatter() {
 }
 
 /** Returns a formatter for the milliseconds of a time. */
-export function useMillisecondsDateTimeFormatter() {
+export function useMillisecondsDateTimeFormatter(): Intl.DateTimeFormat {
   const { t } = useTranslation();
   const locale = t("dateFormat.locale");
   return useMemo(
@@ -72,10 +72,10 @@ export function useMillisecondsDateTimeFormatter() {
   );
 }
 
-export function useDurationFormatter() {
+export function useDurationFormatter(): (ms: number) => string {
   const { t } = useTranslation();
   return useCallback(
-    (ms: number) => {
+    (ms) => {
       const sec = ms / 1000;
       if (sec < 120) return t("duration.secs", { count: Math.floor(sec) });
       if (sec < 3600 + 60 - 1) return t("duration.mins", { count: Math.floor(sec / 60) });

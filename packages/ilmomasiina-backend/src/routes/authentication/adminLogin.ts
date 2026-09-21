@@ -35,7 +35,7 @@ export async function renewAdminToken(
   this: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
-): Promise<AdminLoginResponse | void> {
+): Promise<AdminLoginResponse> {
   // Verify existing token
   const sessionData = this.adminSession.verifySession(request);
 
@@ -56,7 +56,8 @@ export function requireAdmin(session: AdminAuthSession, fastify: FastifyInstance
   fastify.addHook("onRequest", async (request: FastifyRequest, reply) => {
     try {
       // Validate session & decorate request with session data
-      (request.sessionData as AdminTokenData) = session.verifySession(request);
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- the cast only drops readonly
+      (request.sessionData as AdminTokenData | undefined) = session.verifySession(request);
     } catch (err) {
       // Throwing inside hook is not safe, so the errors must be converted to actual reply here
       fastify.log.error(err);
@@ -71,6 +72,6 @@ export function requireAdmin(session: AdminAuthSession, fastify: FastifyInstance
 
 declare module "fastify" {
   interface FastifyRequest {
-    readonly sessionData: AdminTokenData;
+    readonly sessionData?: AdminTokenData;
   }
 }

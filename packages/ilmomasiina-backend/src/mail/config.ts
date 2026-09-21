@@ -1,6 +1,6 @@
 import Mailgun from "mailgun.js";
 import nodemailer, { Transport } from "nodemailer";
-import SMTPTransport from "nodemailer/lib/smtp-transport";
+import type SMTPTransport from "nodemailer/lib/smtp-transport";
 
 import config from "../config";
 
@@ -28,7 +28,7 @@ const mailTransporter: AbstractTransporter = (() => {
         const envelope = message.getEnvelope();
         const messageId = message.messageId();
         // Completely ignore emails in test environment - mocking is done at EmailService.send before calling this
-        setImmediate(() => callback(null, { envelope, messageId } as any));
+        setImmediate(() => callback(null, { envelope, messageId } as SMTPTransport.SentMessageInfo));
       },
     });
   }
@@ -75,12 +75,12 @@ const mailTransporter: AbstractTransporter = (() => {
       const messageId = message.messageId();
       const input = message.createReadStream();
       let data = "";
-      input.on("data", (chunk) => {
+      input.on("data", (chunk: string) => {
         data += chunk;
       });
       input.on("end", () => {
         console.log(data);
-        callback(null, { envelope, messageId } as any);
+        callback(null, { envelope, messageId } as SMTPTransport.SentMessageInfo);
       });
     },
   });

@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file */
 import { ErrorCode } from "@tietokilta/ilmomasiina-models";
 import CustomError from "../../util/customError";
 

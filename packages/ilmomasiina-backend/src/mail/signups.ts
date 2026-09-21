@@ -15,11 +15,13 @@ import EmailService, { ConfirmationMailParams, PaymentMailParams, QueueMailParam
  * In production, we want to send emails asynchronously ("fire and forget") so that we don't
  * block transactions or fail operations due to email sending issues.
  */
-function sendSynchronouslyInTest<A extends any[]>(func: (...args: A) => Promise<void>): (...args: A) => Promise<void> {
+function sendSynchronouslyInTest<A extends unknown[]>(
+  func: (...args: A) => Promise<void>,
+): (...args: A) => Promise<void> {
   if (config.nodeEnv === "test" || config.nodeEnv === "bench") return func;
 
   return async (...args: A) => {
-    func(...args).catch((err) => {
+    void func(...args).catch((err: unknown) => {
       console.error("Error sending email:", err);
     });
   };
@@ -68,6 +70,7 @@ export const sendSignupConfirmationMail = sendSynchronouslyInTest(
     const { event } = quota;
     const questions = await event.getQuestions({ order: [["order", "ASC"]] });
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- indexing may fail
     const localeQuestions = event.languages[lang]?.questions ?? questions;
 
     // Show name only if filled
@@ -108,7 +111,7 @@ export const sendSignupConfirmationMail = sendSynchronouslyInTest(
 /** Fetches information necessary for a payment confirmation email and sends it. */
 export const sendPaymentConfirmationMail = sendSynchronouslyInTest(async (payment: Payment) => {
   const signup = await payment.getSignup();
-  if (!signup.email) return;
+  if (!signup || !signup.email) return;
 
   const lang = signup.language ?? config.defaultLanguage;
 

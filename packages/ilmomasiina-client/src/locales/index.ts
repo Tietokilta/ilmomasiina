@@ -5,5 +5,4 @@ import fi from "./fi.json";
 fi satisfies typeof en;
 en satisfies typeof fi;
 
-// eslint-disable-next-line import/prefer-default-export
 export const i18nResources = { fi, en } as const;

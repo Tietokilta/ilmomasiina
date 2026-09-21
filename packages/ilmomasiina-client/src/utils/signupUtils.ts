@@ -17,12 +17,11 @@ export type SignupWithQuota<Ev extends AnyEventSchema = AnyEventSchema> = Ev["qu
 };
 
 export function getSignupsAsList<Ev extends AnyEventSchema>(event: Ev): SignupWithQuota<Ev>[] {
-  return event.quotas.flatMap(
-    (quota) =>
-      quota.signups?.map((signup) => ({
-        ...signup,
-        quota,
-      })) ?? [],
+  return event.quotas.flatMap((quota) =>
+    quota.signups.map((signup) => ({
+      ...signup,
+      quota,
+    })),
   );
 }
 

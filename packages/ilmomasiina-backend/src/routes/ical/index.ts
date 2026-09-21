@@ -54,7 +54,7 @@ export async function eventsAsICal() {
     })),
   );
 
-  if (error !== null) throw new Error(`Failed to generate iCalendar: ${error}`);
+  if (error != null) throw new Error(`Failed to generate iCalendar: ${error}`);
   return value;
 }
 

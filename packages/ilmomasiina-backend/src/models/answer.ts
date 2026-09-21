@@ -23,23 +23,23 @@ export interface AnswerAttributes {
 export interface AnswerCreationAttributes extends Optional<AnswerAttributes, "id"> {}
 
 export class Answer extends Model<AnswerAttributes, AnswerCreationAttributes> implements AnswerAttributes {
-  public id!: string;
-  public answer!: string | string[];
+  declare id: string;
+  declare answer: string | string[];
 
-  public questionId!: Question["id"];
-  public question?: Question;
-  public getQuestion!: HasOneGetAssociationMixin<Question>;
-  public setQuestion!: HasOneSetAssociationMixin<Question, Question["id"]>;
-  public createQuestion!: HasOneCreateAssociationMixin<Question>;
+  declare questionId: Question["id"];
+  declare question?: Question;
+  declare getQuestion: HasOneGetAssociationMixin<Question | null>;
+  declare setQuestion: HasOneSetAssociationMixin<Question, Question["id"]>;
+  declare createQuestion: HasOneCreateAssociationMixin<Question>;
 
-  public signupId!: Signup["id"];
-  public signup?: Signup;
-  public getSignup!: HasOneGetAssociationMixin<Signup>;
-  public setSignup!: HasOneSetAssociationMixin<Signup, Signup["id"]>;
-  public createSignup!: HasOneCreateAssociationMixin<Signup>;
+  declare signupId: Signup["id"];
+  declare signup?: Signup;
+  declare getSignup: HasOneGetAssociationMixin<Signup | null>;
+  declare setSignup: HasOneSetAssociationMixin<Signup, Signup["id"]>;
+  declare createSignup: HasOneCreateAssociationMixin<Signup>;
 
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 export default function setupAnswerModel(sequelize: Sequelize) {

@@ -113,7 +113,7 @@ const EditForm = () => {
       let saved;
       if (isNew) {
         saved = await publishNewEvent(data);
-        navigate(paths.adminEditEvent(saved.id));
+        void navigate(paths.adminEditEvent(saved.id));
         toast.success(t("editor.status.createSuccess"), { autoClose: 2000 });
       } else {
         saved = await publishEventUpdate(event!.id, data);

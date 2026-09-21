@@ -1,8 +1,8 @@
-import type { ErrorCode } from "@tietokilta/ilmomasiina-models";
+import type { ErrorCode, ErrorResponse } from "@tietokilta/ilmomasiina-models";
 
 export interface FetchOptions {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-  body?: any;
+  body?: unknown;
   headers?: Record<string, string>;
   signal?: AbortSignal;
 }
@@ -10,9 +10,9 @@ export interface FetchOptions {
 export class ApiError extends Error {
   status: number;
   code?: ErrorCode;
-  response?: any;
+  response?: unknown;
 
-  constructor(status: number, response: any) {
+  constructor(status: number, response: Pick<ErrorResponse, "message" | "code">) {
     super(response.message);
     this.status = status;
     this.name = "ApiError";
@@ -22,11 +22,11 @@ export class ApiError extends Error {
 
   static async fromResponse(response: Response) {
     try {
-      const data = await response.json();
+      const data = (await response.json()) as ErrorResponse;
       if (data.message) {
         return new ApiError(response.status, data);
       }
-    } catch (e) {
+    } catch {
       /* fall through */
     }
     return new ApiError(response.status, { message: response.statusText });
@@ -52,9 +52,9 @@ export async function apiFetch<T = unknown>(uri: string, { method = "GET", body,
     body: body === undefined ? undefined : JSON.stringify(body),
     headers: allHeaders,
     signal,
-  }).catch((err) => {
+  }).catch((err: unknown) => {
     // convert network errors to barebones ApiError
-    throw new ApiError(0, err);
+    throw new ApiError(0, err as Error);
   });
   // proper API errors, try to parse JSON
   if (!response.ok) {
@@ -65,7 +65,7 @@ export async function apiFetch<T = unknown>(uri: string, { method = "GET", body,
     return null as T;
   }
   // just in case, convert JSON parse errors for 2xx responses to ApiError
-  return response.json().catch((err) => {
-    throw new ApiError(0, err);
+  return response.json().catch((err: unknown) => {
+    throw new ApiError(0, err as Error);
   }) as Promise<T>;
 }

@@ -17,6 +17,7 @@ type State = {
   event?: UserEventResponse;
   localizedEvent?: UserEventResponse;
   signupsByQuota?: QuotaSignups[];
+  registrationOpens?: number;
   pending: boolean;
   error?: ApiError;
   preview?: { setPreviewingForm: (form: boolean) => void };
@@ -29,11 +30,18 @@ export type { State as SingleEventState };
 export { Provider as SingleEventContextProvider };
 
 export function useSingleEventState({ slug, language }: SingleEventProps) {
-  const {
-    result: event,
-    error,
-    pending,
-  } = useAbortablePromise((signal) => apiFetch<UserEventResponse>(`events/${slug}`, { signal }), [slug]);
+  const { result, error, pending } = useAbortablePromise(
+    async (signal) => {
+      const event = await apiFetch<UserEventResponse>(`events/${slug}`, { signal });
+      return {
+        event,
+        // Compute registrationOpens as early as possible to make it as accurate as possible.
+        registrationOpens: Date.now() + (event.millisTillOpening || 0),
+      };
+    },
+    [slug],
+  );
+  const { event, registrationOpens } = result ?? {};
 
   const localizedEvent = useMemo(
     () => (event && language ? getLocalizedEvent(event, language) : event),
@@ -46,6 +54,7 @@ export function useSingleEventState({ slug, language }: SingleEventProps) {
     event,
     localizedEvent,
     signupsByQuota,
+    registrationOpens,
     pending,
     error: error as ApiError | undefined,
   });

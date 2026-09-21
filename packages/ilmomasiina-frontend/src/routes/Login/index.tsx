@@ -40,7 +40,7 @@ const Login = () => {
     try {
       await login(email, password);
       loginToast("success", t("auth.loginSuccess"), 2000);
-      navigate(paths.adminEventsList);
+      void navigate(paths.adminEventsList);
       return undefined;
     } catch (err) {
       return { [FORM_ERROR]: err };
@@ -61,13 +61,19 @@ const Login = () => {
                   type="email"
                   required
                   placeholder={branding.loginPlaceholderEmail}
-                  isInvalid={touched && error}
+                  isInvalid={touched && !!error}
                 />
               )}
             </FieldFormGroup>
             <FieldFormGroup name="password" required label={t("login.password")}>
               {({ input, meta: { touched, error } }) => (
-                <FormControl {...input} type="password" required placeholder="••••••••" isInvalid={touched && error} />
+                <FormControl
+                  {...input}
+                  type="password"
+                  required
+                  placeholder="••••••••"
+                  isInvalid={touched && !!error}
+                />
               )}
             </FieldFormGroup>
             <Button type="submit" variant="secondary" disabled={submitting}>

@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { afterAll, afterEach, beforeAll, beforeEach, expect, RunnerTaskBase, vi } from "vitest";
 
+import type { ErrorCode, ErrorResponse } from "@tietokilta/ilmomasiina-models";
 import initApp from "../src/app";
 import EmailService from "../src/mail";
 import setupDatabase, { closeDatabase } from "../src/models";
@@ -8,10 +9,13 @@ import { AuditLog } from "../src/models/auditlog";
 import { Event } from "../src/models/event";
 import { Payment } from "../src/models/payment";
 import { User } from "../src/models/user";
+import type { InjectResponse } from "./routes/api";
 import { testUser } from "./testData";
 
 const needsDb = (suite: RunnerTaskBase) => suite.name.includes("test/routes");
 const needsApi = (suite: RunnerTaskBase) => suite.name.includes("test/routes");
+
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unnecessary-condition */
 
 // Common setup for all backend test files: initialize Sequelize & Fastify, tear down at test end.
 beforeAll(async (suite) => {
@@ -80,11 +84,11 @@ afterEach(() => {
 });
 
 expect.extend({
-  toBeApiError(received: unknown, expectedStatus: number, expectedCode?: string) {
+  toBeApiError(received: unknown, expectedStatus: number, expectedCode?: ErrorCode) {
     if (!Array.isArray(received) || received.length !== 2) {
       throw new Error("toBeApiError matcher expects an array of [data, response]");
     }
-    const [data, response] = received;
+    const [data, response] = received as [ErrorResponse, InjectResponse];
     if (response.statusCode !== expectedStatus) {
       return {
         pass: false,
@@ -93,12 +97,12 @@ expect.extend({
         actual: response.statusCode,
       };
     }
-    if (expectedCode && (data as any)?.code !== expectedCode) {
+    if (expectedCode && data?.code !== expectedCode) {
       return {
         pass: false,
-        message: () => `Expected error code '${expectedCode}', but received '${(data as any)?.code}'`,
+        message: () => `Expected error code '${expectedCode}', but received '${data?.code}'`,
         expected: expectedCode,
-        actual: (data as any)?.code,
+        actual: data?.code,
       };
     }
     return {

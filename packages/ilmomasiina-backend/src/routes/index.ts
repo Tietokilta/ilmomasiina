@@ -45,9 +45,7 @@ async function setupAdminRoutes(fastifyInstance: FastifyInstance) {
   const server = fastifyInstance.withTypeProvider<TypeBoxTypeProvider>();
 
   /** Routes for categories */
-  server.get<{
-    /* Params: types.UserID */
-  }>(
+  server.get(
     "/categories",
     {
       schema: {

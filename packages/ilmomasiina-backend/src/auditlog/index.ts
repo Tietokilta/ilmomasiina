@@ -57,6 +57,7 @@ export function addLogEventHook(fastify: FastifyInstance): void {
     throw new Error("Not initialized");
   });
   fastify.addHook("onRequest", async (req) => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- the cast only removes readonly
     (req.logEvent as AuditLogger) = eventLogger(req.ip, () => req.sessionData?.email || null);
   });
 }

@@ -9,9 +9,9 @@ export default function RenewLogin() {
   const renewLogin = useStore((state) => state.auth.renewLogin);
   useEffect(() => {
     // Renew login immediately on page load if necessary.
-    renewLogin();
+    void renewLogin();
     // Then, check every minute and renew if necessary.
-    const timer = window.setInterval(() => renewLogin(), LOGIN_RENEW_INTERVAL);
+    const timer = window.setInterval(() => void renewLogin(), LOGIN_RENEW_INTERVAL);
     return () => window.clearInterval(timer);
   }, [renewLogin]);
 

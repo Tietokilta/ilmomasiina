@@ -22,7 +22,7 @@ const SignupList = ({ isSingleQuota, quota }: Props) => {
   return (
     <div className="ilmo--quota-signups">
       <h3>{quota.type !== SignupStatus.IN_QUOTA ? t(`singleEvent.signups.quotaTitle.${quota.type}`) : quota.title}</h3>
-      {!signups?.length ? (
+      {!signups.length ? (
         <p>{t("singleEvent.signups.emptyQuota")}</p>
       ) : (
         <div className="table-responsive">
