@@ -9,6 +9,12 @@ export function useFieldValue<T>(name: string) {
   return value;
 }
 
+export function useFieldError(name: string) {
+  const error = useField(name, { subscription: { error: true } }).meta.error as unknown;
+  useDebugValue(error);
+  return error;
+}
+
 export function useFieldTouched(name: string) {
   const { touched } = useField(name, { subscription: { touched: true } }).meta;
   useDebugValue(touched);

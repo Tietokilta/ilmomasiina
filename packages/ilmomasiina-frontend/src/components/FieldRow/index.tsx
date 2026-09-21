@@ -3,13 +3,14 @@ import React, { ComponentPropsWithoutRef, ComponentType, JSX, ReactNode } from "
 import identity from "lodash-es/identity";
 import { Col, Form, FormControlProps, Row } from "react-bootstrap";
 import { useField, UseFieldConfig } from "react-final-form";
-import { z } from "zod";
+
+import { isZodIssue } from "../../utils/convertZodError";
 
 /** Basic unlocalized default formatter for Zod issues. */
 const defaultFormatError = (error: unknown) =>
-  typeof error === "object" && error && "message" in error
+  isZodIssue(error)
     ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-conversion
-      String((error as z.core.$ZodIssue).message)
+      String(error.message)
     : // Errors without a message field are for a nested field and will be shown there.
       null;
 

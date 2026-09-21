@@ -1,18 +1,17 @@
 import { useCallback } from "react";
 
 import { useTranslation } from "react-i18next";
-import { z } from "zod";
 
 import { TKey } from "../../../i18n";
+import { isZodIssue } from "../../../utils/convertZodError";
 
 export default function useEditorErrors(): (error: unknown) => string {
   const { t } = useTranslation();
   return useCallback(
-    (error) => {
-      if (!error || typeof error !== "object" || !("code" in error)) {
-        return t("editor.errors.generic", { error: error as string });
+    (issue) => {
+      if (!isZodIssue(issue)) {
+        return t("editor.errors.generic", { error: String(issue) });
       }
-      const issue = error as z.core.$ZodIssue;
       // Handle one-off custom error messages by passing the i18n key directly in .message
       if (issue.message.startsWith("editor.errors.")) {
         return t(issue.message as TKey, issue.code === "custom" ? issue.params : {});
