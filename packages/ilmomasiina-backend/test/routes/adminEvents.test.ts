@@ -1013,8 +1013,6 @@ describe("PATCH /api/admin/events/:id", () => {
       updatedAt,
     });
     expect(response.statusCode).toBe(200);
-
-    void updatedAt; // keep linter happy and code consistent
   });
 
   test("checks updatedAt for conflicts", async () => {
@@ -1048,7 +1046,6 @@ describe("PATCH /api/admin/events/:id", () => {
       draft: true,
       updatedAt,
     });
-    void updatedAt; // keep linter happy and code consistent
 
     const logs = await AuditLog.findAll({ order: [["createdAt", "ASC"]] });
     expect(logs.length).toBe(3);

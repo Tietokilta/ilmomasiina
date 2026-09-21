@@ -2,7 +2,7 @@ import React, { lazy, Suspense } from "react";
 
 import { Button, Container, Navbar } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import logo from "../../assets/logo.svg";
 import branding from "../../branding";

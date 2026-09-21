@@ -70,11 +70,6 @@ beforeAll(() => {
 beforeEach(() => {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (mockStripeCheckoutSessionCreate) {
-    mockStripeCheckoutSessionCreate.mockClear();
-    mockStripeCheckoutSessionExpire.mockClear();
-    mockStripeCheckoutSessionRetrieve.mockClear();
-    mockStripeWebhookConstructEvent.mockClear();
-
     // Default mock implementation for creating checkout sessions
     mockStripeCheckoutSessionCreate.mockImplementation(async () => createMockCheckoutSession());
     // Default mock implementation for expiring checkout sessions

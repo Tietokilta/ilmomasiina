@@ -23,12 +23,9 @@ const mailTransporter: AbstractTransporter = (() => {
     return nodemailer.createTransport({
       name: "console fallback",
       version: "0",
-      send(mail, callback) {
-        const { message } = mail;
-        const envelope = message.getEnvelope();
-        const messageId = message.messageId();
+      send(_mail, callback) {
         // Completely ignore emails in test environment - mocking is done at EmailService.send before calling this
-        setImmediate(() => callback(null, { envelope, messageId } as SMTPTransport.SentMessageInfo));
+        setImmediate(() => callback(null, null));
       },
     });
   }
@@ -71,16 +68,14 @@ const mailTransporter: AbstractTransporter = (() => {
     version: "0",
     send(mail, callback) {
       const { message } = mail;
-      const envelope = message.getEnvelope();
-      const messageId = message.messageId();
-      const input = message.createReadStream();
+      const input = message!.createReadStream();
       let data = "";
       input.on("data", (chunk: string) => {
         data += chunk;
       });
       input.on("end", () => {
         console.log(data);
-        callback(null, { envelope, messageId } as SMTPTransport.SentMessageInfo);
+        setImmediate(() => callback(null, null));
       });
     },
   });

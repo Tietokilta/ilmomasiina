@@ -2,7 +2,7 @@ import React, { BaseSyntheticEvent, useCallback, useEffect, useMemo, useState } 
 
 import { Button, Spinner } from "react-bootstrap";
 import { Trans, useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import { errorDesc, errorTitle } from "@tietokilta/ilmomasiina-client";
 import LinkButton from "../../components/LinkButton";

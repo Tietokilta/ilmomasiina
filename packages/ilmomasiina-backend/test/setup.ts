@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { afterAll, afterEach, beforeAll, beforeEach, expect, RunnerTaskBase, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, expect, RunnerTaskBase, vi } from "vitest";
 
 import type { ErrorCode, ErrorResponse } from "@tietokilta/ilmomasiina-models";
 import initApp from "../src/app";
@@ -18,7 +18,8 @@ const needsApi = (suite: RunnerTaskBase) => suite.name.includes("test/routes");
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unnecessary-condition */
 
 // Common setup for all backend test files: initialize Sequelize & Fastify, tear down at test end.
-beforeAll(async (suite) => {
+// eslint-disable-next-line no-empty-pattern -- vitest requires a destructured argument
+beforeAll(async ({}, suite) => {
   if (needsDb(suite)) {
     global.sequelize = await setupDatabase();
     // Drop the trigger that prevents deleting payments to allow test data to be reset.
@@ -67,20 +68,12 @@ beforeEach(async () => {
 beforeAll(() => {
   global.emailSend = vi.spyOn(EmailService, "send").mockImplementation(async () => {});
 });
-afterEach(() => {
-  emailSend.mockClear();
-});
 
 // Allow silencing console logs
 beforeAll(() => {
   global.consoleLog = vi.spyOn(console, "log");
   global.consoleWarn = vi.spyOn(console, "warn");
   global.consoleError = vi.spyOn(console, "error");
-});
-afterEach(() => {
-  consoleLog.mockClear();
-  consoleWarn.mockClear();
-  consoleError.mockClear();
 });
 
 expect.extend({

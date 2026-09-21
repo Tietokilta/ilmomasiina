@@ -1,4 +1,3 @@
-import tsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 import config from "./src/config";
@@ -11,7 +10,9 @@ if (!config.allowTestsToResetDb) {
 }
 
 export default defineConfig({
-  plugins: [tsconfigPaths()],
+  resolve: {
+    tsconfigPaths: true,
+  },
   test: {
     setupFiles: ["test/setup.ts"],
     // Running in parallel causes conflicts between global test resources.

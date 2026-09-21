@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 
 import { Spinner } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router";
 
 import { errorDesc, errorTitle } from "@tietokilta/ilmomasiina-client";
 import requireAuth from "../../containers/requireAuth";

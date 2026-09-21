@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 
 import { Spinner, Table } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router";
 
 import {
   errorDesc,
