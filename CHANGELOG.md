@@ -25,10 +25,13 @@
 
 - Proper support for multiple frontends
   - Events can now specify a preferred frontend, and emails will use the correct URLs
+- Frontend pages now set useful page titles
 - **ilmomasiina-client:** Added payment support to EditSignup, including new state flags in context
 
 **Bug fixes and improvements:**
 
+- Upgraded development tooling to (semi-)modern versions, including TypeScript 6/7, tsx, Vite 8, ESLint 9
+- Upgraded most other dependencies to modern versions
 - Added lots of backend tests
 - Improved validation of signup answers
 - Enabled hot reloading of locale files in development mode
