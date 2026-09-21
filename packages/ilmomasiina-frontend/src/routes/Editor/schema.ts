@@ -8,8 +8,8 @@ import { EditorEvent, EditorEventType } from "../../modules/editor/types";
 // a manual validation schema for the rest of the cases, than attempt to map JSON schema errors back
 // to form field names.
 
-// Schema factory for question options with optional minimum length for each option
-const createQuestionOptionsSchema = (minLength: number = 0): ZodType<EditorEvent["questions"][number]["options"]> =>
+// Localized options may be empty, default language options must be non-empty
+const createQuestionOptionsSchema = (minLength = 0): ZodType<EditorEvent["questions"][number]["options"]> =>
   z
     .array(z.string().min(minLength).max(255))
     .max(MAX_OPTIONS_PER_QUESTION)
@@ -26,7 +26,7 @@ const createQuestionOptionsSchema = (minLength: number = 0): ZodType<EditorEvent
     });
 
 const questionOptionsSchema = createQuestionOptionsSchema(1);
-const questionOptionsSchemaLocalized = createQuestionOptionsSchema(0);
+const localizedQuestionOptionsSchema = createQuestionOptionsSchema(0);
 
 const priceSchema = z
   .number({ error: "editor.errors.invalidPrice" })
@@ -80,7 +80,7 @@ const editorSchema: ZodType<EditorEvent> = z
         questions: z.array(
           z.object({
             question: z.string().max(255),
-            options: questionOptionsSchemaLocalized,
+            options: localizedQuestionOptionsSchema,
           }),
         ),
       }),
