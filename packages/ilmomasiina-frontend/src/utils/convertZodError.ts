@@ -1,6 +1,10 @@
 import { FORM_ERROR } from "final-form";
 import { z, ZodError } from "zod";
 
+export function isZodIssue(error: unknown): error is z.core.$ZodIssue {
+  return typeof error === "object" && error !== null && "code" in error && "message" in error;
+}
+
 // Zod produces a _errors array for each field. Post-process to the format expected to final-form:
 // only one error per field, and a leaf field at that.
 

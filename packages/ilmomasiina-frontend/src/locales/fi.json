@@ -167,6 +167,7 @@
     "editor.errors.negativePrice": "Hinta ei voi olla negatiivinen",
     "editor.errors.optionsTooLong": "Vastausvaihtoehdot ovat yhteensä liian pitkät",
     "editor.errors.generic": "Virheellinen arvo: {{error}}",
+    "editor.errors.quotasRequired": "Tapahtumassa täytyy olla vähintään yksi kiintiö",
     "editor.selectedLanguage": "Muokataan kieliversiota:",
     "editor.selectedLanguage.preview": "Esikatsellaan kieliversiota:",
     "editor.selectedLanguage.default": "Oletus",
