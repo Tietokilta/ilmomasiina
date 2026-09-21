@@ -38,6 +38,7 @@ const PreviewTab = () => {
         pending: false,
         event: convertedEvent,
         localizedEvent,
+        registrationOpens: values.registrationStartDate?.getTime() ?? now - 30 * 60 * 60 * 1000,
         preview: { setPreviewingForm },
       },
       {
@@ -55,6 +56,8 @@ const PreviewTab = () => {
         canEdit: true,
         canEditNameAndEmail: true,
         canEditPaidQuestions: true,
+        canPayOnline: false,
+        isInQuota: true,
         preview: { setPreviewingForm },
       },
     ];

@@ -21,7 +21,7 @@ function sendSynchronouslyInTest<A extends unknown[]>(
   if (config.nodeEnv === "test" || config.nodeEnv === "bench") return func;
 
   return async (...args: A) => {
-    await func(...args).catch((err: unknown) => {
+    void func(...args).catch((err: unknown) => {
       console.error("Error sending email:", err);
     });
   };
