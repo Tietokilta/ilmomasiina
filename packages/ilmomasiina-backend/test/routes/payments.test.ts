@@ -1,3 +1,4 @@
+import { maxBy } from "lodash";
 import moment from "moment";
 import { Op } from "sequelize";
 import Stripe from "stripe";
@@ -367,8 +368,8 @@ describe("startPayment", () => {
     );
 
     // Create two signups, first to fill the quota, then to place another in queue
-    await testSignups({ event, count: 1, confirmed: true });
-    const [queuedSignup] = await testSignups({ event, count: 1, confirmed: true });
+    const signups = await testSignups({ event, count: 2, confirmed: true });
+    const queuedSignup = maxBy(signups, "createdAt")!;
 
     // Refresh positions to assign statuses
     await refreshSignupPositions(event);
