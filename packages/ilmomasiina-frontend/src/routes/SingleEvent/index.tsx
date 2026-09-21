@@ -2,7 +2,7 @@ import React from "react";
 
 import { Col, Row, Spinner } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router";
 
 import { errorDesc, errorTitle, SingleEventProvider, useSingleEventContext } from "@tietokilta/ilmomasiina-client";
 import { TKey } from "../../i18n";

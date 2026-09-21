@@ -1,3 +1,4 @@
+import path from "path";
 import js from "@eslint/js";
 import vitest from "@vitest/eslint-plugin";
 import { defineConfig } from "eslint/config";
@@ -65,10 +66,6 @@ export default defineConfig(
       "simple-import-sort": simpleImportSort,
     },
     settings: {
-      // Needed to follow the "paths" mappings between our packages.
-      "import-x/resolver-next": [
-        createTypeScriptImportResolver({ project: "packages/*/tsconfig.json", noWarnOnMultipleProjects: true }),
-      ],
       "import-x/internal-regex": "^@tietokilta/",
       // Pinned rather than "detect": eslint-plugin-react's detection uses
       // context.getFilename(), which ESLint 10 removed.
@@ -77,6 +74,19 @@ export default defineConfig(
       "react-hooks": { additionalEffectHooks: "useAbortableEffect|useAbortablePromise" },
     },
   },
+
+  // Tell import-x to follow tsconfig paths.
+  // Do this per package, as the multi-project resolver is broken and doesn't use any tsconfigs.
+  ...["ilmomasiina-backend", "ilmomasiina-frontend", "ilmomasiina-client", "ilmomasiina-models"].map((packageName) => ({
+    files: [`packages/${packageName}/**/*.{ts,tsx}`],
+    settings: {
+      "import-x/resolver-next": [
+        createTypeScriptImportResolver({
+          project: path.resolve(import.meta.dirname, `packages/${packageName}/tsconfig.json`),
+        }),
+      ],
+    },
+  })),
 
   // Tests.
   {

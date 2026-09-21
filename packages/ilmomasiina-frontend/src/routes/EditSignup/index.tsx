@@ -2,7 +2,7 @@ import React from "react";
 
 import { Spinner } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
+import { useParams } from "react-router";
 
 import { EditSignupProvider, errorDesc, errorTitle, useEditSignupContext } from "@tietokilta/ilmomasiina-client";
 import type { TKey } from "../../i18n";

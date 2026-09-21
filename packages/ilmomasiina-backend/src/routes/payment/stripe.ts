@@ -16,7 +16,7 @@ import { OnlinePaymentsDisabled, PaymentInProgress, PaymentRateLimited, SignupAl
 /** Pre-initialized Stripe client, or null if not configured. */
 const stripeClient: Stripe | null = config.stripeSecretKey
   ? new Stripe(config.stripeSecretKey, {
-      apiVersion: "2025-12-15.clover",
+      apiVersion: "2026-02-25.clover",
       typescript: true,
     })
   : null;

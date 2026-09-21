@@ -1,7 +1,7 @@
 import React from "react";
 
 import { Trans, useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import type { AuditLogItemSchema } from "@tietokilta/ilmomasiina-models";
 import { AuditEvent } from "@tietokilta/ilmomasiina-models";

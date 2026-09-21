@@ -4,7 +4,10 @@ import { useTranslation } from "react-i18next";
 
 import type { SignupFieldError } from "@tietokilta/ilmomasiina-models";
 
-/** Localizes a SignupFieldError. */
+/**
+ * Localizes a SignupFieldError. Relies on the fact that server-sent errors on
+ * EditSignup fields are always SignupFieldError enum values.
+ */
 export default function useFieldErrors() {
   const { t } = useTranslation();
   return useCallback(

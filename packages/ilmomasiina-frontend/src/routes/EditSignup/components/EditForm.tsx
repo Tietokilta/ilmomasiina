@@ -4,7 +4,7 @@ import { FORM_ERROR } from "final-form";
 import { Alert, Button, Form as BsForm, Table } from "react-bootstrap";
 import { Form, FormRenderProps, useFormState } from "react-final-form";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 
 import {
