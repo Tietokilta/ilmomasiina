@@ -43,35 +43,35 @@ export interface QuestionCreationAttributes extends Optional<
 > {}
 
 export class Question extends Model<QuestionAttributes, QuestionCreationAttributes> implements QuestionAttributes {
-  public id!: string;
-  public order!: number;
-  public question!: string;
-  public type!: QuestionType;
-  public options!: string[] | null;
-  public prices!: number[] | null;
-  public required!: boolean;
-  public public!: boolean;
+  declare id: string;
+  declare order: number;
+  declare question: string;
+  declare type: QuestionType;
+  declare options: string[] | null;
+  declare prices: number[] | null;
+  declare required: boolean;
+  declare public: boolean;
 
-  public eventId!: Event["id"];
-  public event?: Event;
-  public getEvent!: HasOneGetAssociationMixin<Event | null>;
-  public setEvent!: HasOneSetAssociationMixin<Event, Event["id"]>;
-  public createEvent!: HasOneCreateAssociationMixin<Event>;
+  declare eventId: Event["id"];
+  declare event?: Event;
+  declare getEvent: HasOneGetAssociationMixin<Event | null>;
+  declare setEvent: HasOneSetAssociationMixin<Event, Event["id"]>;
+  declare createEvent: HasOneCreateAssociationMixin<Event>;
 
-  public answers?: Answer[];
-  public getAnswers!: HasManyGetAssociationsMixin<Answer>;
-  public countAnswers!: HasManyCountAssociationsMixin;
-  public hasAnswer!: HasManyHasAssociationMixin<Answer, Answer["id"]>;
-  public hasAnswers!: HasManyHasAssociationsMixin<Answer, Answer["id"]>;
-  public setAnswers!: HasManySetAssociationsMixin<Answer, Answer["id"]>;
-  public addAnswer!: HasManyAddAssociationMixin<Answer, Answer["id"]>;
-  public addAnswers!: HasManyAddAssociationsMixin<Answer, Answer["id"]>;
-  public removeAnswer!: HasManyRemoveAssociationMixin<Answer, Answer["id"]>;
-  public removeAnswers!: HasManyRemoveAssociationsMixin<Answer, Answer["id"]>;
-  public createAnswer!: HasManyCreateAssociationMixin<Answer>;
+  declare answers?: Answer[];
+  declare getAnswers: HasManyGetAssociationsMixin<Answer>;
+  declare countAnswers: HasManyCountAssociationsMixin;
+  declare hasAnswer: HasManyHasAssociationMixin<Answer, Answer["id"]>;
+  declare hasAnswers: HasManyHasAssociationsMixin<Answer, Answer["id"]>;
+  declare setAnswers: HasManySetAssociationsMixin<Answer, Answer["id"]>;
+  declare addAnswer: HasManyAddAssociationMixin<Answer, Answer["id"]>;
+  declare addAnswers: HasManyAddAssociationsMixin<Answer, Answer["id"]>;
+  declare removeAnswer: HasManyRemoveAssociationMixin<Answer, Answer["id"]>;
+  declare removeAnswers: HasManyRemoveAssociationsMixin<Answer, Answer["id"]>;
+  declare createAnswer: HasManyCreateAssociationMixin<Answer>;
 
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   /**
    * Returns override values to normalize `options` and/or `prices` to null in cases such as:

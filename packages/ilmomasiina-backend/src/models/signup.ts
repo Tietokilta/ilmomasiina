@@ -77,58 +77,58 @@ export interface SignupCreationAttributes extends Optional<
 > {}
 
 export class Signup extends Model<SignupAttributes, SignupCreationAttributes> implements SignupAttributes {
-  public id!: string;
-  public firstName!: string | null;
-  public lastName!: string | null;
-  public namePublic!: boolean;
-  public email!: string | null;
-  public language!: string | null;
-  public confirmedAt!: Date | null;
-  public status!: SignupStatus | null;
-  public position!: number | null;
-  public price!: number | null;
-  public currency!: string | null;
-  public products!: ProductSchema[] | null;
-  public manualPaymentStatus!: ManualPaymentStatus | null;
-  public deletedAt!: Date | null;
+  declare id: string;
+  declare firstName: string | null;
+  declare lastName: string | null;
+  declare namePublic: boolean;
+  declare email: string | null;
+  declare language: string | null;
+  declare confirmedAt: Date | null;
+  declare status: SignupStatus | null;
+  declare position: number | null;
+  declare price: number | null;
+  declare currency: string | null;
+  declare products: ProductSchema[] | null;
+  declare manualPaymentStatus: ManualPaymentStatus | null;
+  declare deletedAt: Date | null;
 
-  public quotaId!: Quota["id"];
-  public quota?: Quota;
-  public getQuota!: HasOneGetAssociationMixin<Quota | null>;
-  public setQuota!: HasOneSetAssociationMixin<Quota, Quota["id"]>;
-  public createQuota!: HasOneCreateAssociationMixin<Quota>;
+  declare quotaId: Quota["id"];
+  declare quota?: Quota;
+  declare getQuota: HasOneGetAssociationMixin<Quota | null>;
+  declare setQuota: HasOneSetAssociationMixin<Quota, Quota["id"]>;
+  declare createQuota: HasOneCreateAssociationMixin<Quota>;
 
-  public answers?: Answer[];
-  public getAnswers!: HasManyGetAssociationsMixin<Answer>;
-  public countAnswers!: HasManyCountAssociationsMixin;
-  public hasAnswer!: HasManyHasAssociationMixin<Answer, Answer["id"]>;
-  public hasAnswers!: HasManyHasAssociationsMixin<Answer, Answer["id"]>;
-  public setAnswers!: HasManySetAssociationsMixin<Answer, Answer["id"]>;
-  public addAnswer!: HasManyAddAssociationMixin<Answer, Answer["id"]>;
-  public addAnswers!: HasManyAddAssociationsMixin<Answer, Answer["id"]>;
-  public removeAnswer!: HasManyRemoveAssociationMixin<Answer, Answer["id"]>;
-  public removeAnswers!: HasManyRemoveAssociationsMixin<Answer, Answer["id"]>;
-  public createAnswer!: HasManyCreateAssociationMixin<Answer>;
+  declare answers?: Answer[];
+  declare getAnswers: HasManyGetAssociationsMixin<Answer>;
+  declare countAnswers: HasManyCountAssociationsMixin;
+  declare hasAnswer: HasManyHasAssociationMixin<Answer, Answer["id"]>;
+  declare hasAnswers: HasManyHasAssociationsMixin<Answer, Answer["id"]>;
+  declare setAnswers: HasManySetAssociationsMixin<Answer, Answer["id"]>;
+  declare addAnswer: HasManyAddAssociationMixin<Answer, Answer["id"]>;
+  declare addAnswers: HasManyAddAssociationsMixin<Answer, Answer["id"]>;
+  declare removeAnswer: HasManyRemoveAssociationMixin<Answer, Answer["id"]>;
+  declare removeAnswers: HasManyRemoveAssociationsMixin<Answer, Answer["id"]>;
+  declare createAnswer: HasManyCreateAssociationMixin<Answer>;
 
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
-  public payments?: Payment[];
-  public getPayments!: HasManyGetAssociationsMixin<Payment>;
-  public countPayments!: HasManyCountAssociationsMixin;
-  public hasPayment!: HasManyHasAssociationMixin<Payment, Payment["id"]>;
-  public hasPayments!: HasManyHasAssociationsMixin<Payment, Payment["id"]>;
-  public setPayments!: HasManySetAssociationsMixin<Payment, Payment["id"]>;
-  public addPayment!: HasManyAddAssociationMixin<Payment, Payment["id"]>;
-  public addPayments!: HasManyAddAssociationsMixin<Payment, Payment["id"]>;
-  public removePayment!: HasManyRemoveAssociationMixin<Payment, Payment["id"]>;
-  public removePayments!: HasManyRemoveAssociationsMixin<Payment, Payment["id"]>;
-  public createPayment!: HasManyCreateAssociationMixin<Payment>;
+  declare payments?: Payment[];
+  declare getPayments: HasManyGetAssociationsMixin<Payment>;
+  declare countPayments: HasManyCountAssociationsMixin;
+  declare hasPayment: HasManyHasAssociationMixin<Payment, Payment["id"]>;
+  declare hasPayments: HasManyHasAssociationsMixin<Payment, Payment["id"]>;
+  declare setPayments: HasManySetAssociationsMixin<Payment, Payment["id"]>;
+  declare addPayment: HasManyAddAssociationMixin<Payment, Payment["id"]>;
+  declare addPayments: HasManyAddAssociationsMixin<Payment, Payment["id"]>;
+  declare removePayment: HasManyRemoveAssociationMixin<Payment, Payment["id"]>;
+  declare removePayments: HasManyRemoveAssociationsMixin<Payment, Payment["id"]>;
+  declare createPayment: HasManyCreateAssociationMixin<Payment>;
 
-  public activePayment?: Payment | null;
-  public getActivePayment!: HasOneGetAssociationMixin<Payment | null>;
-  public setActivePayment!: HasOneSetAssociationMixin<Payment, Payment["id"]>;
-  public createActivePayment!: HasOneCreateAssociationMixin<Payment>;
+  declare activePayment?: Payment | null;
+  declare getActivePayment: HasOneGetAssociationMixin<Payment | null>;
+  declare setActivePayment: HasOneSetAssociationMixin<Payment, Payment["id"]>;
+  declare createActivePayment: HasOneCreateAssociationMixin<Payment>;
 
   public static readonly MAX_NAME_LENGTH = 255;
   public static readonly MAX_EMAIL_LENGTH = 255; // TODO

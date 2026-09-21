@@ -94,57 +94,57 @@ export interface EventCreationWithInclude extends EventCreationAttributes {
 }
 
 export class Event extends Model<EventManualAttributes, EventCreationAttributes> implements EventAttributes {
-  public id!: string;
-  public title!: string;
-  public slug!: string;
-  public date!: Date | null;
-  public endDate!: Date | null;
-  public registrationStartDate!: Date | null;
-  public registrationEndDate!: Date | null;
-  public openQuotaSize!: number;
-  public description!: string | null;
-  public price!: string | null;
-  public location!: string | null;
-  public facebookUrl!: string | null;
-  public webpageUrl!: string | null;
-  public category!: string;
-  public draft!: boolean;
-  public listed!: boolean;
-  public signupsPublic!: boolean;
-  public nameQuestion!: boolean;
-  public emailQuestion!: boolean;
-  public verificationEmail!: string | null;
-  public payments!: PaymentMode;
-  public preferredFrontend!: string;
-  public languages!: Record<string, EventLanguage>;
-  public defaultLanguage!: string;
+  declare id: string;
+  declare title: string;
+  declare slug: string;
+  declare date: Date | null;
+  declare endDate: Date | null;
+  declare registrationStartDate: Date | null;
+  declare registrationEndDate: Date | null;
+  declare openQuotaSize: number;
+  declare description: string | null;
+  declare price: string | null;
+  declare location: string | null;
+  declare facebookUrl: string | null;
+  declare webpageUrl: string | null;
+  declare category: string;
+  declare draft: boolean;
+  declare listed: boolean;
+  declare signupsPublic: boolean;
+  declare nameQuestion: boolean;
+  declare emailQuestion: boolean;
+  declare verificationEmail: string | null;
+  declare payments: PaymentMode;
+  declare preferredFrontend: string;
+  declare languages: Record<string, EventLanguage>;
+  declare defaultLanguage: string;
 
-  public questions?: Question[];
-  public getQuestions!: HasManyGetAssociationsMixin<Question>;
-  public countQuestions!: HasManyCountAssociationsMixin;
-  public hasQuestion!: HasManyHasAssociationMixin<Question, Question["id"]>;
-  public hasQuestions!: HasManyHasAssociationsMixin<Question, Question["id"]>;
-  public setQuestions!: HasManySetAssociationsMixin<Question, Question["id"]>;
-  public addQuestion!: HasManyAddAssociationMixin<Question, Question["id"]>;
-  public addQuestions!: HasManyAddAssociationsMixin<Question, Question["id"]>;
-  public removeQuestion!: HasManyRemoveAssociationMixin<Question, Question["id"]>;
-  public removeQuestions!: HasManyRemoveAssociationsMixin<Question, Question["id"]>;
-  public createQuestion!: HasManyCreateAssociationMixin<Question>;
+  declare questions?: Question[];
+  declare getQuestions: HasManyGetAssociationsMixin<Question>;
+  declare countQuestions: HasManyCountAssociationsMixin;
+  declare hasQuestion: HasManyHasAssociationMixin<Question, Question["id"]>;
+  declare hasQuestions: HasManyHasAssociationsMixin<Question, Question["id"]>;
+  declare setQuestions: HasManySetAssociationsMixin<Question, Question["id"]>;
+  declare addQuestion: HasManyAddAssociationMixin<Question, Question["id"]>;
+  declare addQuestions: HasManyAddAssociationsMixin<Question, Question["id"]>;
+  declare removeQuestion: HasManyRemoveAssociationMixin<Question, Question["id"]>;
+  declare removeQuestions: HasManyRemoveAssociationsMixin<Question, Question["id"]>;
+  declare createQuestion: HasManyCreateAssociationMixin<Question>;
 
-  public quotas?: Quota[];
-  public getQuotas!: HasManyGetAssociationsMixin<Quota>;
-  public countQuotas!: HasManyCountAssociationsMixin;
-  public hasQuota!: HasManyHasAssociationMixin<Quota, Quota["id"]>;
-  public hasQuotas!: HasManyHasAssociationsMixin<Quota, Quota["id"]>;
-  public setQuotas!: HasManySetAssociationsMixin<Quota, Quota["id"]>;
-  public addQuota!: HasManyAddAssociationMixin<Quota, Quota["id"]>;
-  public addQuotas!: HasManyAddAssociationsMixin<Quota, Quota["id"]>;
-  public removeQuota!: HasManyRemoveAssociationMixin<Quota, Quota["id"]>;
-  public removeQuotas!: HasManyRemoveAssociationsMixin<Quota, Quota["id"]>;
-  public createQuota!: HasManyCreateAssociationMixin<Quota>;
+  declare quotas?: Quota[];
+  declare getQuotas: HasManyGetAssociationsMixin<Quota>;
+  declare countQuotas: HasManyCountAssociationsMixin;
+  declare hasQuota: HasManyHasAssociationMixin<Quota, Quota["id"]>;
+  declare hasQuotas: HasManyHasAssociationsMixin<Quota, Quota["id"]>;
+  declare setQuotas: HasManySetAssociationsMixin<Quota, Quota["id"]>;
+  declare addQuota: HasManyAddAssociationMixin<Quota, Quota["id"]>;
+  declare addQuotas: HasManyAddAssociationsMixin<Quota, Quota["id"]>;
+  declare removeQuota: HasManyRemoveAssociationMixin<Quota, Quota["id"]>;
+  declare removeQuotas: HasManyRemoveAssociationsMixin<Quota, Quota["id"]>;
+  declare createQuota: HasManyCreateAssociationMixin<Quota>;
 
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   /** Determines the effective end date of the event, matching the scope logic. */
   public get effectiveEndDate() {

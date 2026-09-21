@@ -31,23 +31,23 @@ export interface PaymentCreateAttributes extends Optional<
 > {}
 
 export class Payment extends Model<PaymentAttributes, PaymentCreateAttributes> implements PaymentAttributes {
-  public id!: number;
-  public stripeCheckoutSessionId!: string | null;
-  public status!: PaymentStatus;
-  public amount!: number;
-  public currency!: string;
-  public products!: ProductSchema[];
+  declare id: number;
+  declare stripeCheckoutSessionId: string | null;
+  declare status: PaymentStatus;
+  declare amount: number;
+  declare currency: string;
+  declare products: ProductSchema[];
 
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
-  public expiresAt!: Date;
-  public completedAt!: Date | null;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
+  declare expiresAt: Date;
+  declare completedAt: Date | null;
 
-  public signupId!: string;
-  public signup?: Signup | null;
-  public getSignup!: HasOneGetAssociationMixin<Signup | null>;
-  public setSignup!: HasOneSetAssociationMixin<Signup, Signup["id"]>;
-  public createSignup!: HasOneCreateAssociationMixin<Signup>;
+  declare signupId: string;
+  declare signup?: Signup | null;
+  declare getSignup: HasOneGetAssociationMixin<Signup | null>;
+  declare setSignup: HasOneSetAssociationMixin<Signup, Signup["id"]>;
+  declare createSignup: HasOneCreateAssociationMixin<Signup>;
 }
 
 export default function setupPaymentModel(sequelize: Sequelize) {
