@@ -18,13 +18,13 @@ export const questionIdentity = Type.Object({
 export const MAX_OPTIONS_PER_QUESTION = 64;
 
 // Localized options may be empty, default language options must be non-empty
-const createQuestionOptionsSchema = (minLength = 0) =>
-  Nullable(Type.Array(Type.String({ minLength, maxLength: 255 }), { maxItems: MAX_OPTIONS_PER_QUESTION }), {
+const createQuestionOptionsSchema = (minItems = 0, minLength = 0) =>
+  Nullable(Type.Array(Type.String({ minLength, maxLength: 255 }), { minItems, maxItems: MAX_OPTIONS_PER_QUESTION }), {
     description: "For select or checkbox questions, the options available.",
   });
 
-const questionOptionsSchema = createQuestionOptionsSchema(1);
-const localizedQuestionOptionsSchema = createQuestionOptionsSchema(0);
+const questionOptionsSchema = createQuestionOptionsSchema(1, 1);
+const localizedQuestionOptionsSchema = createQuestionOptionsSchema(0, 0);
 
 /** Editable attributes of a question language version. */
 export const questionLanguageAttributes = Type.Object({
