@@ -33,15 +33,13 @@ export function getSignupsForAdminList(event: AdminEventResponse): AdminSignupWi
 
 /** Gathers all signups of an event into quotas (including those in the open quota) and the queue. */
 export function getSignupsByQuotaForAdminList(event: AdminEventResponse): AdminQuotaSignups[] {
-  const quotas = event.quotas.map(
-    (quota): AdminQuotaSignups => ({
-      ...quota,
-      type: SignupStatus.IN_QUOTA,
-      signups: quota.signups
-        .filter((signup) => signup.status !== SignupStatus.IN_QUEUE)
-        .map((signup) => ({ ...signup, quota })),
-    }),
-  );
+  const quotas = event.quotas.map((quota): AdminQuotaSignups => ({
+    ...quota,
+    type: SignupStatus.IN_QUOTA,
+    signups: quota.signups
+      .filter((signup) => signup.status !== SignupStatus.IN_QUEUE)
+      .map((signup) => ({ ...signup, quota })),
+  }));
 
   const queueSignups = getSignupsAsList(event).filter((signup) => signup.status === SignupStatus.IN_QUEUE);
   const queue: AdminQuotaSignups[] = queueSignups.length
