@@ -1,18 +1,22 @@
 import type { PropsWithChildren } from "react";
 import { useTranslation } from "react-i18next";
 
-import config from "../../config";
+import { useBranding } from "./BrandingContext";
 
 export default function Layout({ children }: PropsWithChildren) {
   const {
     i18n: { language },
   } = useTranslation();
+  const branding = useBranding();
+  const title = branding.headerTitle;
+  const footerText = branding.mailFooterText;
+  const footerLink = branding.mailFooterLink;
   return (
     <html lang={language}>
       <head>
         <meta name="viewport" content="width=device-width" />
         <meta httpEquiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>Ilmomasiina</title>
+        <title>{title}</title>
         <link href="styles.css" rel="stylesheet" type="text/css" data-inline />
       </head>
       <body itemScope itemType="http://schema.org/EmailMessage">
@@ -25,7 +29,7 @@ export default function Layout({ children }: PropsWithChildren) {
                     <tbody>
                       <tr>
                         <td className="align-center content-block">
-                          <h1 className="headerTitle">Ilmomasiina</h1>
+                          <h1 className="headerTitle">{title}</h1>
                         </td>
                       </tr>
                     </tbody>
@@ -46,19 +50,17 @@ export default function Layout({ children }: PropsWithChildren) {
                       </tr>
                     </tbody>
                   </table>
-                  {(config.brandingMailFooterText || config.brandingMailFooterLink) && (
+                  {(footerText || footerLink) && (
                     <div className="footer">
                       <table width="100%">
                         <tbody>
                           <tr>
                             <td className="align-center content-block">
-                              {config.brandingMailFooterText && (
-                                <p className="footerText">{config.brandingMailFooterText}</p>
-                              )}
-                              {config.brandingMailFooterLink && (
+                              {footerText && <p className="footerText">{footerText}</p>}
+                              {footerLink && (
                                 <p className="footerText">
-                                  <a className="footerLink" href={config.brandingMailFooterLink}>
-                                    {config.brandingMailFooterLink.replace(/^https?:\/\//, "")}
+                                  <a className="footerLink" href={footerLink}>
+                                    {footerLink.replace(/^https?:\/\//, "")}
                                   </a>
                                 </p>
                               )}

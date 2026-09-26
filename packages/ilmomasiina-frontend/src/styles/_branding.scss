@@ -1,0 +1,153 @@
+@use "definitions" as *;
+
+// Runtime theme color support.
+//
+// Theme colors (brand, secondary, success, warning, danger and muted text) flow through --ilmo-<name>-* CSS variables. The defaults
+// are computed here from the compiled Sass variables, and ApplyBranding overrides the variables on <html>
+// when an admin has configured custom colors. Everything else uses the variables unconditionally.
+
+// Declares the variables for one theme color. `$lighter-hover` makes hover states lighter instead of darker.
+@mixin ilmo-theme-color-variables($name, $color, $lighter-hover) {
+  --ilmo-#{$name}-color: #{$color};
+  --ilmo-#{$name}-rgb: #{to-rgb($color)};
+  --ilmo-#{$name}-contrast: #{color-contrast($color)};
+  --ilmo-#{$name}-hover-bg: #{if($lighter-hover, lighten($color, 15%), shade-color($color, 15%))};
+  --ilmo-#{$name}-hover-border: #{if($lighter-hover, lighten($color, 20%), shade-color($color, 20%))};
+  --ilmo-#{$name}-active-bg: #{if($lighter-hover, lighten($color, 20%), shade-color($color, 20%))};
+  --ilmo-#{$name}-active-border: #{if($lighter-hover, lighten($color, 25%), shade-color($color, 25%))};
+  --ilmo-#{$name}-focus-border: #{tint-color($color, 50%)};
+}
+
+// Declares the default variables for all theme colors.
+@mixin ilmo-default-theme-colors {
+  @include ilmo-theme-color-variables(brand, $primary, $lighter-primary-hover);
+  @include ilmo-theme-color-variables(secondary, $secondary, $lighter-secondary-hover);
+  @include ilmo-theme-color-variables(success, $success, false);
+  @include ilmo-theme-color-variables(warning, $warning, false);
+  @include ilmo-theme-color-variables(danger, $danger, false);
+  @include ilmo-theme-color-variables(muted, $secondary-text-color, false);
+}
+
+:root {
+  @include ilmo-default-theme-colors;
+
+  // Exposed so the admin UI can show the compiled default colors in the color pickers.
+  --ilmo-default-brand-color: #{$primary};
+  --ilmo-default-secondary-color: #{$secondary};
+  --ilmo-default-success-color: #{$success};
+  --ilmo-default-warning-color: #{$warning};
+  --ilmo-default-danger-color: #{$danger};
+  --ilmo-default-muted-color: #{$secondary-text-color};
+}
+
+// Areas that must stay usable even with badly chosen theme colors, such as the settings form that previews
+// them, get the compiled defaults again. Variables cascade by DOM inheritance, so this overrides <html>.
+.ilmo--theme-safe {
+  @include ilmo-default-theme-colors;
+}
+
+// Solid button variables for a theme color.
+@mixin ilmo-button-variant($name) {
+  --bs-btn-color: var(--ilmo-#{$name}-contrast);
+  --bs-btn-bg: var(--ilmo-#{$name}-color);
+  --bs-btn-border-color: var(--ilmo-#{$name}-color);
+  --bs-btn-hover-color: var(--ilmo-#{$name}-contrast);
+  --bs-btn-hover-bg: var(--ilmo-#{$name}-hover-bg);
+  --bs-btn-hover-border-color: var(--ilmo-#{$name}-hover-border);
+  --bs-btn-focus-shadow-rgb: var(--ilmo-#{$name}-rgb);
+  --bs-btn-active-color: var(--ilmo-#{$name}-contrast);
+  --bs-btn-active-bg: var(--ilmo-#{$name}-active-bg);
+  --bs-btn-active-border-color: var(--ilmo-#{$name}-active-border);
+  --bs-btn-disabled-color: var(--ilmo-#{$name}-contrast);
+  --bs-btn-disabled-bg: var(--ilmo-#{$name}-color);
+  --bs-btn-disabled-border-color: var(--ilmo-#{$name}-color);
+}
+
+// Outline button variables for a theme color.
+@mixin ilmo-button-outline-variant($name) {
+  --bs-btn-color: var(--ilmo-#{$name}-color);
+  --bs-btn-border-color: var(--ilmo-#{$name}-color);
+  --bs-btn-hover-color: var(--ilmo-#{$name}-contrast);
+  --bs-btn-hover-bg: var(--ilmo-#{$name}-color);
+  --bs-btn-hover-border-color: var(--ilmo-#{$name}-color);
+  --bs-btn-focus-shadow-rgb: var(--ilmo-#{$name}-rgb);
+  --bs-btn-active-color: var(--ilmo-#{$name}-contrast);
+  --bs-btn-active-bg: var(--ilmo-#{$name}-color);
+  --bs-btn-active-border-color: var(--ilmo-#{$name}-color);
+  --bs-btn-disabled-color: var(--ilmo-#{$name}-color);
+  --bs-btn-disabled-border-color: var(--ilmo-#{$name}-color);
+}
+
+// Form validation state colors for a theme color.
+@mixin ilmo-validation-variant($name, $state) {
+  .form-control.is-#{$state},
+  .form-select.is-#{$state},
+  .was-validated .form-control:#{$state},
+  .was-validated .form-select:#{$state} {
+    border-color: var(--ilmo-#{$name}-color);
+
+    &:focus {
+      border-color: var(--ilmo-#{$name}-color);
+      box-shadow: 0 0 0 $focus-ring-width rgba(var(--ilmo-#{$name}-rgb), 0.25);
+    }
+  }
+
+  .#{$state}-feedback {
+    color: var(--ilmo-#{$name}-color);
+  }
+}
+
+.btn-primary {
+  @include ilmo-button-variant(brand);
+}
+.btn-outline-primary {
+  @include ilmo-button-outline-variant(brand);
+}
+.btn-secondary {
+  @include ilmo-button-variant(secondary);
+}
+.btn-outline-secondary {
+  @include ilmo-button-outline-variant(secondary);
+}
+.btn-success {
+  @include ilmo-button-variant(success);
+}
+.btn-outline-success {
+  @include ilmo-button-outline-variant(success);
+}
+.btn-warning {
+  @include ilmo-button-variant(warning);
+}
+.btn-outline-warning {
+  @include ilmo-button-outline-variant(warning);
+}
+.btn-danger {
+  @include ilmo-button-variant(danger);
+}
+.btn-outline-danger {
+  @include ilmo-button-outline-variant(danger);
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+  border-color: var(--ilmo-brand-focus-border);
+  box-shadow: 0 0 0 $focus-ring-width rgba(var(--ilmo-brand-rgb), 0.25);
+}
+
+.form-check-input:checked {
+  background-color: var(--ilmo-brand-color);
+  border-color: var(--ilmo-brand-color);
+}
+
+@include ilmo-validation-variant(success, valid);
+@include ilmo-validation-variant(danger, invalid);
+
+.text-muted {
+  color: var(--ilmo-muted-color) !important;
+}
+
+.dropdown-menu {
+  --bs-dropdown-link-active-bg: var(--ilmo-brand-color);
+  --bs-dropdown-link-active-color: var(--ilmo-brand-contrast);
+}

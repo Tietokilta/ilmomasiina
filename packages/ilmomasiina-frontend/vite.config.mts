@@ -82,14 +82,6 @@ export default defineConfig(({ mode }) => ({
 
     PATH_PREFIX,
     API_URL: process.env.API_URL || "",
-    BRANDING_HEADER_TITLE_TEXT: process.env.BRANDING_HEADER_TITLE_TEXT || "Ilmomasiina",
-    BRANDING_HEADER_TITLE_TEXT_SHORT:
-      process.env.BRANDING_HEADER_TITLE_TEXT_SHORT || process.env.BRANDING_HEADER_TITLE_TEXT || "Ilmomasiina",
-    BRANDING_FOOTER_GDPR_TEXT: process.env.BRANDING_FOOTER_GDPR_TEXT || "",
-    BRANDING_FOOTER_GDPR_LINK: process.env.BRANDING_FOOTER_GDPR_LINK || "",
-    BRANDING_FOOTER_HOME_TEXT: process.env.BRANDING_FOOTER_HOME_TEXT || "",
-    BRANDING_FOOTER_HOME_LINK: process.env.BRANDING_FOOTER_HOME_LINK || "",
-    BRANDING_LOGIN_PLACEHOLDER_EMAIL: process.env.BRANDING_LOGIN_PLACEHOLDER_EMAIL || "admin@tietokilta.fi",
     TIMEZONE,
     DEFAULT_LANGUAGE: process.env.DEFAULT_LANGUAGE || "fi",
     CURRENCY: process.env.CURRENCY || "EUR",

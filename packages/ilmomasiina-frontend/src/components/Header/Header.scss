@@ -1,7 +1,9 @@
 @use "../../styles/definitions" as *;
 
+// The --ilmo-brand-* variables are defined in styles/_branding.scss and overridden at runtime by ApplyBranding.
+
 .navbar {
-  background: $primary;
+  background: var(--ilmo-brand-color);
   margin-bottom: 1.5rem;
   --bs-navbar-brand-margin-end: auto !important;
 }
@@ -9,7 +11,7 @@
 .navbar-brand {
   display: flex !important;
   align-items: center;
-  color: color-contrast($primary) !important;
+  color: var(--ilmo-brand-contrast) !important;
   text-transform: uppercase;
   font-weight: 600;
   letter-spacing: 1px;
@@ -20,4 +22,13 @@
   height: 36px;
   margin-right: 1rem;
   display: if($header-logo, block, none);
+  object-fit: contain;
+}
+
+// Admin-configured logo visibility overrides the build-time $header-logo setting.
+.navbar-logo-shown {
+  display: block;
+}
+.navbar-logo-hidden {
+  display: none;
 }
