@@ -1,32 +1,53 @@
 import { z, ZodType } from "zod";
 
-import { MAX_OPTIONS_PER_QUESTION, PaymentMode, QuestionType } from "@tietokilta/ilmomasiina-models";
-import { EditorEvent, EditorEventType } from "../../modules/editor/types";
+import {
+  MAX_OPTIONS_PER_QUESTION,
+  NON_OPTION_QUESTION_TYPES,
+  OPTION_QUESTION_TYPES,
+  PaymentMode,
+  QuestionType,
+} from "@tietokilta/ilmomasiina-models";
+import { EditorEvent, EditorEventType, EditorQuestion } from "../../modules/editor/types";
 
 // The form validation should catch almost all error cases.
 // As the form state differs from our JSON schema somewhat, it's probably less work to just write
 // a manual validation schema for the rest of the cases, than attempt to map JSON schema errors back
 // to form field names.
 
-const questionOptionsSchema: ZodType<EditorEvent["questions"][number]["options"]> = z
-  .array(z.string().max(255))
-  .max(MAX_OPTIONS_PER_QUESTION)
-  // Validate that the stringified options list is short enough, due to current server limitations.
-  .superRefine((value, ctx) => {
-    if (JSON.stringify(value).length > 255) {
-      ctx.addIssue({
-        code: "custom",
-        message: "editor.errors.optionsTooLong",
-        // Add the error on the last option to make it look nice
-        path: [value.length - 1],
-      });
-    }
-  });
+// Default language options must be non-empty if used by the question, localized options may be empty.
+// This helper builds schemas for both.
+const questionOptionsSchema = (minLength = 0) =>
+  z
+    .array(z.string().min(minLength).max(255))
+    .max(MAX_OPTIONS_PER_QUESTION)
+    // Validate that the stringified options list is short enough, due to current server limitations.
+    .superRefine((value, ctx) => {
+      if (JSON.stringify(value).length > 255) {
+        ctx.addIssue({
+          code: "custom",
+          message: "editor.errors.optionsTooLong",
+          // Add the error on the last option to make it look nice
+          path: [value.length - 1],
+        });
+      }
+    }) satisfies ZodType<EditorQuestion["options"]>;
 
 const priceSchema = z
   .number({ error: "editor.errors.invalidPrice" })
   .int({ error: "editor.errors.invalidPrice" })
   .nonnegative({ error: "editor.errors.negativePrice" });
+
+const baseQuestionSchema = z.object({
+  id: z.optional(z.string()),
+  key: z.string(),
+  type: z.enum(QuestionType),
+  question: z.string().min(1).max(255),
+  required: z.boolean(),
+  public: z.boolean(),
+  options: z.array(z.string()),
+  prices: z.array(priceSchema).max(MAX_OPTIONS_PER_QUESTION),
+  hasPrices: z.boolean(),
+}) satisfies ZodType<EditorQuestion>;
 
 const editorSchema: ZodType<EditorEvent> = z
   .object({
@@ -75,7 +96,7 @@ const editorSchema: ZodType<EditorEvent> = z
         questions: z.array(
           z.object({
             question: z.string().max(255),
-            options: questionOptionsSchema,
+            options: questionOptionsSchema(0),
           }),
         ),
       }),
@@ -91,17 +112,17 @@ const editorSchema: ZodType<EditorEvent> = z
       }),
     ),
     questions: z.array(
-      z.object({
-        id: z.optional(z.string()),
-        key: z.string(),
-        type: z.enum(QuestionType),
-        question: z.string().min(1).max(255),
-        required: z.boolean(),
-        public: z.boolean(),
-        options: questionOptionsSchema,
-        prices: z.array(priceSchema).max(MAX_OPTIONS_PER_QUESTION),
-        hasPrices: z.boolean(),
-      }),
+      z.discriminatedUnion("type", [
+        // For question types with options, options must be present and non-empty.
+        baseQuestionSchema.extend({
+          type: z.enum(OPTION_QUESTION_TYPES),
+          options: questionOptionsSchema(1).min(1),
+        }),
+        // For other types, the option fields are hidden, so they're ignored and discarded upon submit.
+        baseQuestionSchema.extend({
+          type: z.enum(NON_OPTION_QUESTION_TYPES),
+        }),
+      ]),
     ),
     moveSignupsToQueue: z.boolean(),
     updatedAt: z.string(),

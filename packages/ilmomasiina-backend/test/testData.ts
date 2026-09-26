@@ -3,7 +3,7 @@ import { range } from "lodash";
 import moment from "moment";
 import { Optional, UniqueConstraintError } from "sequelize";
 
-import { PaymentMode, QuestionID, QuestionType } from "@tietokilta/ilmomasiina-models";
+import { OPTION_QUESTION_TYPES, PaymentMode, QuestionID, QuestionType } from "@tietokilta/ilmomasiina-models";
 import config from "../src/config";
 import { Answer, AnswerCreationAttributes } from "../src/models/answer";
 import { Event, EventAttributes } from "../src/models/event";
@@ -117,7 +117,7 @@ export function testQuestionAttributes() {
     required: faker.datatype.boolean(),
     public: faker.datatype.boolean(),
   };
-  if (attribs.type === QuestionType.SELECT || attribs.type === QuestionType.CHECKBOX) {
+  if (OPTION_QUESTION_TYPES.includes(attribs.type)) {
     attribs.options = testQuestionOptions();
     attribs.prices = testQuestionPrices(attribs.options.length);
   }
