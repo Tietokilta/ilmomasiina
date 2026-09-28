@@ -1,3 +1,4 @@
+import { createEvent } from "ics";
 import path from "path";
 import type { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -6,7 +7,10 @@ import inline from "web-resource-inliner";
 
 import config from "../config";
 import i18n from "../i18n";
-import mailTransporter from "./config";
+import type { Event } from "../models/event";
+import { icsAttrsFromEvent, isICalExportable } from "../routes/ical";
+import { getStripMarkdownProcessor } from "../util/stripMarkdown";
+import mailTransporter, { AbstractMailAttachment } from "./config";
 import Confirmation, { ConfirmationMailParams } from "./templates/Confirmation";
 import NewUser, { CredentialsMailParams } from "./templates/NewUser";
 import Payment, { PaymentMailParams } from "./templates/Payment";
@@ -47,13 +51,36 @@ function getLanguage(language: string | null): string {
   return language || config.defaultLanguage;
 }
 
+/** Creates an invite.ics attachment for the event, or returns null if the event lacks a start or end date. */
+async function createICalAttachment(event: Event): Promise<AbstractMailAttachment | null> {
+  if (!isICalExportable(event)) return null;
+
+  const stripMarkdown = await getStripMarkdownProcessor();
+  const { error, value } = createEvent({
+    ...icsAttrsFromEvent(event, stripMarkdown(event.description || "")),
+    method: "PUBLISH",
+  });
+  if (error || !value) {
+    // Don't prevent sending the email if the invite fails to generate.
+    console.error("Failed to generate iCalendar attachment:", error);
+    return null;
+  }
+
+  return {
+    filename: "invite.ics",
+    content: value,
+    contentType: "text/calendar; charset=utf-8; method=PUBLISH",
+  };
+}
+
 const EmailService = {
-  send(to: string, subject: string, html: string) {
+  send(to: string, subject: string, html: string, attachments?: AbstractMailAttachment[]) {
     const msg = {
       to,
       from: config.mailFrom,
       subject,
       html,
+      attachments,
     };
 
     return mailTransporter.sendMail(msg);
@@ -64,7 +91,8 @@ const EmailService = {
       const lng = getLanguage(language);
       const subject = i18n.t(`emails.confirmation.${params.type}.subject`, { lng, event: params.event.title });
       const html = await renderEmail(<Confirmation {...params} />, lng);
-      await EmailService.send(to, subject, html);
+      const icalAttachment = await createICalAttachment(params.event);
+      await EmailService.send(to, subject, html, icalAttachment ? [icalAttachment] : undefined);
     } catch (error) {
       console.error(error);
     }
