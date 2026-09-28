@@ -2,6 +2,7 @@ import { testEvent, testSignups } from "test/testData";
 import { describe, expect, test } from "vitest";
 
 import { PaymentMode, SignupPaymentStatus } from "@tietokilta/ilmomasiina-models";
+import { sendSignupConfirmationMail } from "../../src/mail/signups";
 import { refreshSignupPositionsAndGet } from "../../src/routes/signups/computeSignupPosition";
 import { generateToken } from "../../src/routes/signups/editTokens";
 import * as api from "./api";
@@ -89,5 +90,34 @@ describe("getSignupForEdit", () => {
     [data, response] = await api.fetchSignupForEdit(signup.id, generateToken(other.id));
     expect(response.statusCode).toBe(403);
     expect(data.signup).toBe(undefined);
+  });
+});
+
+describe("signup confirmation email", () => {
+  test("attaches invite.ics only if event has start and end dates", async () => {
+    const datedEvent = await testEvent({ hasDate: true });
+    const [datedSignup] = await testSignups({ event: datedEvent, count: 1, confirmed: true });
+    const undatedEvent = await testEvent({ hasDate: false });
+    const [undatedSignup] = await testSignups({ event: undatedEvent, count: 1, confirmed: true });
+    emailSend.mockClear();
+
+    await sendSignupConfirmationMail(datedSignup, "signup", false);
+    await sendSignupConfirmationMail(undatedSignup, "signup", false);
+
+    expect(emailSend).toHaveBeenCalledTimes(2);
+    expect(emailSend).toHaveBeenNthCalledWith(1, datedSignup.email, expect.any(String), expect.any(String), [
+      {
+        filename: "invite.ics",
+        contentType: expect.stringContaining("text/calendar"),
+        content: expect.stringMatching(new RegExp(`BEGIN:VEVENT[\\s\\S]*UID:${datedEvent.id}@`)),
+      },
+    ]);
+    expect(emailSend).toHaveBeenNthCalledWith(
+      2,
+      undatedSignup.email,
+      expect.any(String),
+      expect.any(String),
+      undefined,
+    );
   });
 });
