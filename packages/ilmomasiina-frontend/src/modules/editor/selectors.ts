@@ -1,6 +1,6 @@
 import { createSelector } from "reselect";
 
-import { AdminEventResponse, PaymentMode } from "@tietokilta/ilmomasiina-models";
+import { AdminEventResponse, OPTION_QUESTION_TYPES, PaymentMode } from "@tietokilta/ilmomasiina-models";
 import i18n from "../../i18n";
 import type { Root } from "../store";
 import { ConvertedEditorEvent, EditorEvent, EditorEventType } from "./types";
@@ -113,8 +113,11 @@ export const editorEventToServer = (form: EditorEvent): ConvertedEditorEvent => 
     ...quota,
     price: form.payments !== PaymentMode.DISABLED ? quota.price : 0,
   })),
+  // Drop options from question types that don't use them, because the editor allows invalid options
+  // for question types that don't have options.
   questions: form.questions.map((question) => ({
     ...question,
+    options: OPTION_QUESTION_TYPES.includes(question.type) ? question.options : null,
     prices: form.payments !== PaymentMode.DISABLED && question.hasPrices ? question.prices : null,
   })),
 });

@@ -19,6 +19,7 @@
 - Removed support for the `MAIL_DEFAULT_LANG` environment variable. Use `DEFAULT_LANGUAGE` instead.
 - Removed support for the `EVENT_DETAILS_URL`, `EDIT_SIGNUP_URL` and `ADMIN_URL`
   environment variables. Use the new `FRONTENDS` system instead.
+- Empty question options are no longer allowed in the default language. (Breaking only for admin API users.)
 - **ilmomasiina-models**: Removed database models (moved to `ilmomasiina-backend`).
 
 **Features:**

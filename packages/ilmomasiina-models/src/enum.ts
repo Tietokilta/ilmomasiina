@@ -48,6 +48,13 @@ export enum QuestionType {
   CHECKBOX = "checkbox",
 }
 
+/** Question types that have options. */
+export const OPTION_QUESTION_TYPES: QuestionType[] = [QuestionType.SELECT, QuestionType.CHECKBOX];
+/** Question types that do not have options. */
+export const NON_OPTION_QUESTION_TYPES: QuestionType[] = Object.values(QuestionType).filter(
+  (type) => !OPTION_QUESTION_TYPES.includes(type),
+);
+
 /** Payment modes for events. */
 export enum PaymentMode {
   /** No payments. */

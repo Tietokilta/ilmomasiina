@@ -14,7 +14,7 @@ import type {
   SignupUpdateResponse,
   SignupValidationErrors,
 } from "@tietokilta/ilmomasiina-models";
-import { AuditEvent, QuestionType, SignupFieldError } from "@tietokilta/ilmomasiina-models";
+import { AuditEvent, OPTION_QUESTION_TYPES, QuestionType, SignupFieldError } from "@tietokilta/ilmomasiina-models";
 import config from "../../config";
 import { sendSignupConfirmationMail } from "../../mail/signups";
 import { getSequelize } from "../../models";
@@ -122,7 +122,7 @@ export function validateAnswersAndGetProducts(
 
     const validOptions = new Map<string, number>();
 
-    if ((question.type === QuestionType.CHECKBOX || question.type === QuestionType.SELECT) && question.options) {
+    if (OPTION_QUESTION_TYPES.includes(question.type) && question.options) {
       // First, collect valid options and their prices from the default language
       question.options.forEach((opt, i) => {
         if (validOptions.has(opt)) {
