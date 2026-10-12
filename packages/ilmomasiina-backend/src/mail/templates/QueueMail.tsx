@@ -2,7 +2,6 @@ import { Trans, useTranslation } from "react-i18next";
 
 import { SignupPaymentStatus } from "@tietokilta/ilmomasiina-models";
 import type { Event } from "../../models/event";
-import Layout from "../components/Layout";
 import { EditLink, EventDetails, PendingPaymentWarning } from "../components/shared";
 
 export interface QueueMailParams {
@@ -15,7 +14,7 @@ export interface QueueMailParams {
 export default function QueueMail({ event, date, paymentStatus, signupLink }: QueueMailParams) {
   const { t } = useTranslation();
   return (
-    <Layout>
+    <>
       <div className="content-block">
         <p className="bodyText">
           <Trans t={t} i18nKey="emails.queueMail.accepted">
@@ -28,6 +27,6 @@ export default function QueueMail({ event, date, paymentStatus, signupLink }: Qu
       {paymentStatus === SignupPaymentStatus.PENDING && <PendingPaymentWarning event={event} signupLink={signupLink} />}
       <EventDetails event={event} date={date} />
       <EditLink href={signupLink} />
-    </Layout>
+    </>
   );
 }

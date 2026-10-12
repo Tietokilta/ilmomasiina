@@ -20,6 +20,9 @@
 - Removed support for the `EVENT_DETAILS_URL`, `EDIT_SIGNUP_URL` and `ADMIN_URL`
   environment variables. Use the new `FRONTENDS` system instead.
 - **ilmomasiina-models**: Removed database models (moved to `ilmomasiina-backend`).
+- `BRANDING_HEADER_TITLE_TEXT`, `BRANDING_HEADER_TITLE_TEXT_SHORT`, `BRANDING_FOOTER_*` and
+  `BRANDING_LOGIN_PLACEHOLDER_EMAIL` are now read by the backend at runtime instead of being frontend build args.
+  Set them in the backend environment; a frontend rebuild is no longer needed to change them.
 
 **Features:**
 
@@ -27,6 +30,12 @@
   - Events can now specify a preferred frontend, and emails will use the correct URLs
 - Frontend pages now set useful page titles
 - **ilmomasiina-client:** Added payment support to EditSignup, including new state flags in context
+- Admins can now customize branding at runtime on the new Settings page (`/admin/settings`), without rebuilding
+  or forking the frontend: header title and logo, favicon, footer links, login email placeholder, theme colors
+  (brand, secondary, success, warning, danger and muted text), iCal calendar name and email footer
+  - Runtime settings override the `BRANDING_*` environment variables, which remain as defaults
+  - New public API endpoint `GET /api/branding` and admin endpoints `GET`/`PUT /api/admin/branding`
+  - New `setting` table and audit log event `branding.edit`
 
 **Bug fixes and improvements:**
 

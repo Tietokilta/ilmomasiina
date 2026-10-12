@@ -1,7 +1,6 @@
 import { Trans, useTranslation } from "react-i18next";
 
 import type { Event } from "../../models/event";
-import Layout from "../components/Layout";
 import { VerificationEmail } from "../components/shared";
 
 export interface PaymentMailParams {
@@ -18,7 +17,7 @@ export interface PaymentMailParams {
 export default function Payment({ totalFormatted, products, event, signupLink }: PaymentMailParams) {
   const { t } = useTranslation();
   return (
-    <Layout>
+    <>
       <div className="content-block">
         <p className="bodyText">
           <Trans t={t} i18nKey="emails.payment.received">
@@ -56,6 +55,6 @@ export default function Payment({ totalFormatted, products, event, signupLink }:
           </Trans>
         </p>
       </div>
-    </Layout>
+    </>
   );
 }

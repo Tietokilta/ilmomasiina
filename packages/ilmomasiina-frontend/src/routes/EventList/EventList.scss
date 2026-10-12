@@ -20,16 +20,16 @@ table.ilmo--event-list {
     }
   }
   tr.ilmo--signup-not-opened td.ilmo--signup-state {
-    color: $signup-state-not-opened;
+    color: var(--bs-body-color);
   }
   tr.ilmo--signup-opened td.ilmo--signup-state {
-    color: $signup-state-opened;
+    color: var(--ilmo-success-color);
   }
   tr.ilmo--signup-closed td.ilmo--signup-state {
-    color: $signup-state-closed;
+    color: var(--ilmo-danger-color);
   }
   tr.ilmo--signup-disabled td.ilmo--signup-state {
-    color: $signup-state-disabled;
+    color: var(--ilmo-muted-color);
   }
 }
 
@@ -67,13 +67,6 @@ table.ilmo--event-list {
 
         td.ilmo--title a {
           font-weight: 600;
-        }
-      }
-
-      // prevent similarity with link color
-      @if $signup-state-opened == $link-color {
-        tr.ilmo--signup-opened td.ilmo--signup-state {
-          color: $signup-state-not-opened;
         }
       }
 

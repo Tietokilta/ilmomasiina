@@ -8,12 +8,14 @@ import Footer from "../components/Footer";
 import Header from "../components/Header";
 import paths from "../paths";
 import PageNotFound from "../routes/404/PageNotFound";
+import ApplyBranding from "./ApplyBranding";
 
 import "react-toastify/dist/ReactToastify.css";
 import "../styles/app.scss";
 
 // Code-split route components.
 const AdminEventsList = lazy(() => import("../routes/AdminEventsList"));
+const AdminSettings = lazy(() => import("../routes/AdminSettings"));
 const AdminUsersList = lazy(() => import("../routes/AdminUsers"));
 const AuditLog = lazy(() => import("../routes/AuditLog"));
 const Editor = lazy(() => import("../routes/Editor"));
@@ -34,6 +36,7 @@ const loadingFallback = (
 
 const AppContainer = () => (
   <BrowserRouter>
+    <ApplyBranding />
     <Suspense>
       <RenewLogin />
     </Suspense>
@@ -50,6 +53,7 @@ const AppContainer = () => (
             <Route path={paths.adminInitialSetup} element={<InitialSetup />} />
             <Route path={paths.adminEventsList} element={<AdminEventsList />} />
             <Route path={paths.adminUsersList} element={<AdminUsersList />} />
+            <Route path={paths.adminSettings} element={<AdminSettings />} />
             <Route path={paths.adminEditEvent(":id")} element={<Editor />} />
             <Route path={paths.adminCopyEvent(":id")} element={<Editor copy />} />
             <Route path={paths.adminAuditLog} element={<AuditLog />} />

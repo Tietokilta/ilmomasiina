@@ -76,6 +76,7 @@ export enum AuditEvent {
   START_PAYMENT = "payment.start",
   COMPLETE_PAYMENT = "payment.complete",
   EXPIRE_PAYMENT = "payment.expire",
+  EDIT_BRANDING = "branding.edit",
 }
 
 export enum ErrorCode {
