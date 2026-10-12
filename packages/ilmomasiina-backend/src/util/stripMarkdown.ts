@@ -7,7 +7,12 @@ export async function getStripMarkdownProcessor() {
     const { remark } = await import("remark");
     const { default: strip } = await import("strip-markdown");
     const { default: remarkGfm } = await import("remark-gfm");
-    processor = (md) => remark().use(remarkGfm).use(strip).processSync(md).toString();
+    processor = (md) =>
+      remark()
+        .use(remarkGfm)
+        .use(strip, { keep: ["link"] }) // this keeps the markdown []() syntax for links. They would be stripped otherwise.
+        .processSync(md)
+        .toString()
   }
   return processor;
 }
