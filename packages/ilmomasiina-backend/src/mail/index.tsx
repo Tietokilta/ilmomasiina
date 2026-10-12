@@ -92,9 +92,10 @@ const EmailService = {
       const subject = i18n.t(`emails.confirmation.${params.type}.subject`, { lng, event: params.event.title });
       const html = await renderEmail(<Confirmation {...params} />, lng);
 
-      // Failing to create the iCal attachment should not prevent the confirmation mail
-      const icalAttachment = await createICalAttachment(params.event)
-        .catch((error: unknown) => { console.error("Failed to create iCal attachment for event", params.event.id, error)});
+      const icalAttachment = await createICalAttachment(params.event).catch((error: unknown) => {
+        // Failing to create the iCal attachment should not prevent the confirmation mail
+        console.error("Failed to create iCal attachment for event", params.event.id, error);
+      });
 
       await EmailService.send(to, subject, html, icalAttachment ? [icalAttachment] : undefined);
     } catch (error) {

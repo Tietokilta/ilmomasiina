@@ -12,7 +12,7 @@ export async function getStripMarkdownProcessor() {
         .use(remarkGfm)
         .use(strip, { keep: ["link"] }) // this keeps the markdown []() syntax for links. They would be stripped otherwise.
         .processSync(md)
-        .toString()
+        .toString();
   }
   return processor;
 }
