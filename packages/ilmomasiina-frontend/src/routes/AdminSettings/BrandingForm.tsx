@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 
-import { Button, Form as BsForm, FormControl, FormSelect, Spinner } from "react-bootstrap";
+import { Button, Form as BsForm, FormControl, Spinner } from "react-bootstrap";
 import { Form, FormSpy } from "react-final-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
@@ -24,67 +24,13 @@ import useEvent from "../../utils/useEvent";
 import ColorField from "./ColorField";
 import ImageField, { formatMaxSize } from "./ImageField";
 
-/** Text and color fields of the form. "" means "use default". */
-const textKeys = [
-  "headerTitle",
-  "headerTitleShort",
-  "footerGdprText",
-  "footerGdprLink",
-  "footerHomeText",
-  "footerHomeLink",
-  "loginPlaceholderEmail",
-  "icalCalendarName",
-  "mailFooterText",
-  "mailFooterLink",
-] as const;
-const colorKeys = ["brandColor", "secondaryColor", "successColor", "warningColor", "dangerColor", "mutedColor"] as const;
-
-type TextKey = (typeof textKeys)[number];
-type ColorKey = (typeof colorKeys)[number];
-
 /** Form values. Text fields use "" instead of null for "use default".
  * Note that final-form turns empty strings into `undefined` when a field is cleared.
  */
-type FormData = Partial<Record<TextKey | ColorKey, string>> & {
-  logo: string | null;
-  /** "" (or undefined) for default, "show" or "hide". */
-  showLogo?: "" | "show" | "hide";
-  favicon: string | null;
-};
-
-function showLogoToForm(showLogo: boolean | null): FormData["showLogo"] {
-  if (showLogo === null) return "";
-  return showLogo ? "show" : "hide";
-}
-
-function toFormData(branding: BrandingSettings): FormData {
-  const data: FormData = {
-    logo: branding.logo,
-    showLogo: showLogoToForm(branding.showLogo),
-    favicon: branding.favicon,
-  };
-  [...textKeys, ...colorKeys].forEach((key) => {
-    data[key] = branding[key] ?? "";
-  });
-  return data;
-}
-
-function toUpdateBody(data: FormData): BrandingUpdateBody {
-  const body = {
-    logo: data.logo,
-    showLogo: data.showLogo ? data.showLogo === "show" : null,
-    favicon: data.favicon,
-  } as BrandingUpdateBody;
-  textKeys.forEach((key) => {
-    body[key] = data[key]?.trim() || null;
-  });
-  colorKeys.forEach((key) => {
-    body[key] = data[key]?.trim().toLowerCase() || null;
-  });
-  return body;
-}
+type FormData = BrandingUpdateBody;
 
 function validate(values: FormData) {
+  // TODO wtf is this shit
   const errors: Partial<Record<keyof FormData, string>> = {};
   colorKeys.forEach((key) => {
     const value = values[key]?.trim();
@@ -308,15 +254,6 @@ const BrandingForm = ({ settings, defaults }: Props) => {
             maxLength={BRANDING_LOGO_MAX_LENGTH}
             defaultPreview={defaultLogo}
           />
-          <FieldFormGroup name="showLogo" label={t("adminSettings.branding.showLogo")}>
-            {({ input }) => (
-              <FormSelect {...input} value={input.value ?? ""}>
-                <option value="">{t("adminSettings.branding.showLogo.default")}</option>
-                <option value="show">{t("adminSettings.branding.showLogo.show")}</option>
-                <option value="hide">{t("adminSettings.branding.showLogo.hide")}</option>
-              </FormSelect>
-            )}
-          </FieldFormGroup>
           <ImageField
             name="favicon"
             label={t("adminSettings.branding.favicon")}

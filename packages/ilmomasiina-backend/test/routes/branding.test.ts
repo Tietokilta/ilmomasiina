@@ -3,9 +3,8 @@ import { beforeEach, describe, expect, test } from "vitest";
 import {
   AdminBrandingResponse,
   AuditEvent,
-  BrandingResponse,
+  BrandingSettings,
   BrandingUpdateBody,
-  emptyBrandingSettings,
 } from "@tietokilta/ilmomasiina-models";
 import { getBrandingDefaults } from "../../src/branding";
 import config from "../../src/config";
@@ -13,6 +12,28 @@ import { AuditLog } from "../../src/models/auditlog";
 import { Setting } from "../../src/models/setting";
 import { testEvent } from "../testData";
 import { handleTestResponse } from "./api";
+
+/** Branding settings with all values set to empty or null, i.e. defaults everywhere. */
+export const emptyBrandingSettings: BrandingSettings = {
+  headerTitle: "Test Guild Signups",
+  headerTitleShort: "Signups",
+  footerGdprText: "Privacy",
+  footerGdprLink: "https://example.com/privacy",
+  footerHomeText: "Home",
+  footerHomeLink: "https://example.com/",
+  loginPlaceholderEmail: "admin@example.com",
+  icalCalendarName: "Test Guild Events",
+  mailFooterText: "Test Guild ry",
+  mailFooterLink: "https://example.com/",
+  brandColor: null,
+  secondaryColor: null,
+  successColor: null,
+  warningColor: null,
+  dangerColor: null,
+  mutedColor: null,
+  logo: null,
+  favicon: null,
+};
 
 // 1x1 transparent PNG
 const testImage =
@@ -36,7 +57,6 @@ const customBranding: BrandingUpdateBody = {
   dangerColor: "#cc0000",
   mutedColor: "#777777",
   logo: testImage,
-  showLogo: true,
   favicon: testImage,
 };
 

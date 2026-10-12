@@ -32,7 +32,9 @@ const Login = () => {
   const { login } = useStore((state) => state.auth);
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const branding = useBranding();
+
+  const { loginPlaceholderEmail } = useBranding();
+  const placeholderEmail = loginPlaceholderEmail || `admin@${window.location.hostname}`;
 
   useBrandedDocumentTitle(t("login.title"));
 
@@ -61,7 +63,7 @@ const Login = () => {
                   {...input}
                   type="email"
                   required
-                  placeholder={branding.loginPlaceholderEmail}
+                  placeholder={placeholderEmail}
                   isInvalid={touched && !!error}
                 />
               )}

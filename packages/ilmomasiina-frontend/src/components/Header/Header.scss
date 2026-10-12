@@ -24,11 +24,3 @@
   display: if($header-logo, block, none);
   object-fit: contain;
 }
-
-// Admin-configured logo visibility overrides the build-time $header-logo setting.
-.navbar-logo-shown {
-  display: block;
-}
-.navbar-logo-hidden {
-  display: none;
-}

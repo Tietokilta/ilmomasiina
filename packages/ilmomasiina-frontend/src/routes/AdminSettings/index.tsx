@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 
 import { Spinner } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import { errorDesc, errorTitle } from "@tietokilta/ilmomasiina-client";
 import requireAuth from "../../containers/requireAuth";
@@ -18,7 +18,7 @@ const AdminSettings = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    getBranding();
+    void getBranding();
     return () => resetState();
   }, [getBranding, resetState]);
 

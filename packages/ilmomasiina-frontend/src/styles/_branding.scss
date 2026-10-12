@@ -25,7 +25,7 @@
   @include ilmo-theme-color-variables(success, $success, false);
   @include ilmo-theme-color-variables(warning, $warning, false);
   @include ilmo-theme-color-variables(danger, $danger, false);
-  @include ilmo-theme-color-variables(muted, $secondary-text-color, false);
+  @include ilmo-theme-color-variables(muted, $text-muted, false);
 }
 
 :root {
@@ -37,7 +37,7 @@
   --ilmo-default-success-color: #{$success};
   --ilmo-default-warning-color: #{$warning};
   --ilmo-default-danger-color: #{$danger};
-  --ilmo-default-muted-color: #{$secondary-text-color};
+  --ilmo-default-muted-color: #{$text-muted};
 }
 
 // Areas that must stay usable even with badly chosen theme colors, such as the settings form that previews

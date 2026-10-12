@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { createEvents, DateArray } from "ics";
 import { Op } from "sequelize";
 
-import { getBranding } from "../../branding";
+import { getBrandingSettings } from "../../branding";
 import config, { eventDetailsUrl } from "../../config";
 import { Event } from "../../models/event";
 
@@ -39,11 +39,11 @@ export async function eventsAsICal() {
     ],
   });
 
-  const calendarName = (await getBranding()).icalCalendarName;
+  const { icalCalendarName } = await getBrandingSettings();
 
   const { error, value } = createEvents(
     events.map((event) => ({
-      calName: calendarName,
+      calName: icalCalendarName,
       uid: `${event.id}@${uidDomain}`,
       start: dateToArray(event.date!),
       startInputType: "utc",

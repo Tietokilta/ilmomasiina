@@ -6,14 +6,9 @@ export interface SettingAttributes {
 }
 
 export class Setting extends Model<SettingAttributes> implements SettingAttributes {
-  public key!: string;
-  public value!: object;
-
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare key: string;
+  declare value: object;
 }
-
-// Key-value store for admin-editable settings, validated by the API schemas in ilmomasiina-models.
 
 export default function setupSettingModel(sequelize: Sequelize) {
   Setting.init(
@@ -31,6 +26,7 @@ export default function setupSettingModel(sequelize: Sequelize) {
       sequelize,
       modelName: "setting",
       freezeTableName: true,
+      timestamps: false,
     },
   );
 

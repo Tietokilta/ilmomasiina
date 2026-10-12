@@ -37,8 +37,7 @@
     border: 1px solid $border-color;
     border-radius: $border-radius;
     // Checkerboard to make transparent and light images visible.
-    background:
-      repeating-conic-gradient($secondary-background 0% 25%, $white 0% 50%) 0 0 / 16px 16px;
+    background: repeating-conic-gradient($gray-200 0% 25%, $white 0% 50%) 0 0 / 16px 16px;
   }
 }
 
