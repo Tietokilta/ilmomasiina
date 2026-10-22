@@ -1,5 +1,9 @@
-import React from "react";
+import React, { TextareaHTMLAttributes } from "react";
 
-import { Form } from "react-bootstrap";
+import { Form, FormControlProps } from "react-bootstrap";
 
-export default (props: any) => <Form.Control as="textarea" {...props} />;
+const Textarea = (props: TextareaHTMLAttributes<HTMLTextAreaElement>) => (
+  <Form.Control as="textarea" {...(props as FormControlProps)} />
+);
+
+export default Textarea;

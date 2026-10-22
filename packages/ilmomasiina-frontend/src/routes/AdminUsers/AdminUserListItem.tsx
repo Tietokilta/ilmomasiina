@@ -18,7 +18,7 @@ const AdminUserListItem = ({ user }: Props) => {
   const { t } = useTranslation();
 
   async function onDelete() {
-    // eslint-disable-next-line no-alert
+    // TODO: Use a proper modal instead of window.confirm
     const confirmed = window.confirm(t("adminUsers.deleteUser.confirm", { user: user.email }));
     if (confirmed) {
       try {
@@ -34,11 +34,11 @@ const AdminUserListItem = ({ user }: Props) => {
           { autoClose: 5000 },
         );
       }
-      getUsers();
+      void getUsers();
     }
   }
   async function onResetPassword() {
-    // eslint-disable-next-line no-alert
+    // TODO: Use a proper modal instead of window.confirm
     const confirmed = window.confirm(t("adminUsers.resetPassword.confirm", { user: user.email }));
     if (confirmed) {
       try {

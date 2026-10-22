@@ -2,13 +2,14 @@ import React, { useEffect } from "react";
 
 import { Spinner } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router";
 
 import { errorDesc, errorTitle } from "@tietokilta/ilmomasiina-client";
 import requireAuth from "../../containers/requireAuth";
 import type { TKey } from "../../i18n";
 import useStore from "../../modules/store";
 import paths from "../../paths";
+import useBrandedDocumentTitle from "../../utils/useBrandedDocumentTitle";
 import EditForm from "./components/EditForm";
 
 import "./Editor.scss";
@@ -25,13 +26,15 @@ const Editor = ({ copy = false }: Props) => {
   const urlEventId = useParams<"id">().id!;
   const urlIsNew = urlEventId === "new";
 
+  useBrandedDocumentTitle(urlIsNew ? t("editor.title.new") : t("editor.title.edit"));
+
   useEffect(() => {
     if (urlIsNew) {
       newEvent();
     } else if (copy) {
-      getEvent(urlEventId, true);
+      void getEvent(urlEventId, true);
     } else {
-      getEvent(urlEventId);
+      void getEvent(urlEventId);
     }
     return () => {
       resetState();

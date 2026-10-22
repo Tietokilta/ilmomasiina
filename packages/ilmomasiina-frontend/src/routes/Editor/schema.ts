@@ -107,6 +107,13 @@ const editorSchema: ZodType<EditorEvent> = z
     updatedAt: z.string(),
   })
   .superRefine((event, ctx) => {
+    if (event.eventType !== EditorEventType.ONLY_EVENT && event.quotas.length === 0) {
+      ctx.addIssue({
+        code: "custom",
+        message: "editor.errors.quotasRequired",
+        path: ["quotas"],
+      });
+    }
     if (event.eventType !== EditorEventType.ONLY_SIGNUP) {
       if (!event.date) {
         ctx.addIssue({

@@ -29,7 +29,7 @@ const AuditLogActionFilter = () => {
   const onChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     // Since e.target.value comes from the <select> below, we can assume the type
     const event = e.target.value ? [e.target.value as AuditEvent] : undefined;
-    setAuditLogQueryField("action", event);
+    void setAuditLogQueryField("action", event);
   };
 
   return (

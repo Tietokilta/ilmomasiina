@@ -2,11 +2,12 @@ import React from "react";
 
 import { Col, Row, Spinner } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router";
 
 import { errorDesc, errorTitle, SingleEventProvider, useSingleEventContext } from "@tietokilta/ilmomasiina-client";
 import { TKey } from "../../i18n";
 import paths from "../../paths";
+import useBrandedDocumentTitle from "../../utils/useBrandedDocumentTitle";
 import EventDescription from "./components/EventDescription";
 import QuotaStatus from "./components/QuotaStatus";
 import SignupCountdown from "./components/SignupCountdown";
@@ -17,6 +18,8 @@ import "./SingleEvent.scss";
 const SingleEventView = () => {
   const { localizedEvent: event, signupsByQuota, pending, error } = useSingleEventContext();
   const { t } = useTranslation();
+
+  useBrandedDocumentTitle(event?.title);
 
   if (error) {
     return (

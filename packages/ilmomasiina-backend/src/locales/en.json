@@ -2,11 +2,42 @@
   "translation": {
     "dateFormat.general": "DD.MM.YYYY HH:mm",
     "currencyFormat.locale": "en-FI",
+
     "emails.confirmation.signup.subject": "Signup confirmation: {{event}}",
     "emails.confirmation.edit.subject": "Edit confirmation: {{event}}",
-    "emails.paymentConfirmation.subject": "Payment confirmation: {{event}}",
+    "emails.adminSignup": "An administrator has signed you up to this event.",
+    "emails.adminEdit": "An administrator has edited your signup.",
+    "emails.pendingPayment": "Your signup is still pending payment!",
+    "emails.completePayment": "You can complete the payment on the <1>signup page</1>.",
+    "emails.queuePosition": "You are in the queue in position {{position}}.",
+    "emails.queueNotify": "If you get accepted from the queue, you will be notified by email.",
+
+    "emails.payment.subject": "Payment confirmation: {{event}}",
+    "emails.payment.received": "Your payment for <1>{{event}}</1> has been received.",
+    "emails.payment.purchaseDetails": "Purchase details:",
+    "emails.payment.total": "Total",
+    "emails.payment.viewSignup": "To view your signup, click <1>this link</1>.",
+
     "emails.newUser.subject": "User created for Ilmomasiina",
-    "emails.promotedFromQueue.subject": "You got into {{event}} from the queue",
-    "emails.resetPassword.subject": "Your Ilmomasiina password has been reset"
+    "emails.newUser.created": "Ilmomasiina admin credentials have been created for you.",
+    "emails.newUser.password": "Password",
+
+    "emails.resetPassword.subject": "Your Ilmomasiina password has been reset",
+    "emails.resetPassword.reset": "Your password for Ilmomasiina has been reset.",
+    "emails.resetPassword.newPassword": "New password",
+
+    "emails.queueMail.subject": "You got into {{event}} from the queue",
+    "emails.queueMail.accepted": "Your signup to <1>{{event}}</1> was accepted from the queue.",
+
+    "emails.eventDetails": "Event details:",
+    "emails.event": "Event",
+    "emails.location": "Location",
+    "emails.time": "Time",
+    "emails.signupDetails": "Signup details:",
+    "emails.name": "Name",
+    "emails.email": "Email",
+    "emails.quota": "Quota",
+    "emails.editLink": "If you want to edit or cancel your signup, you can do it by clicking <1>this link</1>.",
+    "emails.login": "You can log in at <1>{{url}}</1>."
   }
 }

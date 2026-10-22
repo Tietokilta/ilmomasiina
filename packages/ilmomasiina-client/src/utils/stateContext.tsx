@@ -14,7 +14,7 @@ export function createStateContext<State>() {
   }
 
   /** Wraps a function into a React hook that provides it with state. */
-  function createThunk<A extends any[], R>(action: (state: State) => (...args: A) => R) {
+  function createThunk<A extends unknown[], R>(action: (state: State) => (...args: A) => R) {
     return () => {
       const state = useStateContext();
       return action(state);

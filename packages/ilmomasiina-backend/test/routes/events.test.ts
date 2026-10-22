@@ -112,7 +112,7 @@ describe("GET /api/events/:id", () => {
     const event = await testEvent({ questionCount: 3 });
     const [before] = await api.fetchUserEventDetails(event);
 
-    expect(before.questions.map((q) => q.id)).toEqual(sortBy(event.questions!, "order").map((q) => q.id));
+    expect(before.questions.map((q) => q.id)).toEqual(sortBy(event.questions, "order").map((q) => q.id));
 
     await event.questions!.at(-1)!.update({ order: 0 });
     await event.questions![0].update({ order: event.questions!.length - 1 });
@@ -120,14 +120,14 @@ describe("GET /api/events/:id", () => {
     const [after] = await api.fetchUserEventDetails(event);
 
     expect(before.questions.map((q) => q.id)).not.toEqual(after.questions.map((q) => q.id));
-    expect(after.questions.map((q) => q.id)).toEqual(sortBy(event.questions!, "order").map((q) => q.id));
+    expect(after.questions.map((q) => q.id)).toEqual(sortBy(event.questions, "order").map((q) => q.id));
   });
 
   test("returns quotas in correct order", async () => {
     const event = await testEvent({ quotaCount: 3 });
     const [before] = await api.fetchUserEventDetails(event);
 
-    expect(before.quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, "order").map((q) => q.id));
+    expect(before.quotas.map((q) => q.id)).toEqual(sortBy(event.quotas, "order").map((q) => q.id));
 
     await event.quotas!.at(-1)!.update({ order: 0 });
     await event.quotas![0].update({ order: event.quotas!.length - 1 });
@@ -135,7 +135,7 @@ describe("GET /api/events/:id", () => {
     const [after] = await api.fetchUserEventDetails(event);
 
     expect(before.quotas.map((q) => q.id)).not.toEqual(after.quotas.map((q) => q.id));
-    expect(after.quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, "order").map((q) => q.id));
+    expect(after.quotas.map((q) => q.id)).toEqual(sortBy(event.quotas, "order").map((q) => q.id));
   });
 
   test("returns public signups", async () => {
@@ -339,7 +339,7 @@ describe("GET /api/events", () => {
     const event = await testEvent({ quotaCount: 3 });
     const [before] = await api.fetchUserEventList();
 
-    expect(before[0].quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, "order").map((q) => q.id));
+    expect(before[0].quotas.map((q) => q.id)).toEqual(sortBy(event.quotas, "order").map((q) => q.id));
 
     await event.quotas!.at(-1)!.update({ order: 0 });
     await event.quotas![0].update({ order: event.quotas!.length - 1 });
@@ -347,6 +347,6 @@ describe("GET /api/events", () => {
     const [after] = await api.fetchUserEventList();
 
     expect(before[0].quotas.map((q) => q.id)).not.toEqual(after[0].quotas.map((q) => q.id));
-    expect(after[0].quotas.map((q) => q.id)).toEqual(sortBy(event.quotas!, "order").map((q) => q.id));
+    expect(after[0].quotas.map((q) => q.id)).toEqual(sortBy(event.quotas, "order").map((q) => q.id));
   });
 });

@@ -17,7 +17,7 @@ initApp()
     const url = config.nodeEnv === "development" ? `http://${addr}` : config.baseUrl;
     debugLog(`Server is now running at ${url}.`);
   })
-  .catch((err) => {
+  .catch((err: unknown) => {
     console.error("Failed to initialize app", err);
     exit(1);
   });

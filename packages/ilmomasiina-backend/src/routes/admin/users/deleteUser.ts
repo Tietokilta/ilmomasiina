@@ -25,7 +25,7 @@ export default async function deleteUser(
 
     if (!existing) {
       throw new NotFound("User does not exist");
-    } else if (request.sessionData.user === existing.id) {
+    } else if (request.sessionData!.user === existing.id) {
       throw new CannotDeleteSelf("You can't delete your own user");
     } else {
       // Delete user

@@ -137,8 +137,9 @@ export function validateAnswersAndGetProducts(
       for (const lang of Object.values(event.languages)) {
         const localized = lang.questions[index];
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- indexing may fail
         if (localized && localized.options) {
-          // eslint-disable-next-line @typescript-eslint/no-loop-func -- false positive on `error`
+          // eslint-disable-next-line @typescript-eslint/no-loop-func -- func is only used immediately in forEach
           localized.options.forEach((opt, i) => {
             // Only include non-empty options, since empty ones use the default language
             if (!opt) return;
@@ -198,7 +199,7 @@ export function validateAnswersAndGetProducts(
     } else {
       // Forcibly convert to string in admin mode
       if (admin) {
-        answer = Array.isArray(answer) ? answer.join(", ") : String(answer);
+        answer = Array.isArray(answer) ? answer.join(", ") : answer;
       }
       // Don't allow arrays for non-checkbox questions
       if (typeof answer !== "string") {
@@ -272,20 +273,21 @@ async function getSignupAndEventForUpdate(id: SignupID, transaction: Transaction
     throw new NoSuchSignup("Signup expired or already deleted");
   }
 
-  signup.quota = await signup.getQuota({
-    include: [
-      {
-        model: Event,
-        include: [
-          {
-            model: Question,
-          },
-        ],
-      },
-    ],
-    order: [[Event, Question, "order", "ASC"]],
-    transaction,
-  });
+  signup.quota =
+    (await signup.getQuota({
+      include: [
+        {
+          model: Event,
+          include: [
+            {
+              model: Question,
+            },
+          ],
+        },
+      ],
+      order: [[Event, Question, "order", "ASC"]],
+      transaction,
+    })) ?? undefined;
   if (!signup.quota || !signup.quota.event) {
     // Quota or event soft deleted
     throw new NoSuchSignup("Signup expired or already deleted");
@@ -460,7 +462,7 @@ export async function createSignupAsAdmin(
 
   // Refresh signup positions. Ignore errors, but wait for this to complete, so that the user
   // gets a status on their signup before it being returned.
-  await refreshSignupPositions(updatedSignup.quota!.event!).catch((error) => console.error(error));
+  await refreshSignupPositions(updatedSignup.quota!.event!).catch((error: unknown) => console.error(error));
 
   // Fetch updated payment data for response. (Should always be empty, but for consistency.)
   updatedSignup.payments = await updatedSignup.getPayments();

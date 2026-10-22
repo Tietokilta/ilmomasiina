@@ -1,7 +1,7 @@
 import i18n from "i18next";
 
-import * as en from "./locales/en.json";
-import * as fi from "./locales/fi.json";
+import en from "./locales/en.json";
+import fi from "./locales/fi.json";
 
 const resources = {
   // this way we generate typescript errors if not exact match

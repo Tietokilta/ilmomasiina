@@ -28,42 +28,43 @@ export interface QuotaAttributes {
   title: string;
   size: number | null;
   eventId: Event["id"];
-  signupCount?: number;
+  signupCount?: number | string;
   price: number;
 }
 
 export interface QuotaCreationAttributes extends Optional<QuotaAttributes, "id"> {}
 
 export class Quota extends Model<QuotaAttributes, QuotaCreationAttributes> implements QuotaAttributes {
-  public id!: string;
-  public order!: number;
-  public title!: string;
-  public size!: number | null;
-  public price!: number;
+  declare id: string;
+  declare order: number;
+  declare title: string;
+  declare size: number | null;
+  declare price: number;
 
-  public eventId!: Event["id"];
-  public event?: Event;
-  public getEvent!: HasOneGetAssociationMixin<Event>;
-  public setEvent!: HasOneSetAssociationMixin<Event, Event["id"]>;
-  public createEvent!: HasOneCreateAssociationMixin<Event>;
+  declare eventId: Event["id"];
+  declare event?: Event;
+  declare getEvent: HasOneGetAssociationMixin<Event | null>;
+  declare setEvent: HasOneSetAssociationMixin<Event, Event["id"]>;
+  declare createEvent: HasOneCreateAssociationMixin<Event>;
 
-  public signups?: Signup[];
-  public getSignups!: HasManyGetAssociationsMixin<Signup>;
-  public countSignups!: HasManyCountAssociationsMixin;
-  public hasSignup!: HasManyHasAssociationMixin<Signup, Signup["id"]>;
-  public hasSignups!: HasManyHasAssociationsMixin<Signup, Signup["id"]>;
-  public setSignups!: HasManySetAssociationsMixin<Signup, Signup["id"]>;
-  public addSignup!: HasManyAddAssociationMixin<Signup, Signup["id"]>;
-  public addSignups!: HasManyAddAssociationsMixin<Signup, Signup["id"]>;
-  public removeSignup!: HasManyRemoveAssociationMixin<Signup, Signup["id"]>;
-  public removeSignups!: HasManyRemoveAssociationsMixin<Signup, Signup["id"]>;
-  public createSignup!: HasManyCreateAssociationMixin<Signup>;
+  declare signups?: Signup[];
+  declare getSignups: HasManyGetAssociationsMixin<Signup>;
+  declare countSignups: HasManyCountAssociationsMixin;
+  declare hasSignup: HasManyHasAssociationMixin<Signup, Signup["id"]>;
+  declare hasSignups: HasManyHasAssociationsMixin<Signup, Signup["id"]>;
+  declare setSignups: HasManySetAssociationsMixin<Signup, Signup["id"]>;
+  declare addSignup: HasManyAddAssociationMixin<Signup, Signup["id"]>;
+  declare addSignups: HasManyAddAssociationsMixin<Signup, Signup["id"]>;
+  declare removeSignup: HasManyRemoveAssociationMixin<Signup, Signup["id"]>;
+  declare removeSignups: HasManyRemoveAssociationsMixin<Signup, Signup["id"]>;
+  declare createSignup: HasManyCreateAssociationMixin<Signup>;
 
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Virtual columns for some queries (TODO: is there a cleaner way?)
-  public readonly signupCount?: number;
+  // Postgres returns bigint from COUNT, which Sequelize returns as string...
+  declare readonly signupCount?: number | string;
 }
 
 export default function setupQuotaModel(sequelize: Sequelize) {

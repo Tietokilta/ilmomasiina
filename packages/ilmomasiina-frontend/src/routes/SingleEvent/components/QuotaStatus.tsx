@@ -14,7 +14,7 @@ const QuotaStatus = () => {
   return (
     <div className="ilmo--side-widget">
       <h3>{t("singleEvent.quotaCounts.title")}</h3>
-      {signupsByQuota!.map((quota) => {
+      {signupsByQuota.map((quota) => {
         switch (quota.type) {
           case SignupStatus.IN_QUOTA:
             return (

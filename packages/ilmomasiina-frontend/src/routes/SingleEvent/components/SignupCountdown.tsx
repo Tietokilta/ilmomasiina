@@ -6,17 +6,16 @@ import { useSingleEventContext } from "@tietokilta/ilmomasiina-client";
 import SignupButton from "./SignupButton";
 
 const SignupCountdown = () => {
-  const event = useSingleEventContext().localizedEvent!;
-  const openingTime = new Date(Date.now() + (event.millisTillOpening || 0));
+  const { registrationOpens, localizedEvent: event } = useSingleEventContext();
 
   return (
     <Countdown
       daysInHours
-      date={openingTime}
+      date={registrationOpens}
       renderer={({ completed, seconds, total }) => (
         <SignupButton
-          isOpen={completed && !event.registrationClosed}
-          isClosed={event.registrationClosed}
+          isOpen={completed && !event!.registrationClosed}
+          isClosed={event!.registrationClosed}
           seconds={seconds}
           total={total}
         />

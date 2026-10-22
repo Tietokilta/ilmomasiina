@@ -52,7 +52,7 @@ export function eventToRows(event: UserEventListItem, { compact }: EventTableOpt
       date: date ? new Date(date) : null,
       signupCount: quotas.length < 2 ? sumBy(quotas, "signupCount") : undefined,
       quotaSize: quotas.length === 1 ? quotas[0].size : undefined,
-      totalSignupCount: sumBy(quotas, "signupCount") ?? 0,
+      totalSignupCount: sumBy(quotas, "signupCount"),
       totalQuotaSize: every(quotas, "size") ? sumBy(quotas, "size") : null,
     },
   ];

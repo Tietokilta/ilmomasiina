@@ -13,7 +13,7 @@ function generateLegacyToken(signupId: SignupID): string {
 }
 
 export function generateToken(signupId: SignupID) {
-  const key = Buffer.from(config.newEditTokenSecret!, "utf-8");
+  const key = Buffer.from(config.newEditTokenSecret, "utf-8");
   const data = Buffer.from(signupId, "utf-8");
   const mac = createHmac("sha256", key).update(data).digest();
   return base32Encode(mac, "RFC4648").substring(0, 13).toLowerCase();
@@ -41,7 +41,7 @@ class BadEditToken extends CustomError {
  * When the token is not valid, replies with a 403 request with a generic `invalid token`-like error message.
  * The request processing ends here, and the actual route function won't be called.
  */
-export async function requireValidEditToken(request: FastifyRequest<{ Params: SignupPathParams }>): Promise<void> {
+export async function requireValidEditToken(request: FastifyRequest<{ Params: SignupPathParams }>) {
   // Fastify converts header names into lower case
   const headers = request.headers[EDIT_TOKEN_HEADER.toLowerCase()];
   const header = Array.isArray(headers) ? headers[0] : headers;

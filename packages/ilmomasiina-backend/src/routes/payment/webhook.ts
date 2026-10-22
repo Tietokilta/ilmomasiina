@@ -25,17 +25,17 @@ export default async function stripeWebhook(request: FastifyRequest, reply: Fast
   let event: Stripe.Event;
   try {
     event = stripe.webhooks.constructEvent(request.rawBody, signature, config.stripeWebhookSecret);
-  } catch (err) {
+  } catch {
     throw new BadRequest("Webhook signature verification failed");
   }
 
   switch (event.type) {
     case "checkout.session.completed":
-      await checkoutSessionStatusUpdated(event.data.object.id, "complete");
+      await checkoutSessionStatusUpdated(event.data.object.id, "complete", request.logEvent, true);
       break;
 
     case "checkout.session.expired":
-      await checkoutSessionStatusUpdated(event.data.object.id, "expired");
+      await checkoutSessionStatusUpdated(event.data.object.id, "expired", request.logEvent, true);
       break;
 
     default:

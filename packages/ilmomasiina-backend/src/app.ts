@@ -1,10 +1,10 @@
-import fastifyCompress from "@fastify/compress";
-import fastifyCors from "@fastify/cors";
-import fastifySensible from "@fastify/sensible";
-import fastifyStatic from "@fastify/static";
-import Ajv from "ajv";
+import { fastifyCompress } from "@fastify/compress";
+import { fastifyCors } from "@fastify/cors";
+import { fastifySensible } from "@fastify/sensible";
+import { fastifyStatic } from "@fastify/static";
+import { Ajv } from "ajv";
 import ajvFormats from "ajv-formats";
-import fastify, { FastifyInstance } from "fastify";
+import { fastify, FastifyInstance } from "fastify";
 import cron from "node-cron";
 import path from "path";
 import zlib from "zlib";
@@ -59,7 +59,7 @@ export default async function initApp(): Promise<FastifyInstance> {
 
   // Enable configurable CORS
   if (config.allowOrigin) {
-    const corsOrigins = config.allowOrigin === "*" ? "*" : (config.allowOrigin?.split(",") ?? []);
+    const corsOrigins = config.allowOrigin === "*" ? "*" : config.allowOrigin.split(",");
     await server.register(fastifyCors, {
       origin: corsOrigins,
       methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -104,7 +104,7 @@ export default async function initApp(): Promise<FastifyInstance> {
       setHeaders: (res, filePath) => {
         // set immutable cache for javascript files with hash in the name
         if (javascriptHashRegex.test(filePath)) {
-          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+          res.header("Cache-Control", "public, max-age=31536000, immutable");
         }
       },
     });

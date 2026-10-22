@@ -43,7 +43,7 @@ const SignupButton = ({ isOpen, isClosed, seconds, total }: SignupButtonProps) =
       try {
         const response = await beginSignup(quotaId);
         setSubmitting(false);
-        navigate(paths.editSignup(response.id, response.editToken));
+        void navigate(paths.editSignup(response.id, response.editToken));
         toast.dismiss(progressToast);
       } catch (err) {
         setSubmitting(false);
@@ -71,28 +71,23 @@ const SignupButton = ({ isOpen, isClosed, seconds, total }: SignupButtonProps) =
           <span style={{ color: "green" }}>{` (${seconds} s)`}</span>
         )}
       </p>
-      {
-        // eslint-disable-next-line no-nested-ternary
-        eventState.state === SignupState.disabled ? null : preview ? (
-          <Button onClick={() => preview.setPreviewingForm(true)}>{t("singleEvent.signupButton.preview")}</Button>
-        ) : (
-          quotas.map((quota) => (
-            <Button
-              key={quota.id}
-              type="button"
-              variant="secondary"
-              disabled={!isOpen || submitting}
-              className="ilmo--signup-button"
-              onClick={() => onClick(quota.id)}
-            >
-              {isOnly
-                ? t("singleEvent.signupButton.singleQuota")
-                : t("singleEvent.signupButton", { quota: quota.title })}
-              {showPrices && ` (${priceFormat(quota.price)})`}
-            </Button>
-          ))
-        )
-      }
+      {eventState.state === SignupState.disabled ? null : preview ? (
+        <Button onClick={() => preview.setPreviewingForm(true)}>{t("singleEvent.signupButton.preview")}</Button>
+      ) : (
+        quotas.map((quota) => (
+          <Button
+            key={quota.id}
+            type="button"
+            variant="secondary"
+            disabled={!isOpen || submitting}
+            className="ilmo--signup-button"
+            onClick={() => onClick(quota.id)}
+          >
+            {isOnly ? t("singleEvent.signupButton.singleQuota") : t("singleEvent.signupButton", { quota: quota.title })}
+            {showPrices && ` (${priceFormat(quota.price)})`}
+          </Button>
+        ))
+      )}
     </div>
   );
 };

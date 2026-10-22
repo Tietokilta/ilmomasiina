@@ -18,8 +18,11 @@ import {
 import { Event } from "../../src/models/event";
 import { generateToken } from "../../src/routes/signups/editTokens";
 
+export type InjectResponse = Awaited<ReturnType<FastifyInstance["inject"]>>;
+
 /** Handles server errors from injected requests. */
-export function handleTestResponse<R>(response: Awaited<ReturnType<FastifyInstance["inject"]>>, ignore500 = false) {
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- unsafe, but hard to fix
+export function handleTestResponse<R>(response: InjectResponse, ignore500 = false) {
   if (response.statusCode >= 500 && !ignore500) {
     throw new Error(`Request failed with status ${response.statusCode}: ${response.payload}`);
   }

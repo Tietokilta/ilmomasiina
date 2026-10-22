@@ -42,11 +42,11 @@ const SignupRow = ({ position, signup, showQuota }: SignupProps) => {
 
   const onEdit = useEvent(() => editSignup(signup));
   const onDelete = useEvent(async () => {
-    // eslint-disable-next-line no-alert
+    // TODO: Use a proper modal instead of window.confirm
     const confirmation = window.confirm(t("editor.signups.action.delete.confirm"));
     if (confirmation) {
-      await deleteSignup(signup.id!);
-      getEvent(event.id);
+      await deleteSignup(signup.id);
+      void getEvent(event.id);
     }
   });
 
@@ -170,7 +170,7 @@ const SignupsTab = () => {
 
   const createSignup = useEvent(() => editNewSignup(language));
 
-  if (!event || !event.quotas.length) {
+  if (!event || event.quotas.length === 0) {
     return <p>{t("editor.signups.noQuotas")}</p>;
   }
 
@@ -190,7 +190,7 @@ const SignupsTab = () => {
             {t("editor.signups.action.create")}
           </Button>
           <CSVLink
-            data={csvSignups!}
+            data={csvSignups}
             csvOptions={csvOptions}
             download={t("editor.signups.download.filename", { event: event.title })}
           >
@@ -198,7 +198,6 @@ const SignupsTab = () => {
           </CSVLink>
         </div>
       </nav>
-      {/* eslint-disable-next-line no-nested-ternary */}
       {!signups?.length ? (
         <p>{t("editor.signups.noSignups")}</p>
       ) : grouped ? (

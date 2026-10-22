@@ -2,10 +2,17 @@ import { useDebugValue } from "react";
 
 import { useField } from "react-final-form";
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- unsafe, but hard to fix
 export function useFieldValue<T>(name: string) {
   const { value } = useField<T>(name, { subscription: { value: true } }).input;
   useDebugValue(value);
   return value;
+}
+
+export function useFieldError(name: string) {
+  const error = useField(name, { subscription: { error: true } }).meta.error as unknown;
+  useDebugValue(error);
+  return error;
 }
 
 export function useFieldTouched(name: string) {

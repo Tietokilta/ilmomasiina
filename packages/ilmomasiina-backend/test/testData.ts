@@ -260,7 +260,7 @@ export async function testSignups({
         answer: "",
       };
       // Generate answer value based on question type and other constraints
-      if (answers[question.id] !== undefined) {
+      if (question.id in answers) {
         answer.answer = answers[question.id];
       } else if (question.type === QuestionType.TEXT) {
         answer.answer =
@@ -282,13 +282,12 @@ export async function testSignups({
           faker.helpers.maybe(() => faker.helpers.arrayElement(question.options!), {
             probability: question.required ? 1 : 0.5,
           }) ?? "";
-      } else if (question.type === QuestionType.CHECKBOX) {
+      } else {
+        question.type satisfies QuestionType.CHECKBOX;
         answer.answer = faker.helpers.arrayElements(question.options!, {
           min: question.required ? 1 : 0,
           max: Infinity,
         });
-      } else {
-        question.type satisfies never;
       }
       return answer;
     });

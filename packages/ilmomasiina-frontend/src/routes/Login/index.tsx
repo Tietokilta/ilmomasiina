@@ -13,6 +13,7 @@ import type { TKey } from "../../i18n";
 import { loginToast } from "../../modules/auth";
 import useStore from "../../modules/store";
 import paths from "../../paths";
+import useBrandedDocumentTitle from "../../utils/useBrandedDocumentTitle";
 import useEvent from "../../utils/useEvent";
 
 import "./Login.scss";
@@ -32,12 +33,14 @@ const Login = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  useBrandedDocumentTitle(t("login.title"));
+
   const onSubmit = useEvent(async (data: FormData) => {
     const { email, password } = data;
     try {
       await login(email, password);
       loginToast("success", t("auth.loginSuccess"), 2000);
-      navigate(paths.adminEventsList);
+      void navigate(paths.adminEventsList);
       return undefined;
     } catch (err) {
       return { [FORM_ERROR]: err };
@@ -58,13 +61,19 @@ const Login = () => {
                   type="email"
                   required
                   placeholder={branding.loginPlaceholderEmail}
-                  isInvalid={touched && error}
+                  isInvalid={touched && !!error}
                 />
               )}
             </FieldFormGroup>
             <FieldFormGroup name="password" required label={t("login.password")}>
               {({ input, meta: { touched, error } }) => (
-                <FormControl {...input} type="password" required placeholder="••••••••" isInvalid={touched && error} />
+                <FormControl
+                  {...input}
+                  type="password"
+                  required
+                  placeholder="••••••••"
+                  isInvalid={touched && !!error}
+                />
               )}
             </FieldFormGroup>
             <Button type="submit" variant="secondary" disabled={submitting}>

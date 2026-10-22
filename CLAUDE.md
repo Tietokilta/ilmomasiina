@@ -1,11 +1,12 @@
 # Commands
 
 - `pnpm -w format`: Format all files in the repository using Prettier.
-- `pnpm -w lint`: Lint all files in the repository using ESLint.
 - `pnpm -w typecheck`: Run TypeScript type checking for the entire repository.
   - `pnpm --filter @tietokilta/ilmomasiina-backend typecheck`: Run type checking only for the backend (if you only modified the backend package).
 - `pnpm -w test`: Run tests for all packages in the repository using Vitest.
   - `pnpm --filter @tietokilta/ilmomasiina-backend test`: Run tests only for the backend.
+- `pnpm -w lint`: Lint all files in the repository using ESLint.
+  - There is no per-package lint command.
 - `pnpm -w clean`: Clean build artifacts from all packages in the repository.
 
 # Code style
@@ -14,6 +15,7 @@
   - Avoid using `any` whenever possible, unless the value is not really used and writing out the type is complex.
   - Use casting via `unknown` when necessary for trivial changes such as incompatible event targets.
 - Always use Prettier to format code. Run `pnpm -w format` before committing changes.
+- Always run ESLint and fix all errors before committing changes. Warnings may be suppressed with a good reason.
 - Use comments to explain complex logic. Stay concise.
 - Always import via either relative paths or package names. Paths starting with `src` fail after compilation.
 

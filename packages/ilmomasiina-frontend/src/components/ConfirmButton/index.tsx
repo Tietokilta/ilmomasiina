@@ -19,7 +19,7 @@ export default function ConfirmButton({ confirmDelay, confirmLabel, onClick, chi
       const timer = setTimeout(() => setConfirming(false), confirmDelay);
       return () => clearTimeout(timer);
     }
-    return () => {};
+    return undefined;
   }, [confirming, confirmDelay]);
 
   const handler = useCallback(

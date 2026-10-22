@@ -3,7 +3,7 @@ import React, { BaseSyntheticEvent } from "react";
 import { Button, ButtonGroup, Spinner } from "react-bootstrap";
 import { useFormState } from "react-final-form";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import useStore from "../../../modules/store";
 import paths from "../../../paths";

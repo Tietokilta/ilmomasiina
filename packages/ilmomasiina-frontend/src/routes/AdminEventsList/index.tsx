@@ -2,7 +2,7 @@ import React, { BaseSyntheticEvent, useCallback, useEffect, useMemo, useState } 
 
 import { Button, Spinner } from "react-bootstrap";
 import { Trans, useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import { errorDesc, errorTitle } from "@tietokilta/ilmomasiina-client";
 import LinkButton from "../../components/LinkButton";
@@ -11,6 +11,7 @@ import type { TKey } from "../../i18n";
 import useStore from "../../modules/store";
 import paths from "../../paths";
 import { isEventInPast } from "../../utils/eventState";
+import useBrandedDocumentTitle from "../../utils/useBrandedDocumentTitle";
 import AdminEventListItem from "./AdminEventListItem";
 
 const AdminEventsList = () => {
@@ -18,13 +19,15 @@ const AdminEventsList = () => {
   const [showPast, setShowPast] = useState(false);
   const { t } = useTranslation();
 
+  useBrandedDocumentTitle(t("adminEvents.title"));
+
   const togglePast = useCallback((evt: BaseSyntheticEvent) => {
     evt.preventDefault();
     setShowPast((prev) => !prev);
   }, []);
 
   useEffect(() => {
-    getAdminEvents();
+    void getAdminEvents();
     return () => resetState();
   }, [getAdminEvents, resetState]);
 

@@ -150,7 +150,7 @@ const refreshQueues = new Map<
 export async function refreshSignupPositions(
   eventRef: Pick<Event, "id">,
   transaction?: Transaction,
-  moveSignupsToQueue: boolean = true,
+  moveSignupsToQueue = true,
 ): Promise<Signup[]> {
   // If a transaction is passed, we need to do the refresh within that transaction.
   // It may need to wait for other transactions, but let's handle that on the DB level.
@@ -178,14 +178,14 @@ export async function refreshSignupPositions(
         // ignore errors, we always want to run after the ongoing refresh finishes
       })
       .then(async () => {
-        const count = queue!.queuedCount!;
-        queue!.ongoing = queue!.queued;
-        queue!.queued = undefined;
-        queue!.queuedCount = 0;
+        const count = queue.queuedCount!;
+        queue.ongoing = queue.queued;
+        queue.queued = undefined;
+        queue.queuedCount = 0;
         try {
           return await refreshSignupPositionsInternal(eventRef, transaction, moveSignupsToQueue, count);
         } finally {
-          if (queue!.ongoing === queued) queue!.ongoing = undefined;
+          if (queue.ongoing === queued) queue.ongoing = undefined;
         }
       });
     queue.queued = queued;

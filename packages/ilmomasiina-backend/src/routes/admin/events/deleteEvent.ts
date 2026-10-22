@@ -19,11 +19,9 @@ export default async function deleteEvent(
     }
 
     // Delete the DB object
-    await event?.destroy({ transaction });
+    await event.destroy({ transaction });
 
-    if (event) {
-      await request.logEvent(AuditEvent.DELETE_EVENT, { event, transaction });
-    }
+    await request.logEvent(AuditEvent.DELETE_EVENT, { event, transaction });
   });
 
   eventsListForUserCached.invalidate();

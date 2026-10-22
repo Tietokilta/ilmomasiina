@@ -20,7 +20,7 @@ export default async function completePayment(
 
   // If there's an active payment in PENDING state, refresh its status from Stripe.
   if (payment.status === PaymentStatus.PENDING) {
-    const session = await refreshCheckoutSession(payment);
+    const session = await refreshCheckoutSession(payment, request.logEvent);
     if (session.status !== "complete") {
       throw new PaymentNotComplete("Payment session is not complete");
     }

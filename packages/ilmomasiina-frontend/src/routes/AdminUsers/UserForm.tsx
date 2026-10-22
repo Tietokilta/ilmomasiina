@@ -23,7 +23,7 @@ const UserForm = () => {
   const onSubmit = async (data: FormData, form: FormApi<FormData>) => {
     try {
       await createUser(data);
-      getUsers();
+      void getUsers();
       form.restart();
       toast.success(t("adminUsers.createUser.success", { email: data.email }), {
         autoClose: 2000,
@@ -53,7 +53,7 @@ const UserForm = () => {
                 {...input}
                 type="email"
                 required
-                isInvalid={touched && error}
+                isInvalid={touched && !!error}
                 placeholder={branding.loginPlaceholderEmail}
               />
             )}

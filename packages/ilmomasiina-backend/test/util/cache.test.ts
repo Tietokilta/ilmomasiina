@@ -10,18 +10,18 @@ describe("createCache", () => {
     expect(await cache(39)).toEqual(40);
   });
 
-  test("does not call get() unnecessarily", () => {
+  test("does not call get() unnecessarily", async () => {
     const get = vi.fn(async (key: number) => key + 1);
     const cache = createCache({ allowTesting: true, maxAgeMs: Infinity, get });
 
-    cache(1);
-    cache(2);
-    cache(3);
-    cache(1);
-    cache(1);
-    cache(2);
-    cache(1);
-    expect(get).toBeCalledTimes(3);
+    await cache(1);
+    await cache(2);
+    await cache(3);
+    await cache(1);
+    await cache(1);
+    await cache(2);
+    await cache(1);
+    expect(get).toHaveBeenCalledTimes(3);
   });
 
   test("respects maxAge", async () => {
@@ -33,14 +33,14 @@ describe("createCache", () => {
 
     expect(await cache(1)).toEqual(2);
     expect(await cache(1)).toEqual(2);
-    expect(get).toBeCalledTimes(1);
+    expect(get).toHaveBeenCalledTimes(1);
 
     vi.setSystemTime(Date.now() + 1500);
 
     add = 2;
     expect(await cache(1)).toEqual(3);
     expect(await cache(1)).toEqual(3);
-    expect(get).toBeCalledTimes(2);
+    expect(get).toHaveBeenCalledTimes(2);
 
     vi.useRealTimers();
   });
@@ -56,11 +56,11 @@ describe("createCache", () => {
     expect(await cache(4)).toEqual(5);
     expect(await cache(3)).toEqual(4);
     expect(await cache(2)).toEqual(3);
-    expect(get).toBeCalledTimes(4);
+    expect(get).toHaveBeenCalledTimes(4);
 
     add = 2;
     expect(await cache(1)).toEqual(3);
-    expect(get).toBeCalledTimes(5);
+    expect(get).toHaveBeenCalledTimes(5);
   });
 
   test("respects invalidate()", async () => {
@@ -70,13 +70,13 @@ describe("createCache", () => {
 
     expect(await cache(1)).toEqual(2);
     expect(await cache(1)).toEqual(2);
-    expect(get).toBeCalledTimes(1);
+    expect(get).toHaveBeenCalledTimes(1);
 
     add = 2;
     cache.invalidate();
 
     expect(await cache(1)).toEqual(3);
     expect(await cache(1)).toEqual(3);
-    expect(get).toBeCalledTimes(2);
+    expect(get).toHaveBeenCalledTimes(2);
   });
 });

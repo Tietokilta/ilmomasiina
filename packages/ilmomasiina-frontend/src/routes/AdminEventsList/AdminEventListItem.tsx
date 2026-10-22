@@ -3,7 +3,7 @@ import React, { MouseEvent } from "react";
 import sumBy from "lodash-es/sumBy";
 import { Button } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { toast } from "react-toastify";
 
 import { ApiError } from "@tietokilta/ilmomasiina-client";
@@ -30,7 +30,7 @@ const AdminEventListItem = ({ event }: Props) => {
 
   async function onDelete(e: MouseEvent) {
     e.preventDefault();
-    // eslint-disable-next-line no-alert
+    // TODO: Use a proper modal instead of window.confirm
     const confirmed = window.confirm(t("adminEvents.action.delete.confirm"));
     if (confirmed) {
       try {
@@ -40,7 +40,7 @@ const AdminEventListItem = ({ event }: Props) => {
           autoClose: 2000,
         });
       } finally {
-        getAdminEvents();
+        void getAdminEvents();
       }
     }
   }

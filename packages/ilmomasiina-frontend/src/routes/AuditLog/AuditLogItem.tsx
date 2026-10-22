@@ -1,7 +1,7 @@
 import React from "react";
 
 import { Trans, useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import type { AuditLogItemSchema } from "@tietokilta/ilmomasiina-models";
 import { AuditEvent } from "@tietokilta/ilmomasiina-models";
@@ -26,14 +26,17 @@ const ACTION_STRINGS = {
   [AuditEvent.DELETE_USER]: "auditLog.description.deleteUser",
   [AuditEvent.RESET_PASSWORD]: "auditLog.description.resetPassword",
   [AuditEvent.CHANGE_PASSWORD]: "auditLog.description.changeOwnPassword",
+  [AuditEvent.START_PAYMENT]: "auditLog.description.startPayment",
+  [AuditEvent.COMPLETE_PAYMENT]: "auditLog.description.completePayment",
+  [AuditEvent.EXPIRE_PAYMENT]: "auditLog.description.expirePayment",
 } as const;
 
 function useItemDescription(item: AuditLogItemSchema) {
   const { t } = useTranslation();
-  let extra: any = {};
+  let extra: Record<string, unknown> = {};
   try {
-    extra = JSON.parse(item.extra || "");
-  } catch (err) {
+    extra = JSON.parse(item.extra || "") as Record<string, unknown>;
+  } catch {
     /* ignore */
   }
   switch (item.action) {
@@ -46,7 +49,7 @@ function useItemDescription(item: AuditLogItemSchema) {
         <Trans t={t} i18nKey={ACTION_STRINGS[item.action]}>
           created event
           {item.eventId ? (
-            <Link to={paths.adminEditEvent(item.eventId as any)}>{{ event: item.eventName ?? "" }}</Link>
+            <Link to={paths.adminEditEvent(item.eventId)}>{{ event: item.eventName ?? "" }}</Link>
           ) : (
             { event: item.eventName ?? "" }
           )}
@@ -56,6 +59,7 @@ function useItemDescription(item: AuditLogItemSchema) {
     case AuditEvent.EDIT_SIGNUP:
     case AuditEvent.DELETE_SIGNUP:
     case AuditEvent.PROMOTE_SIGNUP:
+    case AuditEvent.START_PAYMENT:
       return (
         <Trans t={t} i18nKey={ACTION_STRINGS[item.action]}>
           edited signup
@@ -68,12 +72,15 @@ function useItemDescription(item: AuditLogItemSchema) {
           )}
         </Trans>
       );
+    case AuditEvent.COMPLETE_PAYMENT:
+    case AuditEvent.EXPIRE_PAYMENT:
+      return t(ACTION_STRINGS[item.action], { signup: item.signupId });
     case AuditEvent.CREATE_USER:
     case AuditEvent.DELETE_USER:
     case AuditEvent.RESET_PASSWORD:
       return t(ACTION_STRINGS[item.action], { user: extra.email });
     default:
-      return ACTION_STRINGS[item.action]
+      return item.action in ACTION_STRINGS
         ? t(ACTION_STRINGS[item.action])
         : t("auditLog.description.unknown", { action: item.action });
   }

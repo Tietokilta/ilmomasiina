@@ -3,7 +3,8 @@
   "compilerOptions": {
     "outDir": "dist/cjs",
     "tsBuildInfoFile": "dist/cjs/tsconfig.tsbuildinfo",
-    "module": "CommonJS"
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext"
   },
   "references": [
     { "path": "../ilmomasiina-models/tsconfig.cjs.json" }

@@ -12,7 +12,7 @@ import { signupEditable } from "./createNewSignup";
 import { NoSuchSignup, SignupsClosed } from "./errors";
 
 /** Requires admin authentication OR editTokenVerification */
-async function deleteSignup(id: SignupID, auditLogger: AuditLogger, admin: boolean = false): Promise<void> {
+async function deleteSignup(id: SignupID, auditLogger: AuditLogger, admin = false): Promise<void> {
   await expireExistingPaymentsForSignupUpdate(id);
 
   const event = await getSequelize().transaction(async (transaction) => {
@@ -29,22 +29,23 @@ async function deleteSignup(id: SignupID, auditLogger: AuditLogger, admin: boole
     // firing ON DELETE RESTRICT constraints.
     await checkForConflictingPaymentsForSignupUpdate(signup, transaction, admin);
 
-    signup.quota = await signup.getQuota({
-      attributes: ["id"],
-      include: [
-        {
-          model: Event,
-          attributes: ["id", "title", "registrationStartDate", "registrationEndDate", "openQuotaSize"],
-        },
-      ],
-      transaction,
-    });
+    signup.quota =
+      (await signup.getQuota({
+        attributes: ["id"],
+        include: [
+          {
+            model: Event,
+            attributes: ["id", "title", "registrationStartDate", "registrationEndDate", "openQuotaSize"],
+          },
+        ],
+        transaction,
+      })) ?? undefined;
     if (!signup.quota || !signup.quota.event) {
       // Quota or event soft deleted
       throw new NoSuchSignup("Signup expired or already deleted");
     }
 
-    if (!admin && !signupEditable(signup.quota!.event!, signup)) {
+    if (!admin && !signupEditable(signup.quota.event, signup)) {
       throw new SignupsClosed("Signups closed for this event.");
     }
 
@@ -54,12 +55,12 @@ async function deleteSignup(id: SignupID, auditLogger: AuditLogger, admin: boole
     // Create an audit log event
     await auditLogger(AuditEvent.DELETE_SIGNUP, { signup, transaction });
 
-    return signup.quota!.event!;
+    return signup.quota.event;
   });
 
   // Advance the queue and send emails to people that were accepted.
   // Do this outside the transaction, as this shouldn't affect the user deleting the signup.
-  refreshSignupPositions(event).catch((error) => console.error(error));
+  refreshSignupPositions(event).catch((error: unknown) => console.error(error));
 }
 
 /** Requires admin authentication */

@@ -16,14 +16,14 @@ const AuditLogPagination = () => {
   const perPage = query.limit || LOGS_PER_PAGE;
 
   const previousPage = useEvent(() => {
-    setAuditLogQueryField("offset", Math.max(0, value - perPage));
+    void setAuditLogQueryField("offset", Math.max(0, value - perPage));
   });
   const nextPage = useEvent(() => {
-    setAuditLogQueryField("offset", value + perPage);
+    void setAuditLogQueryField("offset", value + perPage);
   });
   const onOffsetChange = useEvent((e: ChangeEvent<HTMLInputElement>) => {
     const newOffset = Number(e.target.value) - 1;
-    if (newOffset >= 0) setAuditLogQueryField("offset", newOffset);
+    if (newOffset >= 0) void setAuditLogQueryField("offset", newOffset);
   });
 
   return (

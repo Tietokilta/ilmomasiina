@@ -1,12 +1,16 @@
 import React from "react";
 
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import paths from "../../paths";
+import useBrandedDocumentTitle from "../../utils/useBrandedDocumentTitle";
 
 const PageNotFound = () => {
   const { t } = useTranslation();
+
+  useBrandedDocumentTitle(t("errors.404.title"));
+
   return (
     <div className="ilmo--status-container">
       <h1>{t("errors.404.title")}</h1>

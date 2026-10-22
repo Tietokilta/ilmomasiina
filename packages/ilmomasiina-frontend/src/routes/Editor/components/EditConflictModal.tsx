@@ -64,7 +64,7 @@ const EditConflictModal = ({ onSave }: Props) => {
           id: undefined,
           key: `new-${Math.random()}`,
         };
-      }) ?? [],
+      }),
     );
     form.change(
       "quotas",

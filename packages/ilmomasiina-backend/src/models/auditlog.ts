@@ -18,18 +18,18 @@ export interface AuditLogAttributes {
 export interface AuditLogCreationAttributes extends Optional<AuditLogAttributes, "id"> {}
 
 export class AuditLog extends Model<AuditLogAttributes, AuditLogCreationAttributes> implements AuditLogAttributes {
-  public id!: number;
-  public user!: string | null;
-  public ipAddress!: string;
-  public action!: AuditEvent;
-  public eventId!: string | null;
-  public eventName!: string | null;
-  public signupId!: string | null;
-  public signupName!: string | null;
-  public extra!: string;
+  declare id: number;
+  declare user: string | null;
+  declare ipAddress: string;
+  declare action: AuditEvent;
+  declare eventId: string | null;
+  declare eventName: string | null;
+  declare signupId: string | null;
+  declare signupName: string | null;
+  declare extra: string;
 
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 export default function setupAuditLogModel(sequelize: Sequelize) {

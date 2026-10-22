@@ -2,13 +2,10 @@ import react from "@vitejs/plugin-react";
 import dotenvFlow from "dotenv-flow";
 import path from "path";
 import { defineConfig } from "vite";
-import checker from "vite-plugin-checker";
-import tsconfigPaths from "vite-tsconfig-paths";
-
-/* eslint-disable no-console */
+import { checker } from "vite-plugin-checker";
 
 // Load environment variables from .env files (from the root of repository)
-dotenvFlow.config({ path: path.resolve(__dirname, "../..") });
+dotenvFlow.config({ path: path.resolve(import.meta.dirname, "../..") });
 
 // Default to 127.0.0.1:3001 for the backend.
 // Use the dev-only variable DEV_BACKEND_PORT for this, keeping PORT always for the user-facing port.
@@ -57,6 +54,10 @@ export default defineConfig(({ mode }) => ({
 
   base: `${PATH_PREFIX}/`,
 
+  resolve: {
+    tsconfigPaths: true,
+  },
+
   build: {
     outDir: "build",
     sourcemap: true,
@@ -97,7 +98,6 @@ export default defineConfig(({ mode }) => ({
 
   plugins: [
     react(),
-    tsconfigPaths(),
     checker({
       // We already do type checking & linting separately in CI
       enableBuild: false,
@@ -108,7 +108,15 @@ export default defineConfig(({ mode }) => ({
       // TypeScript in build mode automatically typechecks all depended packages, but
       // ESLint needs to be told where to find our code
       eslint: {
-        lintCommand: "eslint ../../packages",
+        lintCommand: "eslint packages",
+        // Override the working directory for ESLint to the root of the repository so config loads correctly.
+        // This only works in dev mode, but we don't run the checker plugin at build time anyway.
+        watchPath: path.resolve(import.meta.dirname, "../../packages"),
+        dev: {
+          overrideConfig: {
+            cwd: path.resolve(import.meta.dirname, "../.."),
+          },
+        },
       },
     }),
   ],

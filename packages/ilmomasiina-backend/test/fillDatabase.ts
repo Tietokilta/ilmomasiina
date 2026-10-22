@@ -17,17 +17,19 @@ if (!config.allowTestsToResetDb) {
   );
 }
 
-/* eslint-disable no-await-in-loop */
 async function main() {
   await setupDatabase();
 
   for (let i = 0; i < NUM_EVENTS; i++) {
     process.stderr.write(`\rCreating test events: ${i + 1}/${NUM_EVENTS}...`);
+    // eslint-disable-next-line no-await-in-loop
     const event = await testEvent();
-    await testSignups(event, {
+    // eslint-disable-next-line no-await-in-loop
+    await testSignups({
+      event,
       count: faker.number.int(NUM_SIGNUPS_PER_EVENT),
     });
   }
 }
 
-main();
+void main(); // no top-level await in CJS

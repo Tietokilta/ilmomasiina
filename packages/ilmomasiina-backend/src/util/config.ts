@@ -31,7 +31,7 @@ export function envInteger(name: string, defaultValue?: number | null) {
   if (value === undefined && defaultValue !== undefined) {
     return defaultValue;
   }
-  const number = parseInt(value as string);
+  const number = parseInt(value!, 10);
   if (Number.isSafeInteger(number)) {
     return number;
   }
@@ -55,16 +55,16 @@ export function envJson<T>(name: string, schema: ZodType<T>, defaultValue: T): T
   if (json === undefined) {
     return schema.parse(defaultValue);
   }
-  let parsedJson;
+  let parsedJson: unknown;
   try {
     parsedJson = JSON.parse(json);
   } catch (err) {
-    throw new Error(`Env variable ${name} must be valid JSON: ${(err as Error).message}`);
+    throw new Error(`Env variable ${name} must be valid JSON: ${(err as Error).message}`, { cause: err });
   }
   try {
     return schema.parse(parsedJson);
   } catch (err) {
-    throw new Error(`Env variable ${name} is invalid:\n${prettifyError(err as ZodError)}`);
+    throw new Error(`Env variable ${name} is invalid:\n${prettifyError(err as ZodError)}`, { cause: err });
   }
 }
 

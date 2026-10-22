@@ -60,7 +60,6 @@ const QuestionField = ({ name, question, validate = true }: QuestionFieldProps) 
   });
 
   const help =
-    // eslint-disable-next-line no-nested-ternary
     canEdit && disabled // implies question is uneditable because of !canEditPaidQuestions
       ? t("editSignup.uneditablePaidQuestion")
       : question.public
@@ -142,7 +141,7 @@ const QuestionField = ({ name, question, validate = true }: QuestionFieldProps) 
             <option value="" disabled={isRequired}>
               {t("editSignup.fields.select.placeholder")}
             </option>
-            {question.options?.map((option, optIndex) => (
+            {question.options.map((option, optIndex) => (
               // eslint-disable-next-line react/no-array-index-key
               <option key={optIndex} value={option}>
                 {option}

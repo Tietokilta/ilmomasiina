@@ -24,7 +24,7 @@ export const auditLogSlice = storeSlice<Root>()("auditLog", (set, get, store, ge
   ...initialState,
   resetState,
 
-  getAuditLogs: async (query: AuditLoqQuery = {} as AuditLoqQuery) => {
+  getAuditLogs: async (query: AuditLoqQuery = {}) => {
     setSlice({
       query,
       auditLog: null,

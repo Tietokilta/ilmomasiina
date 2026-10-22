@@ -83,7 +83,7 @@ export default async function updateEvent(
 
       // Update the Event
       const wasPublic = !event.draft;
-      await event.set({
+      event.set({
         ...request.body,
         registrationEndDate: toDate(request.body.registrationEndDate),
         registrationStartDate: toDate(request.body.registrationStartDate),
@@ -91,7 +91,7 @@ export default async function updateEvent(
         endDate: toDate(request.body.endDate),
       });
       // Validate and fixup data within languages. This uses event.languages and is thus done after set()
-      event.validateLanguages(updatedQuestions ?? event.questions!, updatedQuotas ?? event.quotas!);
+      event.validateLanguages(updatedQuestions ?? event.questions, updatedQuotas ?? event.quotas);
 
       await event.save({ transaction });
 

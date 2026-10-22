@@ -55,7 +55,7 @@ export default async function setupDatabase() {
     debugLog(`Connected to ${cfg.host}:${cfg.port} as ${cfg.username}.`);
   } catch (err) {
     const cfg = sequelize.config;
-    console.error(`Error connecting to ${cfg.host}:${cfg.port} as ${cfg.username}: ${err}`);
+    console.error(`Error connecting to ${cfg.host}:${cfg.port} as ${cfg.username}: ${String(err)}`);
     throw err;
   }
 

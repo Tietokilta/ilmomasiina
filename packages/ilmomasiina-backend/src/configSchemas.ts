@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import z, { ZodType } from "zod";
+import { z, ZodType } from "zod";
 
 /** Validation schema for frontend URL configurations.
  *
@@ -72,7 +72,6 @@ export type FrontendsConfig = z.infer<typeof frontendsSchema> & {
  * It's a bit extreme to validate this with Zod, but it ensures payments shouldn't fail due to
  * invalid config.
  */
-// eslint-disable-next-line import/prefer-default-export
 export const stripeBrandingSchema: ZodType<Stripe.Checkout.SessionCreateParams.BrandingSettings> = z.strictObject({
   background_color: z.string().optional(),
   border_style: z.enum(["pill", "rectangular", "rounded"]).optional(),
