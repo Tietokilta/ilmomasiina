@@ -47,7 +47,8 @@ export function getLocalizedEvent<E extends UserEventResponse | EventForEditSign
     questions: event.questions.map((question, index) => ({
       ...question,
       question: locale.questions[index]?.question || question.question,
-      options: locale.questions[index]?.options || question.options,
+      options:
+        question.options?.map((option, optIndex) => locale.questions[index]?.options?.[optIndex] || option) ?? null,
     })),
     quotas:
       // Servers prior to 2.0.0-alpha42 do not return quotas in EventForEditSignup.
@@ -56,7 +57,8 @@ export function getLocalizedEvent<E extends UserEventResponse | EventForEditSign
         ...quota,
         title: locale.quotas[index]?.title || quota.title,
       })) ?? [],
-  };
+    // TypeScript isn't able to typecheck generics like E, so sanity-check at least slightly better.
+  } satisfies UserEventResponse | EventForEditSignup as E;
 }
 
 /** Overrides localized properties in the quota of the edited signup with localized versions.

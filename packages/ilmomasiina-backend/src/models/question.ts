@@ -18,7 +18,7 @@ import {
   Sequelize,
 } from "sequelize";
 
-import { QuestionCreate, QuestionType } from "@tietokilta/ilmomasiina-models";
+import { OPTION_QUESTION_TYPES, QuestionCreate, QuestionType } from "@tietokilta/ilmomasiina-models";
 import type { Answer } from "./answer";
 import { EventValidationError } from "./errors";
 import type { Event } from "./event";
@@ -89,11 +89,7 @@ export class Question extends Model<QuestionAttributes, QuestionCreationAttribut
   static normalizeOptions(attrs: Partial<QuestionCreate>) {
     const output: Partial<QuestionCreate> = {};
     // Unset prices and options for non-option question types, or if options are null or empty
-    if (
-      (attrs.type !== QuestionType.CHECKBOX && attrs.type !== QuestionType.SELECT) ||
-      !attrs.options ||
-      attrs.options.length === 0
-    ) {
+    if (!OPTION_QUESTION_TYPES.includes(attrs.type!) || !attrs.options || attrs.options.length === 0) {
       output.options = null;
       output.prices = null;
     }

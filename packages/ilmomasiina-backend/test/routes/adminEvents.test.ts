@@ -501,6 +501,20 @@ describe("POST /api/admin/events", () => {
 
     // TODO: test questions, quotas, languages validation
 
+    const optionQuestion = {
+      type: QuestionType.SELECT,
+      question: "Question",
+      required: false,
+      public: false,
+      prices: null,
+    };
+    // Options must be non-empty array when provided
+    [, response] = await createEvent({ ...createBody, questions: [{ ...optionQuestion, options: [] }] });
+    expect(response.statusCode).toBe(400);
+    // Options must be non-empty strings when provided
+    [, response] = await createEvent({ ...createBody, questions: [{ ...optionQuestion, options: ["A", ""] }] });
+    expect(response.statusCode).toBe(400);
+
     // No event should have been created
     expect(await Event.count()).toBe(0);
   });
@@ -541,14 +555,6 @@ describe("POST /api/admin/events", () => {
           question: faker.lorem.words({ min: 1, max: 5 }),
           required: true,
           public: false,
-          options: [],
-          prices,
-        },
-        {
-          type: QuestionType.CHECKBOX,
-          question: faker.lorem.words({ min: 1, max: 5 }),
-          required: true,
-          public: false,
           options,
           prices: prices.map(() => 0),
         },
@@ -577,10 +583,6 @@ describe("POST /api/admin/events", () => {
             },
             {
               question: "",
-              options: [],
-            },
-            {
-              question: "",
               options: localizedOptions,
             },
           ],
@@ -598,7 +600,7 @@ describe("POST /api/admin/events", () => {
       order: [[Question, "order", "ASC"]],
     });
 
-    expect(event!.questions).toHaveLength(5);
+    expect(event!.questions).toHaveLength(4);
     // type: TEXT always has options: null + prices: null
     expect(event!.questions![0].type).toBe(QuestionType.TEXT);
     expect(event!.questions![0].options).toBe(null);
@@ -611,22 +613,17 @@ describe("POST /api/admin/events", () => {
     expect(event!.questions![2].type).toBe(QuestionType.CHECKBOX);
     expect(event!.questions![2].options).toEqual(null);
     expect(event!.questions![2].prices).toEqual(null);
-    // options: [] normalizes to options: null + prices: null
-    expect(event!.questions![3].type).toBe(QuestionType.CHECKBOX);
-    expect(event!.questions![3].options).toEqual(null);
-    expect(event!.questions![3].prices).toEqual(null);
     // prices: [0, 0, ...] normalizes to prices: null
-    expect(event!.questions![4].type).toBe(QuestionType.CHECKBOX);
-    expect(event!.questions![4].options).toEqual(options);
-    expect(event!.questions![4].prices).toEqual(null);
+    expect(event!.questions![3].type).toBe(QuestionType.CHECKBOX);
+    expect(event!.questions![3].options).toEqual(options);
+    expect(event!.questions![3].prices).toEqual(null);
     // languages options normalization
     expect(event!.languages.fi).toBeTruthy();
-    expect(event!.languages.fi.questions).toHaveLength(5);
+    expect(event!.languages.fi.questions).toHaveLength(4);
     expect(event!.languages.fi.questions[0].options).toBe(null);
     expect(event!.languages.fi.questions[1].options).toEqual(localizedOptions);
     expect(event!.languages.fi.questions[2].options).toBe(null);
-    expect(event!.languages.fi.questions[3].options).toBe(null);
-    expect(event!.languages.fi.questions[4].options).toEqual(localizedOptions);
+    expect(event!.languages.fi.questions[3].options).toEqual(localizedOptions);
   });
 
   test("audit logs creations", async () => {
@@ -748,6 +745,20 @@ describe("PATCH /api/admin/events/:id", () => {
 
     // TODO: test questions, quotas, languages validation
 
+    const optionQuestion = {
+      type: QuestionType.SELECT,
+      question: "Question",
+      required: false,
+      public: false,
+      prices: null,
+    };
+    // Options must be non-empty array when provided
+    [, response] = await updateEvent(event, { ...updateBody, questions: [{ ...optionQuestion, options: [] }] });
+    expect(response.statusCode).toBe(400);
+    // Options must be non-empty strings when provided
+    [, response] = await updateEvent(event, { ...updateBody, questions: [{ ...optionQuestion, options: ["A", ""] }] });
+    expect(response.statusCode).toBe(400);
+
     // Verify that nothing was changed
     const [after] = await fetchAdminEventDetails(event);
     expect(after).toEqual(before);
@@ -782,19 +793,10 @@ describe("PATCH /api/admin/events/:id", () => {
           options,
           prices,
         },
-        // Will have options set to [] -> should normalize options and prices to null
-        {
-          type: QuestionType.CHECKBOX,
-          question: "Question 3",
-          required: false,
-          public: false,
-          options,
-          prices,
-        },
         // Will have all prices set to 0 -> should normalize prices to null but keep options
         {
           type: QuestionType.SELECT,
-          question: "Question 4",
+          question: "Question 3",
           required: false,
           public: false,
           options,
@@ -803,7 +805,7 @@ describe("PATCH /api/admin/events/:id", () => {
         // Will keep valid options and prices
         {
           type: QuestionType.CHECKBOX,
-          question: "Question 5",
+          question: "Question 4",
           required: false,
           public: false,
           options,
@@ -824,14 +826,13 @@ describe("PATCH /api/admin/events/:id", () => {
             { question: "", options: localizedOptions },
             { question: "", options: localizedOptions },
             { question: "", options: localizedOptions },
-            { question: "", options: localizedOptions },
           ],
           verificationEmail: "",
         },
       },
     });
     expect(createResponse.statusCode).toBe(200);
-    expect(created.questions).toHaveLength(5);
+    expect(created.questions).toHaveLength(4);
 
     // Now update the event with changes that should trigger normalization
     const [, response] = await updateEvent(event, {
@@ -858,21 +859,11 @@ describe("PATCH /api/admin/events/:id", () => {
           options: null,
           prices,
         },
-        // Set options to [] -> should normalize options and prices to null
-        {
-          id: created.questions[2].id,
-          type: QuestionType.CHECKBOX,
-          question: "Question 3",
-          required: false,
-          public: false,
-          options: [],
-          prices,
-        },
         // Set all prices to 0 -> should normalize prices to null but keep options
         {
-          id: created.questions[3].id,
+          id: created.questions[2].id,
           type: QuestionType.SELECT,
-          question: "Question 4",
+          question: "Question 3",
           required: false,
           public: false,
           options,
@@ -880,9 +871,9 @@ describe("PATCH /api/admin/events/:id", () => {
         },
         // Keep valid options and prices unchanged
         {
-          id: created.questions[4].id,
+          id: created.questions[3].id,
           type: QuestionType.CHECKBOX,
-          question: "Question 5",
+          question: "Question 4",
           required: false,
           public: false,
           options,
@@ -901,7 +892,6 @@ describe("PATCH /api/admin/events/:id", () => {
           questions: [
             { question: "", options: localizedOptions },
             { question: "", options: null },
-            { question: "", options: [] },
             { question: "", options: localizedOptions },
             { question: "", options: localizedOptions },
           ],
@@ -914,7 +904,7 @@ describe("PATCH /api/admin/events/:id", () => {
 
     // Verify normalization in database
     const dbEvent = await Event.findByPk(event.id, { include: [Question] });
-    expect(dbEvent!.questions).toHaveLength(5);
+    expect(dbEvent!.questions).toHaveLength(4);
 
     // Question 1: type changed to TEXT -> options and prices should be null
     expect(dbEvent!.questions![0].type).toBe(QuestionType.TEXT);
@@ -926,29 +916,23 @@ describe("PATCH /api/admin/events/:id", () => {
     expect(dbEvent!.questions![1].options).toBe(null);
     expect(dbEvent!.questions![1].prices).toBe(null);
 
-    // Question 3: options set to [] -> options and prices should be null
-    expect(dbEvent!.questions![2].type).toBe(QuestionType.CHECKBOX);
-    expect(dbEvent!.questions![2].options).toBe(null);
+    // Question 3: all prices set to 0 -> prices should be null but options kept
+    expect(dbEvent!.questions![2].type).toBe(QuestionType.SELECT);
+    expect(dbEvent!.questions![2].options).toEqual(options);
     expect(dbEvent!.questions![2].prices).toBe(null);
 
-    // Question 4: all prices set to 0 -> prices should be null but options kept
-    expect(dbEvent!.questions![3].type).toBe(QuestionType.SELECT);
+    // Question 4: valid options and prices kept unchanged
+    expect(dbEvent!.questions![3].type).toBe(QuestionType.CHECKBOX);
     expect(dbEvent!.questions![3].options).toEqual(options);
-    expect(dbEvent!.questions![3].prices).toBe(null);
-
-    // Question 5: valid options and prices kept unchanged
-    expect(dbEvent!.questions![4].type).toBe(QuestionType.CHECKBOX);
-    expect(dbEvent!.questions![4].options).toEqual(options);
-    expect(dbEvent!.questions![4].prices).toEqual(prices);
+    expect(dbEvent!.questions![3].prices).toEqual(prices);
 
     // Verify language normalization
     expect(dbEvent!.languages.fi).toBeTruthy();
-    expect(dbEvent!.languages.fi.questions).toHaveLength(5);
+    expect(dbEvent!.languages.fi.questions).toHaveLength(4);
     expect(dbEvent!.languages.fi.questions[0].options).toBe(null);
     expect(dbEvent!.languages.fi.questions[1].options).toBe(null);
-    expect(dbEvent!.languages.fi.questions[2].options).toBe(null);
+    expect(dbEvent!.languages.fi.questions[2].options).toEqual(localizedOptions);
     expect(dbEvent!.languages.fi.questions[3].options).toEqual(localizedOptions);
-    expect(dbEvent!.languages.fi.questions[4].options).toEqual(localizedOptions);
   });
 
   test("does not allow duplicate slugs", async () => {

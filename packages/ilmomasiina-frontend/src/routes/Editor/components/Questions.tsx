@@ -5,7 +5,13 @@ import { Field, FieldRenderProps, useForm } from "react-final-form";
 import { useTranslation } from "react-i18next";
 
 import useShallowMemo from "@tietokilta/ilmomasiina-client/dist/utils/useShallowMemo";
-import { MAX_OPTIONS_PER_QUESTION, PaymentMode, QuestionLanguage, QuestionType } from "@tietokilta/ilmomasiina-models";
+import {
+  MAX_OPTIONS_PER_QUESTION,
+  OPTION_QUESTION_TYPES,
+  PaymentMode,
+  QuestionLanguage,
+  QuestionType,
+} from "@tietokilta/ilmomasiina-models";
 import FieldRow from "../../../components/FieldRow";
 import { EditorQuestion } from "../../../modules/editor/types";
 import useEvent from "../../../utils/useEvent";
@@ -128,7 +134,7 @@ const QuestionRow = ({ name, index }: QuestionProps) => {
           ]}
           formatError={formatError}
         />
-        {(type === QuestionType.SELECT || type === QuestionType.CHECKBOX) && (
+        {OPTION_QUESTION_TYPES.includes(type) && (
           <>
             {optionFields.map((optName, i) => (
               <OptionRow
@@ -172,7 +178,7 @@ const QuestionRow = ({ name, index }: QuestionProps) => {
         >
           {renderCheck}
         </Field>
-        {(type === QuestionType.SELECT || type === QuestionType.CHECKBOX) && (
+        {OPTION_QUESTION_TYPES.includes(type) && (
           <Field
             name={`${name}.hasPrices`}
             type="checkbox"
