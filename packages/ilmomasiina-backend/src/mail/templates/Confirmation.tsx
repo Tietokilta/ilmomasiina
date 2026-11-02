@@ -2,7 +2,6 @@ import { useTranslation } from "react-i18next";
 
 import { SignupPaymentStatus } from "@tietokilta/ilmomasiina-models";
 import type { Event } from "../../models/event";
-import Layout from "../components/Layout";
 import { EditLink, EventDetails, PendingPaymentWarning, SignupDetails, VerificationEmail } from "../components/shared";
 
 export interface ConfirmationMailParams {
@@ -34,7 +33,7 @@ export default function Confirmation({
 }: ConfirmationMailParams) {
   const { t } = useTranslation();
   return (
-    <Layout>
+    <>
       {admin && type === "signup" && (
         <div className="content-block">
           <p className="bodyText">
@@ -63,6 +62,6 @@ export default function Confirmation({
       <EventDetails event={event} date={date} />
       <SignupDetails name={name} email={email} quota={quota} answers={answers} />
       <EditLink href={signupLink} />
-    </Layout>
+    </>
   );
 }

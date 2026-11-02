@@ -3,7 +3,7 @@
 footer {
   padding: 1em 0;
   background: $secondary-background;
-  color: $secondary-text-color;
+  color: var(--ilmo-muted-color);
 
   .container {
     display: flex;

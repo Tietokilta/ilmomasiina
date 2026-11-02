@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { createJSONStorage, devtools, persist } from "zustand/middleware";
 
 import { AdminEventsSlice, adminEventsSlice } from "./adminEvents";
+import { AdminSettingsSlice, adminSettingsSlice } from "./adminSettings";
 import { AdminUsersSlice, adminUsersSlice } from "./adminUsers";
 import { AuditLogSlice, auditLogSlice } from "./auditLog";
 import { AuthSlice, authSlice } from "./auth";
@@ -9,6 +10,7 @@ import { EditorSlice, editorSlice } from "./editor";
 
 export type Root = {
   adminEvents: AdminEventsSlice;
+  adminSettings: AdminSettingsSlice;
   adminUsers: AdminUsersSlice;
   auditLog: AuditLogSlice;
   auth: AuthSlice;
@@ -20,6 +22,7 @@ const useStore = create<Root>()(
     persist(
       (...args) => ({
         adminEvents: adminEventsSlice(...args),
+        adminSettings: adminSettingsSlice(...args),
         adminUsers: adminUsersSlice(...args),
         auditLog: auditLogSlice(...args),
         auth: authSlice(...args),

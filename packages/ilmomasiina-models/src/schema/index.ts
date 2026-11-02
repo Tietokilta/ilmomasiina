@@ -1,4 +1,5 @@
 export * from "./auditLog";
+export * from "./branding";
 export * from "./category";
 export * from "./errors";
 export * from "./event";

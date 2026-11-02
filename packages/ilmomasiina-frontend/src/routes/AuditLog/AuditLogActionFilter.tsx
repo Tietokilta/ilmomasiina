@@ -20,6 +20,7 @@ const ACTIONS = [
   [AuditEvent.DELETE_USER, "auditLog.filter.action.deleteUser"],
   [AuditEvent.RESET_PASSWORD, "auditLog.filter.action.resetPassword"],
   [AuditEvent.CHANGE_PASSWORD, "auditLog.filter.action.changeOwnPassword"],
+  [AuditEvent.EDIT_BRANDING, "auditLog.filter.action.editBranding"],
 ] as const;
 
 const AuditLogActionFilter = () => {

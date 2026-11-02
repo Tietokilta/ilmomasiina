@@ -22,18 +22,18 @@ services:
       args:
         #- PATH_PREFIX=
         #- API_URL=
-        - BRANDING_HEADER_TITLE_TEXT=Kilta ry ilmomasiina
-        - BRANDING_HEADER_TITLE_TEXT_SHORT=Ilmomasiina
-        - BRANDING_FOOTER_GDPR_TEXT=Tietosuoja
-        - BRANDING_FOOTER_GDPR_LINK=http://example.com/privacy
-        - BRANDING_FOOTER_HOME_TEXT=Example.com
-        - BRANDING_FOOTER_HOME_LINK=http://example.com
-        - BRANDING_LOGIN_PLACEHOLDER_EMAIL=admin@example.com
     restart: always
     depends_on:
       - database
     environment:
       - DB_HOST=database
+      - BRANDING_HEADER_TITLE_TEXT=Kilta ry ilmomasiina
+      - BRANDING_HEADER_TITLE_TEXT_SHORT=Ilmomasiina
+      - BRANDING_FOOTER_GDPR_TEXT=Tietosuoja
+      - BRANDING_FOOTER_GDPR_LINK=http://example.com/privacy
+      - BRANDING_FOOTER_HOME_TEXT=Example.com
+      - BRANDING_FOOTER_HOME_LINK=http://example.com
+      - BRANDING_LOGIN_PLACEHOLDER_EMAIL=admin@example.com
       - NODE_ENV=production
       - ENFORCE_HTTPS=false
       - PORT=3000

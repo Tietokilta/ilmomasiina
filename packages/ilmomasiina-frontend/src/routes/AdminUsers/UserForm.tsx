@@ -7,9 +7,9 @@ import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 
 import { ApiError, errorDesc } from "@tietokilta/ilmomasiina-client";
-import branding from "../../branding";
 import FieldFormGroup from "../../components/FieldFormGroup";
 import type { TKey } from "../../i18n";
+import { useBranding } from "../../modules/branding";
 import useStore from "../../modules/store";
 
 type FormData = {
@@ -19,6 +19,7 @@ type FormData = {
 const UserForm = () => {
   const { getUsers, createUser } = useStore((state) => state.adminUsers);
   const { t } = useTranslation();
+  const branding = useBranding();
 
   const onSubmit = async (data: FormData, form: FormApi<FormData>) => {
     try {

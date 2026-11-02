@@ -47,7 +47,7 @@
 
   .ilmo--unconfirmed,
   .ilmo--hidden-name {
-    color: $text-muted;
+    color: var(--ilmo-muted-color);
   }
   .ilmo--hidden-name {
     font-style: italic;

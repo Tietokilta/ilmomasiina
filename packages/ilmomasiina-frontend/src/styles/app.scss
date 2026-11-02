@@ -22,6 +22,7 @@
 @use "widgets";
 @use "forms";
 @use "shared";
+@use "branding";
 
 // Global layout
 
@@ -57,7 +58,7 @@ h2 {
   font-weight: 600;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: $secondary-text-color;
+  color: var(--ilmo-muted-color);
 }
 
 h3 {

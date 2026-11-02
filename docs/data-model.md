@@ -77,6 +77,15 @@ Each Answer has one **Signup** and one **Question**.
 Users are not related to any other models. This model is only used for local login, and can be enumerated, created
 and deleted by admins.
 
+### Setting
+
+**Setting** is a key-value table for admin-editable settings. Values are JSON validated by schemas in `ilmomasiina-models`.
+
+Currently the only key is `branding`, which holds the runtime branding text, colors and images.
+Branding is readable publicly and editable by admins.
+
+Settings are not related to any other models.
+
 ## Paranoid mode
 
 Tables other than **User** use Sequelize's paranoid mode by default. This means their data is not deleted immediately,

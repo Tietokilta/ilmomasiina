@@ -3,90 +3,40 @@
 This file contains installation and customization instructions for Ilmomasiina,
 both for [production](#production) and [development](#development).
 
-## Customization
-
 > [!IMPORTANT]
 > The `dev` branch is currently used for major changes upcoming to Ilmomasiina 3.0. Significant instability and
 > breaking changes are expected. If you maintain a fork of Ilmomasiina, we **strongly recommend** tracking `2.x` until
 > 3.0 is more stable.
->
-> We expect to release a version of Ilmomasiina 2.x in 2026 that will allow making most customizations from the UI,
-> removing the need for most users to fork Ilmomasiina.
 
-If you want to change any of the following, you'll need to modify the code slightly and
-build your own Docker image (if using Docker):
+## Customization
+
+> [!IMPORTANT]
+> **Branding no longer requires a custom container!** Starting with Ilmomasiina 3.0,
+> most settings are customizable on the Settings page of the admin UI. The `BRANDING_*` variables are
+> only used as defaults by the backend and have no effect once imported to the database on first run.
+
+The following customizations still require pre-build modifications and/or building a custom Docker image
+(if using Docker):
 
 | What to customize | Where |
 |-|-|
 | Hosting in a subfolder instead of directly at `https://ilmo.your.domain/` | build args |
-| Colors | [`packages/ilmomasiina-frontend/src/styles/_definitions.scss`](../packages/ilmomasiina-frontend/src/styles/_definitions.scss) |
-| Header logo | `packages/ilmomasiina-frontend/src/assets/logo.svg` (can also be disabled from `_definitions.scss`) |
-| Favicon | `packages/ilmomasiina-frontend/public/*.png` |
-| Header title | build args or [`packages/ilmomasiina-frontend/src/branding.ts`](../packages/ilmomasiina-frontend/src/branding.ts) |
-| Footer links | build args or [`packages/ilmomasiina-frontend/src/branding.ts`](../packages/ilmomasiina-frontend/src/branding.ts) |
 | Translations | `packages/ilmomasiina-*/src/locales/*.json` |
-| Timezone | build args |
-| Default language | build args |
-| Payment currency | build args |
+| Timezone | build args (TODO) |
+| Default language | build args (TODO) |
+| Payment currency | build args (TODO) |
 
-You can of course make further UI changes, but that is not documented.
-
-How build arguments are passed depends on your build method:
-- [GitHub Actions](#github-actions): Workflow YAML file
-- [Docker Compose](#docker-compose): Compose YAML file
-- [Local Docker build](#local-docker-build): build command
-
-**Note:** If you fix bugs or add functionality, it would be *very* appreciated to
-create a pull request to the Tietokilta repository so we can potentially integrate them
-in our version. That also reduces your maintenance work when upgrading.
-
-### Building customized Docker images
-
-#### GitHub Actions
-
-The easiest way to build and host your Docker image is using GitHub Actions. Your public repos
-have free Actions time. The repository contains a workflow called
-[`docker-build.yml`](../.github/workflows//docker-build.yml) that can easily be customized with
-variables to build and push an image for your organization.
-
-Simply [enable GitHub Actions](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#managing-github-actions-permissions-for-your-repository)
-for your fork and modify `docker-build.yml` as instructed in comments:
-
-- Update `env` block as necessary.
-- Change the repository names in `jobs.docker.if` to ensure the workflow runs;
-  it's automatically disabled on forks to avoid unnecessary errors.
-- Change other conditions in `on` and `jobs.docker.if` if you want to build on branch pushes
-  or a different tag pattern. The `docker` is otherwise set up for either approach.
-
-#### Local Docker build
-
-You can of course also build images locally.
-
-Variables in `.env.example` can be passed as build args, though don't include secrets there.
-Anything that *requires frontend rebuild* needs to be passed as a build arg and won't work as a normal env variable.
-
-```
-docker build \
-  --build-arg BRANDING_HEADER_TITLE_TEXT='Kilta ry ilmomasiina' \
-  --build-arg BRANDING_HEADER_TITLE_TEXT_SHORT='Ilmomasiina' \
-  --build-arg BRANDING_FOOTER_GDPR_TEXT='Tietosuoja' \
-  --build-arg BRANDING_FOOTER_GDPR_LINK='https://example.com' \
-  --build-arg BRANDING_FOOTER_HOME_TEXT='Kotisivu' \
-  --build-arg BRANDING_FOOTER_HOME_LINK='https://example.com' \
-  --build-arg BRANDING_LOGIN_PLACEHOLDER_EMAIL='admin@example.com' \
-  -t ilmomasiina .
-```
-
-You can then use `docker push` to a host of your choice, or run the container locally.
+How build arguments are passed depends on your build method.
+See [hacking.md](./hacking.md#building-docker-images) for further instructions.
 
 ## Production
 
 There are a few ways to run Ilmomasiina in production:
 
 - [Docker as Azure Web App](#azure) (used by Tietokilta)
-- [Docker without Azure](#docker-manual) (same setup, should work)
-- [Docker Compose](#docker-compose) (currently untested)
-- [Without Docker](#running-without-docker) (not recommended)
+- [Docker locally](#docker-manual) (same setup, should work)
+- [Docker Compose locally](#docker-compose) (currently untested)
+- [Without Docker](#running-without-docker) (not recommended in production)
 
 Other prerequisites:
 
@@ -294,10 +244,11 @@ If you don't want to use Docker Compose, or already have a database, you can run
 
 ### Running without Docker
 
-You can also set up a production deployment without Docker. **This method is not recommended.**
+You can also set up a production deployment without Docker. **This method is not recommended in production,
+as issues in your own environment are much more likely to affect Ilmomasiina.**
 
 1. Install a suitable Node version (e.g. using nvm).
-2. Run `corepack enable`, then `pnpm install --frozen-lockfile` to setup cross-dependencies.
+2. Run `corepack enable`, then `pnpm install --frozen-lockfile` to setup cross-dependencies
    between packages and install other dependencies.
 3. Create a `.env` file at the root of this repository. You can copy [.env.example](../.env.example) to begin and read the instructions within.
 4. **Optional:** Make [customizations](#customization) in other files if necessary.

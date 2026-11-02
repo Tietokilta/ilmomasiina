@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
 
-import Layout from "../components/Layout";
 import { LoginLink } from "../components/shared";
 
 export interface CredentialsMailParams {
@@ -11,7 +10,7 @@ export interface CredentialsMailParams {
 export default function NewUser({ email, password }: CredentialsMailParams) {
   const { t } = useTranslation();
   return (
-    <Layout>
+    <>
       <div className="content-block">
         <p className="bodyText">{t("emails.newUser.created")}</p>
         <ul>
@@ -24,6 +23,6 @@ export default function NewUser({ email, password }: CredentialsMailParams) {
         </ul>
       </div>
       <LoginLink />
-    </Layout>
+    </>
   );
 }

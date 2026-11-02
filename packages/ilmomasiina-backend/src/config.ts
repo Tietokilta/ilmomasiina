@@ -118,12 +118,29 @@ const config = {
 
   /** From: address for emails. */
   mailFrom: envString("MAIL_FROM"),
-  /** Text shown at the end of emails. */
-  brandingMailFooterText: envString("BRANDING_MAIL_FOOTER_TEXT"),
-  /** Link shown at the end of emails. */
-  brandingMailFooterLink: envString("BRANDING_MAIL_FOOTER_LINK"),
-  /** Calendar name included in iCalendar exports. */
-  icalCalendarName: envString("BRANDING_ICAL_CALENDAR_NAME", "Ilmomasiina"),
+
+  branding: {
+    /** Default title shown in the header. Admins can override this in the UI. */
+    headerTitle: envString("BRANDING_HEADER_TITLE_TEXT", "Ilmomasiina"),
+    /** Default title shown in the header on small screens. Defaults to the full title. */
+    headerTitleShort: envString("BRANDING_HEADER_TITLE_TEXT_SHORT", null),
+    /** Default text of the privacy policy link in the footer. Empty to hide the link. */
+    footerGdprText: envString("BRANDING_FOOTER_GDPR_TEXT", ""),
+    /** Default URL of the privacy policy link in the footer. */
+    footerGdprLink: envString("BRANDING_FOOTER_GDPR_LINK", ""),
+    /** Default text of the home page link in the footer. Empty to hide the link. */
+    footerHomeText: envString("BRANDING_FOOTER_HOME_TEXT", ""),
+    /** Default URL of the home page link in the footer. */
+    footerHomeLink: envString("BRANDING_FOOTER_HOME_LINK", ""),
+    /** Default placeholder for email fields in the login and user forms. */
+    loginPlaceholderEmail: envString("BRANDING_LOGIN_PLACEHOLDER_EMAIL", ""),
+    /** Text shown at the end of emails. */
+    mailFooterText: envString("BRANDING_MAIL_FOOTER_TEXT"),
+    /** Link shown at the end of emails. */
+    mailFooterLink: envString("BRANDING_MAIL_FOOTER_LINK"),
+    /** Calendar name included in iCalendar exports. */
+    icalCalendarName: envString("BRANDING_ICAL_CALENDAR_NAME", "Ilmomasiina"),
+  },
   /** Default language for emails, iCalendar exports, and signups for which no language is known. */
   defaultLanguage: envEnum("DEFAULT_LANGUAGE", knownLanguages, "fi"),
 
