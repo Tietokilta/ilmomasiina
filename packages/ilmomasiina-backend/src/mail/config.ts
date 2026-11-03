@@ -4,12 +4,20 @@ import type SMTPTransport from "nodemailer/lib/smtp-transport";
 
 import config from "../config";
 
+/** Attachment format valid for both nodemailer and mailgun.js. */
+export type AbstractMailAttachment = {
+  filename: string;
+  content: string | Buffer;
+  contentType: string;
+};
+
 /** Common input values valid for both nodemailer and mailgun.js. */
-type AbstractMailOptions = {
+export type AbstractMailOptions = {
   to: string;
   from: string;
   subject: string;
   html: string;
+  attachments?: AbstractMailAttachment[];
 };
 
 /** Base type for the minimal interface we use in nodemailer. */
@@ -42,7 +50,15 @@ const mailTransporter: AbstractTransporter = (() => {
     });
     // Wrap mailgun.js client to somewhat match nodemailer interface
     return {
-      sendMail: (msg) => client.messages.create(config.mailgunDomain!, msg),
+      sendMail: ({ attachments, ...msg }) =>
+        client.messages.create(config.mailgunDomain!, {
+          ...msg,
+          attachment: attachments?.map(({ content, contentType, filename }) => ({
+            data: content,
+            filename,
+            contentType,
+          })),
+        }),
       transporter: { name: "Mailgun" },
     };
   }

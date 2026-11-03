@@ -1,6 +1,9 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { createEvents, DateArray } from "ics";
+import { createEvents, DateArray, EventAttributes } from "ics";
+import { remark } from "remark";
+import remarkGfm from "remark-gfm";
 import { Op } from "sequelize";
+import stripMarkdown from "strip-markdown";
 
 import config, { eventDetailsUrl } from "../../config";
 import { Event } from "../../models/event";
@@ -20,6 +23,35 @@ function dateToArray(date: Date) {
  */
 const uidDomain = config.icalUidDomain || new URL(config.baseUrl).hostname;
 
+/** An event that has both a start and an end date, and can thus be exported to iCalendar. */
+export type ICalExportableEvent = Event & { date: Date; endDate: Date };
+
+/** Checks whether an event can be exported to iCalendar, i.e. has both start and end dates. */
+export function isICalExportable(event: Event): event is ICalExportableEvent {
+  return event.date != null && event.endDate != null;
+}
+
+export const stripMarkdownProcessor = remark()
+  .use(remarkGfm)
+  .use(stripMarkdown, { keep: ["link"] }) // this keeps the markdown []() syntax for links. They would be stripped otherwise.
+  .freeze();
+
+export function icsAttrsFromEvent(event: ICalExportableEvent): EventAttributes {
+  return {
+    calName: config.icalCalendarName,
+    uid: `${event.id}@${uidDomain}`,
+    start: dateToArray(event.date),
+    startInputType: "utc",
+    end: dateToArray(new Date(event.endDate)),
+    endInputType: "utc",
+    title: event.title,
+    description: stripMarkdownProcessor.processSync(event.description || "").toString(),
+    location: event.location || undefined,
+    categories: event.category ? [event.category] : undefined,
+    url: eventDetailsUrl({ slug: event.slug, lang: config.defaultLanguage, frontend: event.preferredFrontend }),
+  };
+}
+
 export async function eventsAsICal() {
   const events = await Event.scope("user").findAll({
     where: [
@@ -38,21 +70,7 @@ export async function eventsAsICal() {
     ],
   });
 
-  const { error, value } = createEvents(
-    events.map((event) => ({
-      calName: config.icalCalendarName,
-      uid: `${event.id}@${uidDomain}`,
-      start: dateToArray(event.date!),
-      startInputType: "utc",
-      end: dateToArray(new Date(event.endDate!)),
-      endInputType: "utc",
-      title: event.title,
-      description: event.description || undefined, // TODO convert markdown
-      location: event.location || undefined,
-      categories: event.category ? [event.category] : undefined,
-      url: eventDetailsUrl({ slug: event.slug, lang: config.defaultLanguage, frontend: event.preferredFrontend }),
-    })),
-  );
+  const { error, value } = createEvents(events.filter(isICalExportable).map(icsAttrsFromEvent));
 
   if (error != null) throw new Error(`Failed to generate iCalendar: ${error}`);
   return value;
