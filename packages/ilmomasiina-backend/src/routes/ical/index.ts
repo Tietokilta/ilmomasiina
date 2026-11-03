@@ -1,10 +1,12 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { createEvents, DateArray, EventAttributes } from "ics";
+import { remark } from "remark";
+import remarkGfm from "remark-gfm";
 import { Op } from "sequelize";
+import stripMarkdown from "strip-markdown";
 
 import config, { eventDetailsUrl } from "../../config";
 import { Event } from "../../models/event";
-import { getStripMarkdownProcessor } from "../../util/stripMarkdown";
 
 function dateToArray(date: Date) {
   return [
@@ -29,7 +31,12 @@ export function isICalExportable(event: Event): event is ICalExportableEvent {
   return event.date != null && event.endDate != null;
 }
 
-export function icsAttrsFromEvent(event: ICalExportableEvent, description: string): EventAttributes {
+export const stripMarkdownProcessor = remark()
+  .use(remarkGfm)
+  .use(stripMarkdown, { keep: ["link"] }) // this keeps the markdown []() syntax for links. They would be stripped otherwise.
+  .freeze();
+
+export function icsAttrsFromEvent(event: ICalExportableEvent): EventAttributes {
   return {
     calName: config.icalCalendarName,
     uid: `${event.id}@${uidDomain}`,
@@ -38,7 +45,7 @@ export function icsAttrsFromEvent(event: ICalExportableEvent, description: strin
     end: dateToArray(new Date(event.endDate)),
     endInputType: "utc",
     title: event.title,
-    description,
+    description: stripMarkdownProcessor.processSync(event.description || "").toString(),
     location: event.location || undefined,
     categories: event.category ? [event.category] : undefined,
     url: eventDetailsUrl({ slug: event.slug, lang: config.defaultLanguage, frontend: event.preferredFrontend }),
@@ -63,14 +70,7 @@ export async function eventsAsICal() {
     ],
   });
 
-  const stripMarkdown = await getStripMarkdownProcessor();
-
-  const { error, value } = createEvents(
-    events.filter(isICalExportable).map((event) => {
-      const description = stripMarkdown(event.description || "");
-      return icsAttrsFromEvent(event, description);
-    }),
-  );
+  const { error, value } = createEvents(events.filter(isICalExportable).map(icsAttrsFromEvent));
 
   if (error != null) throw new Error(`Failed to generate iCalendar: ${error}`);
   return value;
