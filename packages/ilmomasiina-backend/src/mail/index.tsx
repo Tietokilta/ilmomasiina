@@ -9,7 +9,6 @@ import config from "../config";
 import i18n from "../i18n";
 import type { Event } from "../models/event";
 import { icsAttrsFromEvent, isICalExportable } from "../routes/ical";
-import { getStripMarkdownProcessor } from "../util/stripMarkdown";
 import mailTransporter, { AbstractMailAttachment } from "./config";
 import Confirmation, { ConfirmationMailParams } from "./templates/Confirmation";
 import NewUser, { CredentialsMailParams } from "./templates/NewUser";
@@ -52,14 +51,10 @@ function getLanguage(language: string | null): string {
 }
 
 /** Creates an invite.ics attachment for the event, or returns null if the event lacks a start or end date. */
-async function createICalAttachment(event: Event): Promise<AbstractMailAttachment | null> {
+function createICalAttachment(event: Event): AbstractMailAttachment | null {
   if (!isICalExportable(event)) return null;
 
-  const stripMarkdown = await getStripMarkdownProcessor();
-  const { error, value } = createEvent({
-    ...icsAttrsFromEvent(event, stripMarkdown(event.description || "")),
-    method: "PUBLISH",
-  });
+  const { error, value } = createEvent(icsAttrsFromEvent(event));
   if (error || !value) {
     // Don't prevent sending the email if the invite fails to generate.
     console.error("Failed to generate iCalendar attachment:", error);
@@ -92,10 +87,7 @@ const EmailService = {
       const subject = i18n.t(`emails.confirmation.${params.type}.subject`, { lng, event: params.event.title });
       const html = await renderEmail(<Confirmation {...params} />, lng);
 
-      const icalAttachment = await createICalAttachment(params.event).catch((error: unknown) => {
-        // Failing to create the iCal attachment should not prevent the confirmation mail
-        console.error("Failed to create iCal attachment for event", params.event.id, error);
-      });
+      const icalAttachment = createICalAttachment(params.event);
 
       await EmailService.send(to, subject, html, icalAttachment ? [icalAttachment] : undefined);
     } catch (error) {

@@ -102,9 +102,6 @@ describe("signup confirmation email", () => {
     emailSend.mockClear();
 
     await sendSignupConfirmationMail(datedSignup, "signup", false);
-    await sendSignupConfirmationMail(undatedSignup, "signup", false);
-
-    expect(emailSend).toHaveBeenCalledTimes(2);
     expect(emailSend).toHaveBeenNthCalledWith(1, datedSignup.email, expect.any(String), expect.any(String), [
       {
         filename: "invite.ics",
@@ -112,6 +109,7 @@ describe("signup confirmation email", () => {
         content: expect.stringMatching(new RegExp(`BEGIN:VEVENT[\\s\\S]*UID:${datedEvent.id}@`)),
       },
     ]);
+    await sendSignupConfirmationMail(undatedSignup, "signup", false);
     expect(emailSend).toHaveBeenNthCalledWith(
       2,
       undatedSignup.email,
@@ -119,5 +117,6 @@ describe("signup confirmation email", () => {
       expect.any(String),
       undefined,
     );
+    expect(emailSend).toHaveBeenCalledTimes(2);
   });
 });
