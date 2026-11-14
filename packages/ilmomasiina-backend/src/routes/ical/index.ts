@@ -4,6 +4,7 @@ import { Op } from "sequelize";
 
 import config, { eventDetailsUrl } from "../../config";
 import { Event } from "../../models/event";
+import createCache from "../../util/cache";
 
 function dateToArray(date: Date) {
   return [
@@ -58,9 +59,15 @@ export async function eventsAsICal() {
   return value;
 }
 
+const eventsAsICalCached = createCache({
+  maxAgeMs: 60 * 1000,
+  logName: "eventsAsICalCached",
+  get: eventsAsICal,
+});
+
 export async function sendICalFeed(request: FastifyRequest, reply: FastifyReply): Promise<void> {
   // Generate iCal content (as a string)
-  const cal = await eventsAsICal();
+  const cal = await eventsAsICalCached(undefined);
 
   reply.status(200);
   reply.type("text/calendar"); // Set proper content type header

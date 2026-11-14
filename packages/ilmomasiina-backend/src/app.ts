@@ -95,7 +95,6 @@ export default async function initApp(): Promise<FastifyInstance> {
   // but this helps run a low-effort server.
   // frontend files should not be gzipped on the fly, rather done on the build step.
   if (config.frontendFilesPath) {
-    const javascriptHashRegex = /.*[.-][0-9a-fA-F]+[..*]+/;
     console.info(`Serving frontend files from '${config.frontendFilesPath}'`);
     server.register(fastifyStatic, {
       root: path.resolve(config.frontendFilesPath),
@@ -103,7 +102,7 @@ export default async function initApp(): Promise<FastifyInstance> {
       wildcard: false, // Disable wildcard matching, so that own index.html is served
       setHeaders: (res, filePath) => {
         // set immutable cache for javascript files with hash in the name
-        if (javascriptHashRegex.test(filePath)) {
+        if (/[\\/]assets[\\/]/.test(filePath)) {
           res.header("Cache-Control", "public, max-age=31536000, immutable");
         }
       },
@@ -118,6 +117,7 @@ export default async function initApp(): Promise<FastifyInstance> {
     brotliOptions: {
       params: {
         [zlib.constants.BROTLI_PARAM_MODE]: zlib.constants.BROTLI_MODE_TEXT, // useful for APIs
+        [zlib.constants.BROTLI_PARAM_QUALITY]: 4,
       },
     },
   });

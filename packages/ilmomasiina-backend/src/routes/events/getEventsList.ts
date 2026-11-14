@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { BadRequest } from "http-errors";
 import moment from "moment";
-import { col, fn, Op, Order, WhereOptions } from "sequelize";
+import { Op, Order, WhereOptions } from "sequelize";
 
 import type { AdminEventListResponse, EventListQuery, UserEventListResponse } from "@tietokilta/ilmomasiina-models";
 import { adminEventListEventAttrs, eventListEventAttrs, eventListQuotaAttrs } from "../../models/attrs";
@@ -12,6 +12,19 @@ import { ascNullsFirst } from "../../models/util/ascNullsFirst";
 import createCache from "../../util/cache";
 import { InitialSetupNeeded, isInitialSetupDone } from "../admin/users/createInitialUser";
 import { StringifyApi } from "../utils";
+
+async function withSignupCounts(events: Event[]) {
+  const quotaIds = events.flatMap((event) => event.quotas!.map((quota) => quota.id));
+  const counts = await Signup.scope("active").count({ where: { quotaId: quotaIds }, group: ["quotaId"] });
+  const signupCounts = new Map(counts.map(({ quotaId, count }) => [quotaId, count]));
+  return events.map((event) => ({
+    ...event.get({ plain: true }),
+    quotas: event.quotas!.map((quota) => ({
+      ...quota.get({ plain: true }),
+      signupCount: signupCounts.get(quota.id) ?? 0,
+    })),
+  }));
+}
 
 function eventOrder(): Order {
   return [
@@ -55,30 +68,11 @@ export const eventsListForUserCached = createCache({
       attributes: eventListEventAttrs,
       where,
       // Include quotas of event and count of signups
-      include: [
-        {
-          model: Quota,
-          attributes: [...eventListQuotaAttrs, [fn("COUNT", col("quotas->signups.id")), "signupCount"]],
-          include: [
-            {
-              model: Signup.scope("active"),
-              required: false,
-              attributes: [],
-            },
-          ],
-        },
-      ],
-      group: [col("event.id"), col("quotas.id")],
+      include: [{ model: Quota, attributes: eventListQuotaAttrs }],
       order: eventOrder(),
     });
 
-    return events.map((event) => ({
-      ...event.get({ plain: true }),
-      quotas: event.quotas!.map((quota) => ({
-        ...quota.get({ plain: true }),
-        signupCount: Number(quota.signupCount),
-      })),
-    }));
+    return withSignupCounts(events);
   },
 });
 
@@ -106,31 +100,11 @@ export async function getEventsListForAdmin(
   const events = await Event.findAll({
     attributes: adminEventListEventAttrs,
     where: request.query,
-    // Include quotas of event and count of signups
-    include: [
-      {
-        model: Quota,
-        attributes: [...eventListQuotaAttrs, [fn("COUNT", col("quotas->signups.id")), "signupCount"]],
-        include: [
-          {
-            model: Signup.scope("active"),
-            required: false,
-            attributes: [],
-          },
-        ],
-      },
-    ],
-    group: [col("event.id"), col("quotas.id")],
+    include: [{ model: Quota, attributes: eventListQuotaAttrs }],
     order: eventOrder(),
   });
 
-  const res = events.map((event) => ({
-    ...event.get({ plain: true }),
-    quotas: event.quotas!.map((quota) => ({
-      ...quota.get({ plain: true }),
-      signupCount: Number(quota.signupCount!),
-    })),
-  }));
+  const res = await withSignupCounts(events);
 
   reply.status(200);
   return res as StringifyApi<typeof res>;

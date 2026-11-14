@@ -105,4 +105,10 @@ export const eventListEventAttrs: (keyof EventAttributes)[] = [
 export const eventListQuotaAttrs: (keyof QuotaAttributes)[] = ["id", "title", "size", "price"];
 
 /** Attributes included in GET /api/admin/events for Event instances. */
-export const adminEventListEventAttrs: (keyof EventAttributes)[] = [...eventListEventAttrs, "draft", "listed"];
+export const adminEventListEventAttrs: (keyof EventAttributes)[] = [
+  ...eventListEventAttrs.filter(
+    (attr) => !["description", "price", "location", "webpageUrl", "facebookUrl", "languages"].includes(attr),
+  ),
+  "draft",
+  "listed",
+];
