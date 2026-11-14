@@ -56,6 +56,7 @@ export async function eventsAsICal() {
   );
 
   if (error != null) throw new Error(`Failed to generate iCalendar: ${error}`);
+  if (value == null) throw new Error("Failed to generate iCalendar");
   return value;
 }
 
@@ -65,11 +66,11 @@ const eventsAsICalCached = createCache({
   get: eventsAsICal,
 });
 
-export async function sendICalFeed(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+export async function sendICalFeed(request: FastifyRequest, reply: FastifyReply): Promise<string> {
   // Generate iCal content (as a string)
   const cal = await eventsAsICalCached(undefined);
 
   reply.status(200);
   reply.type("text/calendar"); // Set proper content type header
-  reply.send(cal);
+  return cal;
 }
