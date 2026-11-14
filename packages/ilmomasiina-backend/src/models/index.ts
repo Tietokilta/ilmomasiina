@@ -1,4 +1,5 @@
 import debug from "debug";
+import { types } from "pg";
 import { Sequelize } from "sequelize";
 import { SequelizeStorage, Umzug } from "umzug";
 
@@ -43,6 +44,10 @@ async function runMigrations() {
   });
   await umzug.up();
 }
+
+// IDs are stored as CHAR(12), which Postgres pads with spaces. IDs from old installations can be
+// shorter than that, so strip the padding when reading. Comparisons on CHAR columns ignore it anyway.
+types.setTypeParser(types.builtins.BPCHAR, (value) => value.trimEnd());
 
 export default async function setupDatabase() {
   if (sequelize) return sequelize;

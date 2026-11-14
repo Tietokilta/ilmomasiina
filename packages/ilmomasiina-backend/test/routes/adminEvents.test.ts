@@ -127,6 +127,24 @@ describe("GET /api/admin/events/:id", () => {
     expect(after.questions.map((q) => q.id)).toEqual(sortBy(event.questions, "order").map((q) => q.id));
   });
 
+  test("returns legacy short event IDs without padding", async () => {
+    // IDs from old installations can be shorter than the CHAR(12) column, which Postgres pads with spaces.
+    const created = await testEvent({ questionCount: 0, quotaCount: 0 });
+    await Event.update({ id: "7" }, { where: { id: created.id }, hooks: false });
+    const event = { id: "7", slug: created.slug };
+
+    const [data] = await fetchAdminEventDetails(event);
+    const slugResponse = await server.inject({
+      method: "GET",
+      url: `/api/admin/slugs/${event.slug}`,
+      headers: { authorization: adminToken },
+    });
+
+    expect(data.id).toBe("7");
+    expect(slugResponse.statusCode).toBe(200);
+    expect(slugResponse.json()).toMatchObject({ id: "7" });
+  });
+
   test("returns legacy questions that store empty options", async () => {
     // Versions before 3.0 saved options as [] for some questions, which the API schema no longer allows.
     const event = await testEvent({ questionCount: 2 });
