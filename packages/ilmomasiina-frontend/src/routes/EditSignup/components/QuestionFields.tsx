@@ -119,7 +119,7 @@ const QuestionField = ({ name, question, validate = true }: QuestionFieldProps) 
           as="textarea"
           rows={3}
           cols={40}
-          maxLength={250}
+          maxLength={1000}
           required={isRequired}
           readOnly={disabled}
           value={currentAnswerString}
