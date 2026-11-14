@@ -132,7 +132,11 @@ export default function setupQuestionModel(sequelize: Sequelize) {
       options: {
         type: DataTypes.JSON,
         allowNull: true,
-        get: jsonColumnGetter<string[]>("options"),
+        get(this: Question): string[] | null {
+          const options = jsonColumnGetter<string[] | null>("options").call(this);
+          // Versions before 3.0 may have saved [] instead of null, which the API schema no longer allows.
+          return options && options.length > 0 ? options : null;
+        },
         validate: {
           validOptionsArray(value: string[] | null) {
             if (value == null) return;
