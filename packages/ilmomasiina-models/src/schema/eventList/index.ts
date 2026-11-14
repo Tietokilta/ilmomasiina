@@ -23,14 +23,11 @@ const userEventListItem = Type.Interface(
 export const userEventListResponse = Type.Array(userEventListItem);
 
 /** Schema for an item of an event list from the admin API. */
-const adminEventListItem = Type.Interface(
-  [eventIdentity, publicEventAttributes, publicCommonAttributes, adminOnlyEventAttributes],
-  {
-    quotas: Type.Array(quotaWithSignupCount, {
-      description: "The quotas in this event, with signup counts.",
-    }),
-  },
-);
+const adminEventListItem = Type.Interface([eventIdentity, publicEventAttributes, adminOnlyEventAttributes], {
+  quotas: Type.Array(quotaWithSignupCount, {
+    description: "The quotas in this event, with signup counts.",
+  }),
+});
 
 /** Response schema for fetching a list of events from the admin API. */
 export const adminEventListResponse = Type.Array(adminEventListItem);

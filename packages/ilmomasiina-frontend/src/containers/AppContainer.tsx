@@ -1,7 +1,7 @@
-import React, { lazy, Suspense } from "react";
+import React, { ComponentType, lazy, Suspense } from "react";
 
 import { Container, Spinner } from "react-bootstrap";
-import { BrowserRouter, Route, Routes } from "react-router";
+import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
 import { Flip, ToastContainer } from "react-toastify";
 
 import Footer from "../components/Footer";
@@ -12,17 +12,6 @@ import PageNotFound from "../routes/404/PageNotFound";
 import "react-toastify/dist/ReactToastify.css";
 import "../styles/app.scss";
 
-// Code-split route components.
-const AdminEventsList = lazy(() => import("../routes/AdminEventsList"));
-const AdminUsersList = lazy(() => import("../routes/AdminUsers"));
-const AuditLog = lazy(() => import("../routes/AuditLog"));
-const Editor = lazy(() => import("../routes/Editor"));
-const EditSignup = lazy(() => import("../routes/EditSignup"));
-const EventList = lazy(() => import("../routes/EventList"));
-const InitialSetup = lazy(() => import("../routes/InitialSetup"));
-const Login = lazy(() => import("../routes/Login"));
-const SingleEvent = lazy(() => import("../routes/SingleEvent"));
-
 // Also code-split RenewLogin to avoid strong dependency on the store.
 const RenewLogin = lazy(() => import("./RenewLogin"));
 
@@ -32,31 +21,19 @@ const loadingFallback = (
   </div>
 );
 
-const AppContainer = () => (
-  <BrowserRouter>
+// Code-split route components.
+const page = (load: () => Promise<{ default: ComponentType }>) => async () => ({ Component: (await load()).default });
+
+const Layout = () => (
+  <>
     <Suspense>
       <RenewLogin />
     </Suspense>
     <div className="layout-wrapper">
       <Header />
-      <Suspense fallback={loadingFallback}>
-        <Container>
-          <Routes>
-            <Route path={paths.eventsList} element={<EventList />} />
-            <Route path={paths.eventDetails(":slug")} element={<SingleEvent />} />
-            <Route path={paths.editSignup(":id", ":editToken")} element={<EditSignup />} />
-            <Route path={paths.completePayment(":id", ":editToken")} element={<EditSignup paid />} />
-            <Route path={paths.adminLogin} element={<Login />} />
-            <Route path={paths.adminInitialSetup} element={<InitialSetup />} />
-            <Route path={paths.adminEventsList} element={<AdminEventsList />} />
-            <Route path={paths.adminUsersList} element={<AdminUsersList />} />
-            <Route path={paths.adminEditEvent(":id")} element={<Editor />} />
-            <Route path={paths.adminCopyEvent(":id")} element={<Editor copy />} />
-            <Route path={paths.adminAuditLog} element={<AuditLog />} />
-            <Route path="*" element={<PageNotFound />} />
-          </Routes>
-        </Container>
-      </Suspense>
+      <Container>
+        <Outlet />
+      </Container>
       <Footer />
       <ToastContainer
         position="top-right"
@@ -71,7 +48,42 @@ const AppContainer = () => (
         transition={Flip}
       />
     </div>
-  </BrowserRouter>
+  </>
 );
+
+const router = createBrowserRouter([
+  {
+    element: <Layout />,
+    HydrateFallback: () => loadingFallback,
+    children: [
+      { path: paths.eventsList, lazy: page(() => import("../routes/EventList")) },
+      { path: paths.eventDetails(":slug"), lazy: page(() => import("../routes/SingleEvent")) },
+      { path: paths.editSignup(":id", ":editToken"), lazy: page(() => import("../routes/EditSignup")) },
+      {
+        path: paths.completePayment(":id", ":editToken"),
+        lazy: async () => {
+          const { default: EditSignup } = await import("../routes/EditSignup");
+          return { Component: () => <EditSignup paid /> };
+        },
+      },
+      { path: paths.adminLogin, lazy: page(() => import("../routes/Login")) },
+      { path: paths.adminInitialSetup, lazy: page(() => import("../routes/InitialSetup")) },
+      { path: paths.adminEventsList, lazy: page(() => import("../routes/AdminEventsList")) },
+      { path: paths.adminUsersList, lazy: page(() => import("../routes/AdminUsers")) },
+      { path: paths.adminEditEvent(":id"), lazy: page(() => import("../routes/Editor")) },
+      {
+        path: paths.adminCopyEvent(":id"),
+        lazy: async () => {
+          const { default: Editor } = await import("../routes/Editor");
+          return { Component: () => <Editor copy /> };
+        },
+      },
+      { path: paths.adminAuditLog, lazy: page(() => import("../routes/AuditLog")) },
+      { path: "*", element: <PageNotFound /> },
+    ],
+  },
+]);
+
+const AppContainer = () => <RouterProvider router={router} />;
 
 export default AppContainer;
