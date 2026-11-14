@@ -30,7 +30,7 @@ export const signupAnswer = Type.Object({
   questionId: questionID,
   answer: Type.Union(
     [
-      Type.String({ maxLength: 255 }),
+      Type.String({ maxLength: 1000 }),
       Type.Array(
         Type.String({ maxLength: 255 }),
         // This was a practical limit before an explicit limitation was added, so seems reasonable to set it here.
