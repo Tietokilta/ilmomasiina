@@ -127,6 +127,17 @@ describe("GET /api/admin/events/:id", () => {
     expect(after.questions.map((q) => q.id)).toEqual(sortBy(event.questions, "order").map((q) => q.id));
   });
 
+  test("returns legacy questions that store empty options", async () => {
+    // Versions before 3.0 saved options as [] for some questions, which the API schema no longer allows.
+    const event = await testEvent({ questionCount: 2 });
+    await Question.update({ options: [] }, { where: { eventId: event.id }, hooks: false, validate: false });
+
+    const [data, response] = await fetchAdminEventDetails(event);
+
+    expect(response.statusCode).toBe(200);
+    expect(data.questions.map((q) => q.options)).toEqual([null, null]);
+  });
+
   test("returns quotas in correct order", async () => {
     const event = await testEvent({ quotaCount: 3 });
     const [before] = await fetchAdminEventDetails(event);
