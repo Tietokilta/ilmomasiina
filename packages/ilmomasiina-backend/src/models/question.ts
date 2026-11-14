@@ -102,8 +102,6 @@ export class Question extends Model<QuestionAttributes, QuestionCreationAttribut
   }
 }
 
-const getStoredOptions = jsonColumnGetter<string[] | null>("options");
-
 export default function setupQuestionModel(sequelize: Sequelize) {
   Question.init(
     {
@@ -135,7 +133,7 @@ export default function setupQuestionModel(sequelize: Sequelize) {
         type: DataTypes.JSON,
         allowNull: true,
         get(this: Question): string[] | null {
-          const options = getStoredOptions.call(this);
+          const options = jsonColumnGetter<string[] | null>("options").call(this);
           // Versions before 3.0 may have saved [] instead of null, which the API schema no longer allows.
           return options && options.length > 0 ? options : null;
         },
