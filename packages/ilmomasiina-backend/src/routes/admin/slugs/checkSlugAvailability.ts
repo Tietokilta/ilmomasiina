@@ -1,15 +1,15 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 
 import type { CheckSlugParams, CheckSlugResponse } from "@tietokilta/ilmomasiina-models";
-import { Event } from "../../../models/event";
+import { getDb } from "../../../db";
 
 export default async function checkSlugAvailability(
   request: FastifyRequest<{ Params: CheckSlugParams }>,
   response: FastifyReply,
 ): Promise<CheckSlugResponse> {
-  const event = await Event.findOne({
-    where: { slug: request.params.slug },
-    attributes: ["id", "title"],
+  const event = await getDb().query.event.findFirst({
+    where: { slug: request.params.slug, deletedAt: { isNull: true } },
+    columns: { id: true, title: true },
   });
 
   response.status(200);

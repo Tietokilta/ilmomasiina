@@ -1,6 +1,6 @@
 # Data model
 
-Ilmomasiina uses Sequelize to store data in a relational database.
+Ilmomasiina uses Drizzle ORM to store data in a PostgreSQL database.
 
 ## Models
 
@@ -79,6 +79,6 @@ and deleted by admins.
 
 ## Paranoid mode
 
-Tables other than **User** use Sequelize's paranoid mode by default. This means their data is not deleted immediately,
+Tables other than **User** are soft-deleted via a `deletedAt` column. This means their data is not deleted immediately,
 only marked as deleted. The `removeDeletedData.ts` script periodically deletes this data permanently with a
 configurable grace period, to allow restoration of accidentally deleted data.

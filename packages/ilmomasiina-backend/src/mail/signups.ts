@@ -2,10 +2,10 @@ import moment from "moment-timezone";
 
 import { SignupStatus } from "@tietokilta/ilmomasiina-models";
 import config, { editSignupUrl } from "../config";
+import { getDb } from "../db";
 import i18n from "../i18n";
-import { Event } from "../models/event";
-import { Payment } from "../models/payment";
-import { Signup } from "../models/signup";
+import { getPaymentStatuses, Payment } from "../models/payment";
+import { effectivePaymentStatus, Signup } from "../models/signup";
 import { generateToken } from "../routes/signups/editTokens";
 import EmailService, { ConfirmationMailParams, PaymentMailParams, QueueMailParams } from ".";
 
@@ -27,15 +27,23 @@ function sendSynchronouslyInTest<A extends unknown[]>(
   };
 }
 
+/** Fetches the quota of a signup together with its event. Either is missing if it was soft deleted. */
+const getQuotaWithEvent = (signup: Pick<Signup, "quotaId">) =>
+  getDb().query.quota.findFirst({
+    where: { id: signup.quotaId, deletedAt: { isNull: true } },
+    with: { event: true },
+  });
+
+type MailedSignup = Pick<Signup, "id" | "quotaId" | "email" | "language" | "price" | "manualPaymentStatus">;
+
 /** Fetches information necessary for a "promoted from queue" email and sends it. */
-export const sendPromotedFromQueueMail = sendSynchronouslyInTest(async (signup: Signup) => {
+export const sendPromotedFromQueueMail = sendSynchronouslyInTest(async (signup: MailedSignup) => {
   if (!signup.email) return; // Nowhere to send email to
 
   const lang = signup.language ?? config.defaultLanguage;
 
-  // eslint-disable-next-line no-param-reassign
-  signup.payments = await signup.getPayments();
-  const quota = await signup.getQuota({ attributes: [], include: [Event] });
+  const payments = await getPaymentStatuses(signup.id);
+  const quota = await getQuotaWithEvent(signup);
   if (!quota || !quota.event) return; // Quota or event soft deleted
   const { event } = quota;
 
@@ -48,7 +56,7 @@ export const sendPromotedFromQueueMail = sendSynchronouslyInTest(async (signup: 
   const params: QueueMailParams = {
     event,
     date,
-    paymentStatus: signup.effectivePaymentStatus,
+    paymentStatus: effectivePaymentStatus(signup, payments),
     signupLink,
   };
 
@@ -62,13 +70,18 @@ export const sendSignupConfirmationMail = sendSynchronouslyInTest(
 
     const lang = signup.language ?? config.defaultLanguage;
 
-    // eslint-disable-next-line no-param-reassign
-    signup.payments = await signup.getPayments();
-    const answers = await signup.getAnswers();
-    const quota = await signup.getQuota({ include: [Event] });
+    const db = getDb();
+    const payments = await getPaymentStatuses(signup.id);
+    const answers = await db.query.answer.findMany({
+      where: { signupId: signup.id, deletedAt: { isNull: true } },
+    });
+    const quota = await getQuotaWithEvent(signup);
     if (!quota || !quota.event) return; // Quota or event soft deleted
     const { event } = quota;
-    const questions = await event.getQuestions({ order: [["order", "ASC"]] });
+    const questions = await db.query.question.findMany({
+      where: { eventId: event.id, deletedAt: { isNull: true } },
+      orderBy: { order: "asc" },
+    });
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- indexing may fail
     const localeQuestions = event.languages[lang]?.questions ?? questions;
@@ -96,7 +109,7 @@ export const sendSignupConfirmationMail = sendSynchronouslyInTest(
       quota: quota.title,
       answers: questionFields,
       queuePosition: signup.status === SignupStatus.IN_QUEUE ? signup.position : null,
-      paymentStatus: signup.effectivePaymentStatus,
+      paymentStatus: effectivePaymentStatus(signup, payments),
       type,
       admin,
       date,
@@ -110,12 +123,12 @@ export const sendSignupConfirmationMail = sendSynchronouslyInTest(
 
 /** Fetches information necessary for a payment confirmation email and sends it. */
 export const sendPaymentConfirmationMail = sendSynchronouslyInTest(async (payment: Payment) => {
-  const signup = await payment.getSignup();
+  const signup = await getDb().query.signup.findFirst({ where: { id: payment.signupId } });
   if (!signup || !signup.email) return;
 
   const lang = signup.language ?? config.defaultLanguage;
 
-  const quota = await signup.getQuota({ attributes: [], include: [Event] });
+  const quota = await getQuotaWithEvent(signup);
   if (!quota || !quota.event) return; // Quota or event soft deleted
   const { event } = quota;
 

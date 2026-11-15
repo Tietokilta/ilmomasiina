@@ -15,8 +15,8 @@ import anonymizeOldSignups from "./cron/anonymizeOldSignups";
 import deleteOldAuditLogs from "./cron/deleteOldAuditLogs";
 import deleteUnconfirmedSignups from "./cron/deleteUnconfirmedSignups";
 import removeDeletedData from "./cron/removeDeletedData";
+import setupDatabase from "./db";
 import enforceHTTPS from "./enforceHTTPS";
-import setupDatabase from "./models";
 import setupRoutes from "./routes";
 import { isInitialSetupDone } from "./routes/admin/users/createInitialUser";
 

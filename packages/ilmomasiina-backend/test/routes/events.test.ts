@@ -2,6 +2,8 @@ import { sortBy } from "lodash";
 import { describe, expect, test } from "vitest";
 
 import { PaymentMode } from "@tietokilta/ilmomasiina-models";
+import { questionTable, quotaTable } from "../../src/db/schema";
+import { updateRow } from "../db";
 import { fetchSignups, testEvent, testSignups } from "../testData";
 import * as api from "./api";
 
@@ -40,7 +42,7 @@ describe("GET /api/events/:id", () => {
       millisTillOpening: expect.any(Number),
     });
 
-    const firstQuestion = event.questions![0];
+    const firstQuestion = event.questions[0];
     expect(data.questions).toContainEqual({
       id: firstQuestion.id,
       question: firstQuestion.question,
@@ -51,7 +53,7 @@ describe("GET /api/events/:id", () => {
       public: firstQuestion.public,
     });
 
-    const firstQuota = event.quotas![0];
+    const firstQuota = event.quotas[0];
     expect(data.quotas).toContainEqual({
       id: firstQuota.id,
       title: firstQuota.title,
@@ -114,8 +116,8 @@ describe("GET /api/events/:id", () => {
 
     expect(before.questions.map((q) => q.id)).toEqual(sortBy(event.questions, "order").map((q) => q.id));
 
-    await event.questions!.at(-1)!.update({ order: 0 });
-    await event.questions![0].update({ order: event.questions!.length - 1 });
+    await updateRow(questionTable, event.questions.at(-1)!, { order: 0 });
+    await updateRow(questionTable, event.questions[0], { order: event.questions.length - 1 });
 
     const [after] = await api.fetchUserEventDetails(event);
 
@@ -129,8 +131,8 @@ describe("GET /api/events/:id", () => {
 
     expect(before.quotas.map((q) => q.id)).toEqual(sortBy(event.quotas, "order").map((q) => q.id));
 
-    await event.quotas!.at(-1)!.update({ order: 0 });
-    await event.quotas![0].update({ order: event.quotas!.length - 1 });
+    await updateRow(quotaTable, event.quotas.at(-1)!, { order: 0 });
+    await updateRow(quotaTable, event.quotas[0], { order: event.quotas.length - 1 });
 
     const [after] = await api.fetchUserEventDetails(event);
 
@@ -145,7 +147,7 @@ describe("GET /api/events/:id", () => {
 
     const [data] = await api.fetchUserEventDetails(event);
 
-    for (const quota of event.quotas!) {
+    for (const quota of event.quotas) {
       const found = data.quotas.find((q) => q.id === quota.id);
       expect(found).toBeTruthy();
       expect(found!.signups.length).toEqual(quota.signups!.length);
@@ -192,22 +194,22 @@ describe("GET /api/events/:id", () => {
     await testSignups({ event, confirmed: true, count: 1, overrides: { namePublic: false } });
     await fetchSignups(event);
 
-    await event.questions![0].update({ public: true });
+    await updateRow(questionTable, event.questions[0], { public: true });
     const [before] = await api.fetchUserEventDetails(event);
 
-    const signup = event.quotas![0].signups![0];
+    const signup = event.quotas[0].signups![0];
     expect(before.quotas[0].signups).toMatchObject([
       {
         answers: [
           {
-            questionId: event.questions![0].id,
-            answer: signup.answers![0].answer,
+            questionId: event.questions[0].id,
+            answer: signup.answers[0].answer,
           },
         ],
       },
     ]);
 
-    await event.questions![0].update({ public: false });
+    await updateRow(questionTable, event.questions[0], { public: false });
     const [after] = await api.fetchUserEventDetails(event);
 
     expect(after.quotas[0].signups).toMatchObject([
@@ -224,7 +226,7 @@ describe("GET /api/events/:id", () => {
 
     const [data] = await api.fetchUserEventDetails(event);
 
-    for (const quota of event.quotas!) {
+    for (const quota of event.quotas) {
       const found = data.quotas.find((q) => q.id === quota.id);
       expect(found).toBeTruthy();
       expect(found!.signupCount).toEqual(quota.signups!.length);
@@ -266,7 +268,7 @@ describe("GET /api/events", () => {
       quotas: expect.any(Array),
     });
 
-    const firstQuota = event.quotas![0];
+    const firstQuota = event.quotas[0];
     expect(data[0].quotas).toContainEqual({
       id: firstQuota.id,
       title: firstQuota.title,
@@ -283,7 +285,7 @@ describe("GET /api/events", () => {
 
     const [data] = await api.fetchUserEventList();
 
-    for (const quota of event.quotas!) {
+    for (const quota of event.quotas) {
       const found = data[0].quotas.find((q) => q.id === quota.id);
       expect(found).toBeTruthy();
       expect(found!.signupCount).toEqual(quota.signups!.length);
@@ -341,8 +343,8 @@ describe("GET /api/events", () => {
 
     expect(before[0].quotas.map((q) => q.id)).toEqual(sortBy(event.quotas, "order").map((q) => q.id));
 
-    await event.quotas!.at(-1)!.update({ order: 0 });
-    await event.quotas![0].update({ order: event.quotas!.length - 1 });
+    await updateRow(quotaTable, event.quotas.at(-1)!, { order: 0 });
+    await updateRow(quotaTable, event.quotas[0], { order: event.quotas.length - 1 });
 
     const [after] = await api.fetchUserEventList();
 

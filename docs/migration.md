@@ -2,8 +2,24 @@
 
 This file documents:
 
+- Upgrading a database from the Sequelize-based versions to the Drizzle-based ones
 - The migration from MySQL/MariaDB to PostgreSQL for Ilmomasiina v3+
 - The migration from Athene's Ilmomasiina to Ilmomasiina v2+
+
+## Upgrading from Sequelize-based versions
+
+Versions that use Drizzle ORM take over databases created by the Sequelize-based versions automatically on first
+start. Before upgrading:
+
+1. Start the last Sequelize-based version once, so that all of its migrations (up to `0010-add-preferredFrontend`)
+   have been run.
+2. Make a backup of the database. The first start changes it, and there is no automatic way back.
+3. Make sure the database user has the `CREATE` privilege on the database. The owner of the database has it. For
+   other users, run as a database superuser:
+   ```sql
+   GRANT CREATE ON DATABASE ilmomasiina TO ilmo_user;
+   ```
+   The migrations are recorded in a schema named `drizzle`, and the privilege is needed on every start.
 
 ## Migration from MySQL/MariaDB to PostgreSQL
 

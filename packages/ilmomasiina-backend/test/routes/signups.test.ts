@@ -2,6 +2,7 @@ import { testEvent, testSignups } from "test/testData";
 import { describe, expect, test } from "vitest";
 
 import { PaymentMode, SignupPaymentStatus } from "@tietokilta/ilmomasiina-models";
+import { getDb } from "../../src/db";
 import { refreshSignupPositionsAndGet } from "../../src/routes/signups/computeSignupPosition";
 import { generateToken } from "../../src/routes/signups/editTokens";
 import * as api from "./api";
@@ -10,8 +11,8 @@ describe("getSignupForEdit", () => {
   test("returns signup for editing", async () => {
     const event = await testEvent({}, { payments: PaymentMode.ONLINE });
     const [signup] = await testSignups({ event, count: 1, confirmed: true });
-    const quota = await signup.getQuota();
-    const answers = await signup.getAnswers();
+    const quota = event.quotas.find((q) => q.id === signup.quotaId)!;
+    const answers = await getDb().query.answer.findMany({ where: { signupId: signup.id } });
 
     const [data, response] = await api.fetchSignupForEdit(signup.id);
 

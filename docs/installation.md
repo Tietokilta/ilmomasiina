@@ -145,6 +145,8 @@ Especially for development, running PostgreSQL with Docker may be the easiest op
     ```sql
     CREATE DATABASE ilmomasiina WITH OWNER ilmo_user;
     ```
+    - If the database is owned by another user, grant `ilmo_user` the right to create schemas in it:
+      `GRANT CREATE ON DATABASE ilmomasiina TO ilmo_user;`. Database migrations need it on every start.
 6. Exit the PostgreSQL session with `exit`.
 7. Try signing in with your new user: `psql -h localhost -U ilmo_user ilmomasiina`.
 
@@ -220,6 +222,7 @@ B-tier App Service Plans have been tried and at least B1 doesn't seem to handle 
         4. Grant access to the database for the new user:
             ```sql
             GRANT ALL PRIVILEGES ON SCHEMA public TO ilmo_user;
+            GRANT CREATE ON DATABASE ilmomasiina TO ilmo_user;
             ```
         5. Exit the PostgreSQL session with `exit`.
         6. Try signing in with your new user: replace your admin username in the `psql`

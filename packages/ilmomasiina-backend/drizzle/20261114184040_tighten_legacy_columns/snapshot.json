@@ -1,0 +1,53 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "fee7790b-5590-4dd2-8950-7f2fde1f63db",
+  "prevIds": ["50e99cfa-74a3-4b25-886e-34ec9dddc26a"],
+  "footprints": [
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "event", "openQuotaSize"],
+      "writes": ["s|colprop|public.event.openQuotaSize.notNull"],
+      "reads": ["n|tbl|public.event", "n|sch|public", "n|col|public.event.openQuotaSize"],
+      "sqlHash": "e33ae2e3466da46e"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "event", "defaultLanguage"],
+      "writes": ["s|colprop|public.event.defaultLanguage.notNull"],
+      "reads": ["n|tbl|public.event", "n|sch|public", "n|col|public.event.defaultLanguage"],
+      "sqlHash": "1c0d1a6291abcf78"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "signup", "namePublic"],
+      "writes": ["s|colprop|public.signup.namePublic.notNull"],
+      "reads": ["n|tbl|public.signup", "n|sch|public", "n|col|public.signup.namePublic"],
+      "sqlHash": "8f335c362354a08b"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"event\",\"openQuotaSize\"]",
+      "set": {
+        "notNull": true
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"event\",\"defaultLanguage\"]",
+      "set": {
+        "notNull": true
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"signup\",\"namePublic\"]",
+      "set": {
+        "notNull": true
+      }
+    }
+  ]
+}

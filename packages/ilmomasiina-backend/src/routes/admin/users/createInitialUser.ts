@@ -1,10 +1,9 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { Transaction } from "sequelize";
 
 import { AdminLoginResponse, ErrorCode, UserCreateSchema } from "@tietokilta/ilmomasiina-models";
 import AdminPasswordAuth from "../../../authentication/adminPasswordAuth";
-import { getSequelize } from "../../../models";
-import { User } from "../../../models/user";
+import { DbOrTx, getDb } from "../../../db";
+import { userTable } from "../../../db/schema";
 import CustomError from "../../../util/customError";
 import { createUser } from "./inviteUser";
 
@@ -20,8 +19,8 @@ export class InitialSetupAlreadyDone extends CustomError {
   }
 }
 
-export async function isInitialSetupDone(transaction?: Transaction) {
-  return (await User.count({ transaction })) > 0;
+export async function isInitialSetupDone(transaction: DbOrTx = getDb()) {
+  return (await transaction.$count(userTable)) > 0;
 }
 
 /**
@@ -37,7 +36,7 @@ export default async function createInitialUser(
 ): Promise<AdminLoginResponse> {
   AdminPasswordAuth.validateNewPassword(request.body.password);
 
-  const user = await getSequelize().transaction(async (transaction) => {
+  const user = await getDb().transaction(async (transaction) => {
     if (await isInitialSetupDone(transaction)) {
       throw new InitialSetupAlreadyDone("The initial admin user has already been created.");
     }

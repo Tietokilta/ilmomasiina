@@ -216,7 +216,13 @@ export default defineConfig(
       "import-x/no-extraneous-dependencies": [
         "error",
         {
-          devDependencies: ["**/test/**", "**/vite.config.mts", "**/vitest.config.mts", "**/eslint.config.mjs"],
+          devDependencies: [
+            "**/test/**",
+            "**/vite.config.mts",
+            "**/vitest.config.mts",
+            "**/drizzle.config.ts",
+            "**/eslint.config.mjs",
+          ],
         },
       ],
       // Sort imports: React first, then npm packages, then local files, then CSS.

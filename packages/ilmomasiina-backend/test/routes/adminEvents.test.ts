@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
 import { sortBy, sumBy } from "lodash";
 import moment from "moment";
 import { describe, expect, test } from "vitest";
@@ -12,12 +13,11 @@ import {
   SignupPaymentStatus,
   SignupStatus,
 } from "@tietokilta/ilmomasiina-models";
-import { AuditLog } from "../../src/models/auditlog";
-import { Event } from "../../src/models/event";
-import { Question } from "../../src/models/question";
-import { Quota } from "../../src/models/quota";
+import { getDb } from "../../src/db";
+import { eventTable, questionTable, quotaTable } from "../../src/db/schema";
 import { refreshSignupPositions } from "../../src/routes/signups/computeSignupPosition";
 import { toDate } from "../../src/routes/utils";
+import { countEvents, findAuditLogs, findEvent, updateRow } from "../db";
 import {
   fetchSignups,
   testEvent,
@@ -66,7 +66,7 @@ describe("GET /api/admin/events/:id", () => {
       updatedAt: event.updatedAt.toISOString(),
     });
 
-    const firstQuestion = event.questions![0];
+    const firstQuestion = event.questions[0];
     expect(data.questions).toContainEqual({
       id: firstQuestion.id,
       question: firstQuestion.question,
@@ -77,7 +77,7 @@ describe("GET /api/admin/events/:id", () => {
       public: firstQuestion.public,
     });
 
-    const firstQuota = event.quotas![0];
+    const firstQuota = event.quotas[0];
     expect(data.quotas).toContainEqual({
       id: firstQuota.id,
       title: firstQuota.title,
@@ -118,13 +118,33 @@ describe("GET /api/admin/events/:id", () => {
 
     expect(before.questions.map((q) => q.id)).toEqual(sortBy(event.questions, "order").map((q) => q.id));
 
-    await event.questions!.at(-1)!.update({ order: 0 });
-    await event.questions![0].update({ order: event.questions!.length - 1 });
+    await updateRow(questionTable, event.questions.at(-1)!, { order: 0 });
+    await updateRow(questionTable, event.questions[0], { order: event.questions.length - 1 });
 
     const [after] = await fetchAdminEventDetails(event);
 
     expect(before.questions.map((q) => q.id)).not.toEqual(after.questions.map((q) => q.id));
     expect(after.questions.map((q) => q.id)).toEqual(sortBy(event.questions, "order").map((q) => q.id));
+  });
+
+  test("returns legacy short event IDs without padding", async () => {
+    // IDs from old installations can be shorter than the CHAR(12) column, which Postgres pads with spaces.
+    const created = await testEvent({ questionCount: 0, quotaCount: 1 });
+    await getDb().update(eventTable).set({ id: "7" }).where(eq(eventTable.id, created.id));
+    await getDb().update(quotaTable).set({ id: "8" }).where(eq(quotaTable.eventId, "7"));
+    const event = { id: "7", slug: created.slug };
+
+    const [data] = await fetchAdminEventDetails(event);
+    const slugResponse = await server.inject({
+      method: "GET",
+      url: `/api/admin/slugs/${event.slug}`,
+      headers: { authorization: adminToken },
+    });
+
+    expect(data.id).toBe("7");
+    expect(data.quotas.map((quota) => quota.id)).toEqual(["8"]);
+    expect(slugResponse.statusCode).toBe(200);
+    expect(slugResponse.json()).toMatchObject({ id: "7" });
   });
 
   test("returns quotas in correct order", async () => {
@@ -133,8 +153,8 @@ describe("GET /api/admin/events/:id", () => {
 
     expect(before.quotas.map((q) => q.id)).toEqual(sortBy(event.quotas, "order").map((q) => q.id));
 
-    await event.quotas!.at(-1)!.update({ order: 0 });
-    await event.quotas![0].update({ order: event.quotas!.length - 1 });
+    await updateRow(quotaTable, event.quotas.at(-1)!, { order: 0 });
+    await updateRow(quotaTable, event.quotas[0], { order: event.quotas.length - 1 });
 
     const [after] = await fetchAdminEventDetails(event);
 
@@ -144,13 +164,16 @@ describe("GET /api/admin/events/:id", () => {
 
   test("always returns signups with full data", async () => {
     const event = await testEvent({ quotaCount: 3 }, { signupsPublic: false });
-    await Question.update({ public: false, required: true }, { where: { eventId: event.id } });
+    await getDb()
+      .update(questionTable)
+      .set({ public: false, required: true })
+      .where(eq(questionTable.eventId, event.id));
     await testSignups({ event, count: 10, overrides: { namePublic: false } });
     await fetchSignups(event);
 
     const [data] = await fetchAdminEventDetails(event);
 
-    for (const quota of event.quotas!) {
+    for (const quota of event.quotas) {
       const found = data.quotas.find((q) => q.id === quota.id);
       expect(found).toBeTruthy();
       expect(found!.signups.length).toEqual(quota.signups!.length);
@@ -174,8 +197,8 @@ describe("GET /api/admin/events/:id", () => {
       });
 
       const foundSignup = found!.signups.find((signup) => signup.id === firstSignup.id);
-      expect(foundSignup!.answers.length).toBe(event.questions!.length);
-      const firstAnswer = firstSignup.answers![0];
+      expect(foundSignup!.answers.length).toBe(event.questions.length);
+      const firstAnswer = firstSignup.answers[0];
       expect(foundSignup!.answers).toContainEqual({
         questionId: firstAnswer.questionId,
         answer: firstAnswer.answer,
@@ -219,7 +242,7 @@ describe("GET /api/admin/events", () => {
       defaultLanguage: event.defaultLanguage,
     });
 
-    const firstQuota = event.quotas![0];
+    const firstQuota = event.quotas[0];
     expect(data[0].quotas).toContainEqual({
       id: firstQuota.id,
       title: firstQuota.title,
@@ -256,8 +279,8 @@ describe("GET /api/admin/events", () => {
 
     expect(before[0].quotas.map((q) => q.id)).toEqual(sortBy(event.quotas, "order").map((q) => q.id));
 
-    await event.quotas!.at(-1)!.update({ order: 0 });
-    await event.quotas![0].update({ order: event.quotas!.length - 1 });
+    await updateRow(quotaTable, event.quotas.at(-1)!, { order: 0 });
+    await updateRow(quotaTable, event.quotas[0], { order: event.quotas.length - 1 });
 
     const [after] = await fetchAdminEventList();
 
@@ -339,13 +362,7 @@ describe("POST /api/admin/events", () => {
 
     expect(createResponse.statusCode).toBe(201);
 
-    const event = await Event.findByPk(createBody.id, {
-      include: [Question, Quota],
-      order: [
-        [Question, "order", "ASC"],
-        [Quota, "order", "ASC"],
-      ],
-    });
+    const event = await findEvent(createBody.id);
     expect(event).toBeTruthy();
     expect(event!.title).toBe(postBody.title);
     expect(event!.slug).toBe(postBody.slug);
@@ -369,18 +386,18 @@ describe("POST /api/admin/events", () => {
     expect(event!.createdAt).toStrictEqual(event!.updatedAt);
     expect(event!.updatedAt.getTime()).toBeGreaterThanOrEqual(Date.now() - 2000);
 
-    expect(event!.quotas!.length).toBe(createBody.quotas.length);
+    expect(event!.quotas.length).toBe(createBody.quotas.length);
     postBody.quotas.forEach((postQuota, index) => {
-      const found = event!.quotas!.find((quota) => quota.title === postQuota.title);
+      const found = event!.quotas.find((quota) => quota.title === postQuota.title);
       expect(found).toBeTruthy();
       expect(found!.size).toBe(postQuota.size);
       expect(found!.order).toBe(index);
       expect(found!.price).toBe(postQuota.price);
     });
 
-    expect(event!.questions!.length).toBe(createBody.questions.length);
+    expect(event!.questions.length).toBe(createBody.questions.length);
     postBody.questions.forEach((postQuestion, index) => {
-      const found = event!.questions!.find((question) => question.question === postQuestion.question);
+      const found = event!.questions.find((question) => question.question === postQuestion.question);
       expect(found).toBeTruthy();
       expect(found!.type).toBe(postQuestion.type);
       expect(found!.question).toBe(postQuestion.question);
@@ -407,7 +424,7 @@ describe("POST /api/admin/events", () => {
     const [, createResponse] = await createEvent(createBody);
     expect(createResponse.statusCode).toBe(409);
 
-    const countAfter = await Event.count({ where: { slug: duplicate.slug } });
+    const countAfter = await countEvents(duplicate.slug);
     expect(countAfter).toBe(1);
   });
 
@@ -422,7 +439,7 @@ describe("POST /api/admin/events", () => {
     const [, createResponse] = await createEvent(createBody);
     expect(createResponse.statusCode).toBe(201);
 
-    const countAfter = await Event.count({ where: { slug: duplicate.slug } });
+    const countAfter = await countEvents(duplicate.slug);
     expect(countAfter).toBe(1);
   });
 
@@ -516,7 +533,7 @@ describe("POST /api/admin/events", () => {
     expect(response.statusCode).toBe(400);
 
     // No event should have been created
-    expect(await Event.count()).toBe(0);
+    expect(await countEvents()).toBe(0);
   });
 
   test("normalizes options and prices to null when applicable", async () => {
@@ -595,28 +612,25 @@ describe("POST /api/admin/events", () => {
 
     expect(createResponse.statusCode).toBe(201);
 
-    const event = await Event.findByPk(createBody.id, {
-      include: [Question, Quota],
-      order: [[Question, "order", "ASC"]],
-    });
+    const event = await findEvent(createBody.id);
 
     expect(event!.questions).toHaveLength(4);
     // type: TEXT always has options: null + prices: null
-    expect(event!.questions![0].type).toBe(QuestionType.TEXT);
-    expect(event!.questions![0].options).toBe(null);
-    expect(event!.questions![0].prices).toBe(null);
+    expect(event!.questions[0].type).toBe(QuestionType.TEXT);
+    expect(event!.questions[0].options).toBe(null);
+    expect(event!.questions[0].prices).toBe(null);
     // options and prices are kept as-is
-    expect(event!.questions![1].type).toBe(QuestionType.SELECT);
-    expect(event!.questions![1].options).toEqual(options);
-    expect(event!.questions![1].prices).toEqual(prices);
+    expect(event!.questions[1].type).toBe(QuestionType.SELECT);
+    expect(event!.questions[1].options).toEqual(options);
+    expect(event!.questions[1].prices).toEqual(prices);
     // options: null normalizes to options: null + prices: null
-    expect(event!.questions![2].type).toBe(QuestionType.CHECKBOX);
-    expect(event!.questions![2].options).toEqual(null);
-    expect(event!.questions![2].prices).toEqual(null);
+    expect(event!.questions[2].type).toBe(QuestionType.CHECKBOX);
+    expect(event!.questions[2].options).toEqual(null);
+    expect(event!.questions[2].prices).toEqual(null);
     // prices: [0, 0, ...] normalizes to prices: null
-    expect(event!.questions![3].type).toBe(QuestionType.CHECKBOX);
-    expect(event!.questions![3].options).toEqual(options);
-    expect(event!.questions![3].prices).toEqual(null);
+    expect(event!.questions[3].type).toBe(QuestionType.CHECKBOX);
+    expect(event!.questions[3].options).toEqual(options);
+    expect(event!.questions[3].prices).toEqual(null);
     // languages options normalization
     expect(event!.languages.fi).toBeTruthy();
     expect(event!.languages.fi.questions).toHaveLength(4);
@@ -626,10 +640,53 @@ describe("POST /api/admin/events", () => {
     expect(event!.languages.fi.questions[3].options).toEqual(localizedOptions);
   });
 
+  test("ignores extra fields sent by the editor", async () => {
+    // The editor sends its whole form state. None of this may reach the database.
+    const serverManaged = {
+      id: "customid",
+      createdAt: "2000-01-01T00:00:00.000Z",
+      updatedAt: "",
+      deletedAt: "2000-01-01T00:00:00.000Z",
+    };
+    const body = {
+      ...eventBody(),
+      ...serverManaged,
+      eventType: "event+signup",
+      useOpenQuota: false,
+      moveSignupsToQueue: false,
+      quotas: [{ title: "Quota", size: 10, price: 0, key: "new-1", eventId: "other", ...serverManaged }],
+      questions: [
+        {
+          type: QuestionType.TEXT,
+          question: "Question",
+          required: true,
+          public: false,
+          options: null,
+          prices: null,
+          key: "new-2",
+          hasPrices: false,
+          eventId: "other",
+          ...serverManaged,
+        },
+      ],
+    };
+    const [data, response] = await createEvent(body);
+
+    expect(response.statusCode).toBe(201);
+    expect(data.id).not.toBe("customid");
+    const event = await findEvent(data.id);
+    expect(event).toBeTruthy();
+    expect(event!.createdAt.getFullYear()).toBeGreaterThan(2000);
+    expect(event!.quotas.map((quota) => [quota.id === "customid", quota.eventId])).toEqual([[false, data.id]]);
+    expect(event!.questions.map((question) => [question.id === "customid", question.eventId])).toEqual([
+      [false, data.id],
+    ]);
+  });
+
   test("audit logs creations", async () => {
     const [event] = await createEvent(eventBody());
 
-    const logs = await AuditLog.findAll();
+    const logs = await findAuditLogs();
     expect(logs.length).toBe(1);
     expect(logs[0]).toMatchObject({
       user: adminUser.email,
@@ -773,7 +830,7 @@ describe("PATCH /api/admin/events/:id", () => {
     const event = await testEvent({ questionCount: 0, quotaCount: 1 });
     const [created, createResponse] = await updateEvent(event, {
       updatedAt: event.updatedAt.toISOString(),
-      quotas: [{ id: event.quotas![0].id, title: event.quotas![0].title, size: event.quotas![0].size, price: 0 }],
+      quotas: [{ id: event.quotas[0].id, title: event.quotas[0].title, size: event.quotas[0].size, price: 0 }],
       questions: [
         // Will be changed from CHECKBOX to TEXT -> options and prices should be nullified
         {
@@ -837,7 +894,7 @@ describe("PATCH /api/admin/events/:id", () => {
     // Now update the event with changes that should trigger normalization
     const [, response] = await updateEvent(event, {
       updatedAt: created.updatedAt,
-      quotas: [{ id: event.quotas![0].id, title: event.quotas![0].title, size: event.quotas![0].size, price: 0 }],
+      quotas: [{ id: event.quotas[0].id, title: event.quotas[0].title, size: event.quotas[0].size, price: 0 }],
       questions: [
         // Change type from CHECKBOX to TEXT -> options and prices should be nullified
         {
@@ -903,28 +960,28 @@ describe("PATCH /api/admin/events/:id", () => {
     expect(response.statusCode).toBe(200);
 
     // Verify normalization in database
-    const dbEvent = await Event.findByPk(event.id, { include: [Question] });
+    const dbEvent = await findEvent(event.id);
     expect(dbEvent!.questions).toHaveLength(4);
 
     // Question 1: type changed to TEXT -> options and prices should be null
-    expect(dbEvent!.questions![0].type).toBe(QuestionType.TEXT);
-    expect(dbEvent!.questions![0].options).toBe(null);
-    expect(dbEvent!.questions![0].prices).toBe(null);
+    expect(dbEvent!.questions[0].type).toBe(QuestionType.TEXT);
+    expect(dbEvent!.questions[0].options).toBe(null);
+    expect(dbEvent!.questions[0].prices).toBe(null);
 
     // Question 2: options set to null -> options and prices should be null
-    expect(dbEvent!.questions![1].type).toBe(QuestionType.SELECT);
-    expect(dbEvent!.questions![1].options).toBe(null);
-    expect(dbEvent!.questions![1].prices).toBe(null);
+    expect(dbEvent!.questions[1].type).toBe(QuestionType.SELECT);
+    expect(dbEvent!.questions[1].options).toBe(null);
+    expect(dbEvent!.questions[1].prices).toBe(null);
 
     // Question 3: all prices set to 0 -> prices should be null but options kept
-    expect(dbEvent!.questions![2].type).toBe(QuestionType.SELECT);
-    expect(dbEvent!.questions![2].options).toEqual(options);
-    expect(dbEvent!.questions![2].prices).toBe(null);
+    expect(dbEvent!.questions[2].type).toBe(QuestionType.SELECT);
+    expect(dbEvent!.questions[2].options).toEqual(options);
+    expect(dbEvent!.questions[2].prices).toBe(null);
 
     // Question 4: valid options and prices kept unchanged
-    expect(dbEvent!.questions![3].type).toBe(QuestionType.CHECKBOX);
-    expect(dbEvent!.questions![3].options).toEqual(options);
-    expect(dbEvent!.questions![3].prices).toEqual(prices);
+    expect(dbEvent!.questions[3].type).toBe(QuestionType.CHECKBOX);
+    expect(dbEvent!.questions[3].options).toEqual(options);
+    expect(dbEvent!.questions[3].prices).toEqual(prices);
 
     // Verify language normalization
     expect(dbEvent!.languages.fi).toBeTruthy();
@@ -944,6 +1001,77 @@ describe("PATCH /api/admin/events/:id", () => {
       updatedAt: event2.updatedAt.toISOString(),
     });
     expect(response.statusCode).toBe(409);
+  });
+
+  test("keeps localized options when questions are not sent", async () => {
+    const localized = {
+      title: "Tapahtuma",
+      description: null,
+      price: null,
+      location: null,
+      webpageUrl: null,
+      facebookUrl: null,
+      verificationEmail: null,
+      quotas: [{ title: "Kiintiö" }],
+      questions: [
+        { question: "Teksti", options: null },
+        { question: "Valinta", options: ["x", "y"] },
+      ],
+    };
+    const event = await testEvent(
+      { quotaCount: 1, questionCount: 2, questionOverrides: { type: QuestionType.TEXT, options: null, prices: null } },
+      { languages: { fi: localized } },
+    );
+    // Make the question stored first the second one in order, and give it options.
+    await updateRow(questionTable, event.questions[0], {
+      order: 1,
+      type: QuestionType.SELECT,
+      options: ["a", "b"],
+    });
+    await updateRow(questionTable, event.questions[1], { order: 0 });
+
+    const [before] = await fetchAdminEventDetails(event);
+    const [, response] = await updateEvent(event, { draft: true, updatedAt: before.updatedAt });
+    expect(response.statusCode).toBe(200);
+
+    const dbEvent = await findEvent(event.id);
+    expect(dbEvent!.languages.fi.questions.map((question) => question.options)).toEqual([null, ["x", "y"]]);
+  });
+
+  test("ignores extra fields sent by the editor", async () => {
+    const event = await testEvent({ quotaCount: 1, questionCount: 1 });
+    const other = await testEvent({ quotaCount: 0, questionCount: 0 });
+    const [before] = await fetchAdminEventDetails(event);
+    const serverManaged = {
+      createdAt: "2000-01-01T00:00:00.000Z",
+      deletedAt: "2000-01-01T00:00:00.000Z",
+      eventId: other.id,
+    };
+    const body = {
+      id: "customid",
+      title: "Changed",
+      eventType: "event+signup",
+      useOpenQuota: false,
+      ...serverManaged,
+      updatedAt: before.updatedAt,
+      quotas: [
+        { id: before.quotas[0].id, title: "Kept quota", size: 10, price: 0, key: "a", ...serverManaged },
+        { title: "New quota", size: 10, price: 0, key: "new-1", ...serverManaged },
+      ],
+      questions: before.questions.map((question) => ({ ...question, key: "b", hasPrices: false, ...serverManaged })),
+    };
+    const [data, response] = await updateEvent(event, body);
+
+    expect(response.statusCode).toBe(200);
+    expect(data.id).toBe(event.id);
+    expect(data.title).toBe("Changed");
+    // Nothing was deleted or moved to the other event.
+    const dbEvent = await findEvent(event.id);
+    expect(dbEvent!.createdAt.getFullYear()).toBeGreaterThan(2000);
+    expect(dbEvent!.quotas.map((quota) => quota.title)).toEqual(["Kept quota", "New quota"]);
+    expect(dbEvent!.quotas.map((quota) => quota.createdAt.getFullYear() > 2000)).toEqual([true, true]);
+    expect(dbEvent!.questions).toHaveLength(1);
+    expect((await findEvent(other.id))!.quotas).toHaveLength(0);
   });
 
   test("checks moving signups to queue", async () => {
@@ -1031,7 +1159,7 @@ describe("PATCH /api/admin/events/:id", () => {
       updatedAt,
     });
 
-    const logs = await AuditLog.findAll({ order: [["createdAt", "ASC"]] });
+    const logs = await findAuditLogs();
     expect(logs.length).toBe(3);
     expect(logs[0]).toMatchObject({
       user: adminUser.email,
@@ -1061,7 +1189,7 @@ describe("DELETE /api/admin/events/:id", () => {
     const [, response] = await deleteEvent(event);
     expect(response.statusCode).toBe(204);
 
-    expect(await Event.count()).toBe(0);
+    expect(await countEvents()).toBe(0);
   });
 
   test("audit logs deletions", async () => {
@@ -1070,7 +1198,7 @@ describe("DELETE /api/admin/events/:id", () => {
     const [, response] = await deleteEvent(event);
     expect(response.statusCode).toBe(204);
 
-    const logs = await AuditLog.findAll();
+    const logs = await findAuditLogs();
     expect(logs.length).toBe(1);
     expect(logs[0]).toMatchObject({
       user: adminUser.email,

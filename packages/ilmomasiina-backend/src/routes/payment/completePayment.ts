@@ -1,7 +1,8 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 
 import { PaymentStatus, SignupForEditResponse, SignupPathParams } from "@tietokilta/ilmomasiina-models";
-import { Payment } from "../../models/payment";
+import { getDb } from "../../db";
+import { ACTIVE_PAYMENT_STATUSES } from "../../models/payment";
 import getSignupForEdit from "../signups/getSignupForEdit";
 import { PaymentNotComplete, PaymentNotFound } from "./errors";
 import { refreshCheckoutSession } from "./stripe";
@@ -11,8 +12,8 @@ export default async function completePayment(
   request: FastifyRequest<{ Params: SignupPathParams }>,
   reply: FastifyReply,
 ): Promise<SignupForEditResponse> {
-  const payment = await Payment.scope("active").findOne({
-    where: { signupId: request.params.id },
+  const payment = await getDb().query.payment.findFirst({
+    where: { signupId: request.params.id, status: { in: ACTIVE_PAYMENT_STATUSES } },
   });
   if (!payment) {
     throw new PaymentNotFound("No active payment found for signup");

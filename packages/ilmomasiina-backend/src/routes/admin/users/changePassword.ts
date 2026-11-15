@@ -1,10 +1,11 @@
+import { eq } from "drizzle-orm";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { NotFound } from "http-errors";
 
 import { AuditEvent, ErrorCode, UserChangePasswordSchema } from "@tietokilta/ilmomasiina-models";
 import AdminPasswordAuth from "../../../authentication/adminPasswordAuth";
-import { getSequelize } from "../../../models";
-import { User } from "../../../models/user";
+import { getDb } from "../../../db";
+import { userTable } from "../../../db/schema";
 import CustomError from "../../../util/customError";
 
 class WrongOldPassword extends CustomError {
@@ -19,11 +20,11 @@ export default async function changePassword(
 ): Promise<void> {
   AdminPasswordAuth.validateNewPassword(request.body.newPassword);
 
-  await getSequelize().transaction(async (transaction) => {
+  await getDb().transaction(async (transaction) => {
     // Try to fetch existing user
-    const existing = await User.findByPk(request.sessionData!.user, {
-      attributes: ["id", "email", "password"],
-      transaction,
+    const existing = await transaction.query.user.findFirst({
+      where: { id: request.sessionData!.user },
+      columns: { id: true, email: true, password: true },
     });
 
     if (!existing) {
@@ -34,7 +35,10 @@ export default async function changePassword(
         throw new WrongOldPassword("Incorrect password");
       }
       // Update user with a new password
-      await existing.update({ password: AdminPasswordAuth.createHash(request.body.newPassword) }, { transaction });
+      await transaction
+        .update(userTable)
+        .set({ password: AdminPasswordAuth.createHash(request.body.newPassword) })
+        .where(eq(userTable.id, existing.id));
 
       await request.logEvent(AuditEvent.CHANGE_PASSWORD, {
         extra: {

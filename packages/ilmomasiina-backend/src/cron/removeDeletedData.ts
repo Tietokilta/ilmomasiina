@@ -1,62 +1,22 @@
+import { lt } from "drizzle-orm";
 import moment from "moment";
-import { Op, WhereOptions } from "sequelize";
 
 import config from "../config";
-import { Answer } from "../models/answer";
-import { Event } from "../models/event";
-import { Question } from "../models/question";
-import { Quota } from "../models/quota";
-import { Signup } from "../models/signup";
+import { getDb } from "../db";
+import { answerTable, eventTable, questionTable, quotaTable, signupTable } from "../db/schema";
 
 export default async function removeDeletedData() {
   const ifRemovedBefore = moment().subtract(config.deletionGracePeriod, "days").toDate();
+  const db = getDb();
 
-  await Event.unscoped().destroy({
-    where: {
-      deletedAt: {
-        [Op.lt]: ifRemovedBefore,
-      },
-      // Manually adding and initializing deletedAt in _every_ model would be counter-productive,
-      // so casting to avoid a type error here.
-    } as WhereOptions,
-    force: true,
-  });
-
-  await Question.unscoped().destroy({
-    where: {
-      deletedAt: {
-        [Op.lt]: ifRemovedBefore,
-      },
-    } as WhereOptions,
-    force: true,
-  });
-
-  await Quota.unscoped().destroy({
-    where: {
-      deletedAt: {
-        [Op.lt]: ifRemovedBefore,
-      },
-    } as WhereOptions,
-    force: true,
-  });
+  await db.delete(eventTable).where(lt(eventTable.deletedAt, ifRemovedBefore));
+  await db.delete(questionTable).where(lt(questionTable.deletedAt, ifRemovedBefore));
+  await db.delete(quotaTable).where(lt(quotaTable.deletedAt, ifRemovedBefore));
 
   // TODO: This will fail for signups that have payments.
-  await Signup.unscoped().destroy({
-    where: {
-      deletedAt: {
-        [Op.lt]: ifRemovedBefore,
-      },
-    },
-  });
+  await db.delete(signupTable).where(lt(signupTable.deletedAt, ifRemovedBefore));
 
   // Deletes answers that have been replaced by new ones.
   // Answers to deleted signups are already CASCADEd above.
-  await Answer.unscoped().destroy({
-    where: {
-      deletedAt: {
-        [Op.lt]: ifRemovedBefore,
-      },
-    } as WhereOptions,
-    force: true,
-  });
+  await db.delete(answerTable).where(lt(answerTable.deletedAt, ifRemovedBefore));
 }

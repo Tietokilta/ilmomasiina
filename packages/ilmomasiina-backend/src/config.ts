@@ -69,7 +69,7 @@ const frontends: FrontendsConfig = {
 
 const config = {
   nodeEnv: envEnum("NODE_ENV", ["production", "development", "test", "bench"], "development"),
-  /** Whether to log SQL queries from Sequelize. */
+  /** Whether to log SQL queries. */
   debugDbLogging: envBoolean("DEBUG_DB_LOGGING", false),
 
   /** The host to run the backend server on. */

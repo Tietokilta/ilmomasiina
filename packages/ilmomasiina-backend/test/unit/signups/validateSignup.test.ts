@@ -1,10 +1,11 @@
 import { describe, expect, test } from "vitest";
 
 import type { QuestionLanguage } from "@tietokilta/ilmomasiina-models";
-import { QuestionType, SignupFieldError } from "@tietokilta/ilmomasiina-models";
-import type { Event } from "../../../src/models/event";
-import type { QuestionAttributes } from "../../../src/models/question";
-import { validateAnswersAndGetProducts } from "../../../src/routes/signups/updateSignup";
+import { PaymentMode, QuestionType, SignupFieldError } from "@tietokilta/ilmomasiina-models";
+import type { Question } from "../../../src/models/question";
+import { EventForAnswers, validateAnswersAndGetProducts } from "../../../src/routes/signups/updateSignup";
+
+type QuestionAttributes = EventForAnswers["questions"][number] & Partial<Question>;
 
 /** Wrapper to test validation and product generation for a single question. */
 function validateQuestion(
@@ -18,10 +19,10 @@ function validateQuestion(
   if (thirdLocale) languages.sv = { questions: [thirdLocale] };
 
   const event = {
-    paymentsEnabled: true,
+    payments: PaymentMode.ONLINE,
     questions: [question],
     languages,
-  } as Pick<Event, "paymentsEnabled" | "questions" | "languages">;
+  } as EventForAnswers;
 
   const rawAnswers =
     answer === undefined
