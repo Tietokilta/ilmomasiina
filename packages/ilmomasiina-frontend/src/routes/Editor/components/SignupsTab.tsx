@@ -114,8 +114,131 @@ type TableProps = {
   showQuota: boolean;
 };
 
+type SortKey = "createdAt" | "firstName" | "lastName" | "email" | "price" | { type: "answer"; questionId: string };
+
+type SortState = {
+  key: SortKey;
+  dir: "asc" | "desc";
+};
+
+const isSameSortKey = (a: SortKey, b: SortKey) => {
+  if (typeof a === "string" && typeof b === "string") return a === b;
+  if (typeof a === "object" && typeof b === "object") return a.type === b.type && a.questionId === b.questionId;
+  return false;
+};
+
+type SortableThProps = {
+  sort: SortState;
+  sortKey: SortKey;
+  onToggle: (key: SortKey) => void;
+  children: React.ReactNode;
+};
+
+const SortableTh = ({ sort, sortKey, onToggle, children }: SortableThProps) => {
+  const isActive = isSameSortKey(sort.key, sortKey);
+  const temp = !isActive ? "none" : sort.dir;
+  const ariaSort: "none" | "ascending" | "descending" = temp === "asc" ? "ascending" : "descending";
+
+  // Indicators:
+  // - show a "sortable" hint always
+  // - show direction only for active column; otherwise show neutral "not sorted"
+  const ascdescIndicator = sort.dir === "asc" ? "↑" : "↓";
+  const stateIndicator = isActive ? ascdescIndicator : "↕";
+  const sortableIndicator = "⇅";
+
+  return (
+    <th
+      onClick={() => onToggle(sortKey)}
+      aria-sort={ariaSort}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onToggle(sortKey);
+      }}
+      className=""
+    >
+      <span>{children}</span>
+      <span className="ms-1" aria-hidden="true" title={isActive ? `Sorted ${sort.dir}` : "Not sorted"}>
+        {stateIndicator}
+      </span>
+      <span className="ms-1 text-muted" aria-hidden="true" title="Sortable">
+        {sortableIndicator}
+      </span>
+    </th>
+  );
+};
+
+const compareNullableString = (a?: string | null, b?: string | null) => {
+  const av = (a ?? "").trim();
+  const bv = (b ?? "").trim();
+
+  if (!av && !bv) return 0;
+  if (!av) return 1;
+  if (!bv) return -1;
+
+  return av.localeCompare(bv, undefined, { sensitivity: "base", numeric: true });
+};
+
+const compareNullableNumber = (a?: number | null, b?: number | null) => {
+  const av = a ?? null;
+  const bv = b ?? null;
+
+  if (av == null && bv == null) return 0;
+  if (av == null) return 1;
+  if (bv == null) return -1;
+
+  return av - bv;
+};
+
 const SignupTable = ({ event, signups, showQuota }: TableProps) => {
   const { t } = useTranslation();
+
+  const [sort, setSort] = useState<SortState>({ key: "createdAt", dir: "asc" });
+
+  const toggleSort = useCallback((key: SortKey) => {
+    setSort((prev) => {
+      const sameKey = isSameSortKey(prev.key, key);
+      if (!sameKey) return { key, dir: "asc" };
+      return { key, dir: prev.dir === "asc" ? "desc" : "asc" };
+    });
+  }, []);
+
+  const signupsSorted = useMemo(() => {
+    const dirMul = sort.dir === "asc" ? 1 : -1;
+
+    const decorated = signups.map((signup, index) => ({ signup, index }));
+
+    decorated.sort((a, b) => {
+      const sa = a.signup;
+      const sb = b.signup;
+
+      let cmp = 0;
+
+      if (sort.key === "firstName") cmp = compareNullableString(sa.firstName, sb.firstName);
+      else if (sort.key === "lastName") cmp = compareNullableString(sa.lastName, sb.lastName);
+      else if (sort.key === "createdAt") cmp = compareNullableString(sa.createdAt, sb.createdAt);
+      else if (sort.key === "email") cmp = compareNullableString(sa.email, sb.email);
+      else if (sort.key === "price") cmp = compareNullableNumber(sa.price, sb.price);
+      else if (typeof sort.key === "object" && sort.key.type === "answer") {
+        const qid = sort.key.questionId;
+        const aMap = getAnswersFromSignup(event, sa);
+        const bMap = getAnswersFromSignup(event, sb);
+        cmp = compareNullableString(stringifyAnswer(aMap[qid]), stringifyAnswer(bMap[qid]));
+      }
+
+      if (cmp !== 0) return cmp * dirMul;
+
+      // Deterministic tie-breakers: createdAt, id, original order (stable fallback)
+      cmp = compareNullableString(sa.createdAt, sb.createdAt);
+      if (cmp !== 0) return cmp;
+
+      cmp = compareNullableString(sa.id ?? null, sb.id ?? null);
+      if (cmp !== 0) return cmp;
+
+      return a.index - b.index;
+    });
+
+    return decorated.map((d) => d.signup);
+  }, [event, signups, sort]);
 
   if (!signups.length) return <p>{t("editor.signups.emptyQuota")}</p>;
 
@@ -124,15 +247,43 @@ const SignupTable = ({ event, signups, showQuota }: TableProps) => {
       <thead>
         <tr className="active">
           <th key="position">#</th>
-          {event.nameQuestion && <th key="firstName">{t("editor.signups.column.firstName")}</th>}
-          {event.nameQuestion && <th key="lastName">{t("editor.signups.column.lastName")}</th>}
-          {event.emailQuestion && <th key="email">{t("editor.signups.column.email")}</th>}
+
+          {event.nameQuestion && (
+            <SortableTh key="firstName" sort={sort} sortKey="firstName" onToggle={toggleSort}>
+              {t("editor.signups.column.firstName")}
+            </SortableTh>
+          )}
+
+          {event.nameQuestion && (
+            <SortableTh key="lastName" sort={sort} sortKey="lastName" onToggle={toggleSort}>
+              {t("editor.signups.column.lastName")}
+            </SortableTh>
+          )}
+
+          {event.emailQuestion && (
+            <SortableTh key="email" sort={sort} sortKey="email" onToggle={toggleSort}>
+              {t("editor.signups.column.email")}
+            </SortableTh>
+          )}
+
           {showQuota && <th key="quota">{t("editor.signups.column.quota")}</th>}
+
           {event.questions.map((q) => (
-            <th key={q.id}>{q.question}</th>
+            <SortableTh key={q.id} sort={sort} sortKey={{ type: "answer", questionId: q.id }} onToggle={toggleSort}>
+              {q.question}
+            </SortableTh>
           ))}
-          <th key="timestamp">{t("editor.signups.column.time")}</th>
-          {event.payments !== PaymentMode.DISABLED && <th key="price">{t("editor.signups.column.price")}</th>}
+
+          <SortableTh key="timestamp" sort={sort} sortKey="createdAt" onToggle={toggleSort}>
+            {t("editor.signups.column.time")}
+          </SortableTh>
+
+          {event.payments !== PaymentMode.DISABLED && (
+            <SortableTh key="price" sort={sort} sortKey="price" onToggle={toggleSort}>
+              {t("editor.signups.column.price")}
+            </SortableTh>
+          )}
+
           {event.payments !== PaymentMode.DISABLED && (
             <th key="paymentStatus">{t("editor.signups.column.paymentStatus")}</th>
           )}
@@ -140,7 +291,7 @@ const SignupTable = ({ event, signups, showQuota }: TableProps) => {
         </tr>
       </thead>
       <tbody>
-        {signups.map((signup, index) => (
+        {signupsSorted.map((signup, index) => (
           <SignupRow key={signup.id} position={index + 1} signup={signup} showQuota={showQuota} />
         ))}
       </tbody>
