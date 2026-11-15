@@ -1,14 +1,14 @@
 import { FastifyInstance } from "fastify";
-import { Sequelize } from "sequelize";
 import { Mock } from "vitest";
 
+import type { Db } from "../src/db";
 import EmailService from "../src/mail";
-import { User } from "../src/models/user";
+import type { User } from "../src/models/user";
 
 declare global {
   /* eslint-disable vars-on-top -- declare global needs these to be var, not let */
   var server: FastifyInstance;
-  var sequelize: Sequelize;
+  var db: Db;
   var emailSend: Mock<(typeof EmailService)["send"]>;
   var consoleLog: Mock<typeof console.log>;
   var consoleWarn: Mock<typeof console.warn>;

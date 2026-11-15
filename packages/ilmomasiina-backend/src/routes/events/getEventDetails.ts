@@ -1,7 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { NotFound } from "http-errors";
 import moment from "moment";
-import { Op } from "sequelize";
 
 import {
   AdminEventPathParams,
@@ -13,21 +12,26 @@ import {
   UserEventPathParams,
   UserEventResponse,
 } from "@tietokilta/ilmomasiina-models";
-import { Answer } from "../../models/answer";
+import { getDb } from "../../db";
+import type { Answer } from "../../models/answer";
 import {
-  adminEventGetEventAttrs,
-  adminEventGetSignupAttrs,
-  eventGetAnswerAttrs,
-  eventGetEventAttrs,
-  eventGetQuestionAttrs,
-  eventGetQuotaAttrs,
-  eventGetSignupAttrs,
+  adminEventGetEventColumns,
+  adminEventGetSignupColumns,
+  eventGetAnswerColumns,
+  eventGetEventColumns,
+  eventGetQuestionColumns,
+  eventGetQuotaColumns,
+  eventGetSignupColumns,
 } from "../../models/attrs";
-import { Event } from "../../models/event";
-import { Payment } from "../../models/payment";
-import { Question } from "../../models/question";
-import { Quota } from "../../models/quota";
-import { Signup } from "../../models/signup";
+import { effectiveEndDate, userEventFilter } from "../../models/event";
+import type { Payment } from "../../models/payment";
+import {
+  activeSignupFilter,
+  adminSignupFilter,
+  effectivePaymentStatus,
+  isConfirmed,
+  Signup,
+} from "../../models/signup";
 import createCache from "../../util/cache";
 import type { StringifyApi } from "../utils";
 
@@ -37,16 +41,10 @@ export const basicEventInfoCached = createCache({
   logName: "basicEventInfoCached",
   async get(eventSlug: EventSlug) {
     // First query general event information
-    const event = await Event.scope("user").findOne({
-      where: [{ slug: eventSlug }],
-      attributes: eventGetEventAttrs,
-      include: [
-        {
-          model: Question,
-          attributes: eventGetQuestionAttrs,
-        },
-      ],
-      order: [[Question, "order", "ASC"]],
+    const event = await getDb().query.event.findFirst({
+      where: { AND: [userEventFilter(), { slug: eventSlug }] },
+      columns: eventGetEventColumns,
+      with: { questions: { columns: eventGetQuestionColumns, orderBy: { order: "asc" } } },
     });
 
     if (!event) {
@@ -55,14 +53,10 @@ export const basicEventInfoCached = createCache({
     }
 
     // Only return answers to public questions
-    const publicQuestions = event.questions!.filter((question) => question.public).map((question) => question.id);
+    const publicQuestions = event.questions.filter((question) => question.public).map((question) => question.id);
 
     return {
-      event: {
-        ...event.get({ plain: true }),
-        effectiveEndDate: event.effectiveEndDate,
-        questions: event.questions!.map((question) => question.get({ plain: true })),
-      },
+      event: { ...event, effectiveEndDate: effectiveEndDate(event) },
       publicQuestions,
     };
   },
@@ -79,56 +73,48 @@ export const eventDetailsForUserCached = createCache({
     const effectiveEnd = event.effectiveEndDate;
     const isOld = effectiveEnd != null && effectiveEnd < moment().subtract(7, "days").valueOf();
 
-    let quotas: Quota[] = [];
-    if (!isOld) {
-      // Query all quotas for the event
-      quotas = await Quota.findAll({
-        where: { eventId: event.id },
-        attributes: eventGetQuotaAttrs,
-        include: [
-          // Include all signups for the quota
-          {
-            model: Signup.scope("active"),
-            attributes: eventGetSignupAttrs,
-            required: false,
-            include: [
-              // ... and public answers of signups
-              {
-                model: Answer,
-                attributes: eventGetAnswerAttrs,
-                required: false,
-                where: { questionId: { [Op.in]: publicQuestions } },
+    // Query all quotas for the event
+    const quotas = isOld
+      ? []
+      : await getDb().query.quota.findMany({
+          where: { eventId: event.id, deletedAt: { isNull: true } },
+          columns: eventGetQuotaColumns,
+          // First sort by Quota order, then by signup creation date
+          orderBy: { order: "asc" },
+          with: {
+            // Include all signups for the quota
+            signups: {
+              where: activeSignupFilter(),
+              columns: eventGetSignupColumns,
+              orderBy: { createdAt: "asc" },
+              with: {
+                // ... and public answers of signups
+                answers: {
+                  columns: eventGetAnswerColumns,
+                  where: { questionId: { in: publicQuestions } },
+                },
               },
-            ],
+            },
           },
-        ],
-        // First sort by Quota order, then by signup creation date
-        order: [
-          ["order", "ASC"],
-          [Signup, "createdAt", "ASC"],
-        ],
-      });
-    }
+        });
 
     return {
       event: {
         ...event,
         quotas: quotas.map((quota) => ({
-          ...quota.get({ plain: true }),
+          ...quota,
           signups: event.signupsPublic // Hide all signups from non-admins if answers are not public
             ? // When signups are public:
-              quota.signups!.map((signup) => ({
-                ...signup.get({ plain: true }),
+              quota.signups.map((signup) => ({
+                ...signup,
                 // Hide name if necessary
                 firstName: event.nameQuestion && signup.namePublic ? signup.firstName : null,
                 lastName: event.nameQuestion && signup.namePublic ? signup.lastName : null,
-                answers: signup.answers!.map((answer) => answer.get({ plain: true })),
-                status: signup.status,
-                confirmed: signup.confirmed,
+                confirmed: isConfirmed(signup),
               }))
             : // When signups are not public:
               [],
-          signupCount: quota.signups!.length,
+          signupCount: quota.signups.length,
         })),
       },
       registrationStartDate: event.registrationStartDate && new Date(event.registrationStartDate),
@@ -160,14 +146,18 @@ export async function eventDetailsForUser(eventSlug: EventSlug): Promise<UserEve
   return res as unknown as StringifyApi<typeof res>;
 }
 
-/** Converts a signup with answers included to JSON for the admin API. */
-export function formatSignupForAdmin(signup: Signup): AdminSignupSchema {
-  const plain = signup.get({ plain: true });
+/** A signup with the data needed to show it to admins. */
+type SignupForAdmin = Pick<Signup, keyof typeof adminEventGetSignupColumns> & {
+  answers: Pick<Answer, "questionId" | "answer">[];
+  payments: Pick<Payment, "status">[];
+};
+
+/** Converts a signup with answers and payments included to JSON for the admin API. */
+export function formatSignupForAdmin({ payments, ...signup }: SignupForAdmin): AdminSignupSchema {
   const result = {
-    ...plain,
-    answers: signup.answers!.map((answer) => answer.get({ plain: true })),
-    confirmed: signup.confirmed,
-    paymentStatus: signup.effectivePaymentStatus,
+    ...signup,
+    confirmed: isConfirmed(signup),
+    paymentStatus: effectivePaymentStatus(signup, payments),
   };
   return result as unknown as StringifyApi<typeof result>;
 }
@@ -177,71 +167,51 @@ export async function eventDetailsForAdmin(eventID: EventID): Promise<AdminEvent
   // Admin queries include emails and signup IDs
   // Admin queries also show past and draft events.
 
-  const event = await Event.findOne({
-    where: { id: eventID },
-    attributes: adminEventGetEventAttrs,
-    include: [
-      // Include all questions (also non-public for the form)
-      {
-        model: Question,
-        attributes: eventGetQuestionAttrs,
-      },
-    ],
-    order: [[Question, "order", "ASC"]],
+  const event = await getDb().query.event.findFirst({
+    where: { id: eventID, deletedAt: { isNull: true } },
+    columns: adminEventGetEventColumns,
+    // Include all questions (also non-public for the form)
+    with: { questions: { columns: eventGetQuestionColumns, orderBy: { order: "asc" } } },
   });
 
-  if (event === null) {
+  if (!event) {
     // Event not found with id, probably deleted
     throw new NotFound("No event found with id");
   }
 
-  const quotas = await Quota.findAll({
-    where: { eventId: event.id },
-    attributes: eventGetQuotaAttrs,
-    // Include all signups for the quotas
-    include: [
-      {
-        model: Signup.scope("admin"),
-        attributes: adminEventGetSignupAttrs,
-        required: false,
-        // ... and answers of signups
-        include: [
-          {
-            model: Answer,
-            attributes: eventGetAnswerAttrs,
-            required: false,
-          },
-          {
-            model: Payment,
-            attributes: ["status"],
-            required: false,
-          },
-        ],
-      },
-    ],
+  const quotas = await getDb().query.quota.findMany({
+    where: { eventId: event.id, deletedAt: { isNull: true } },
+    columns: eventGetQuotaColumns,
     // First sort by Quota order, then by signup creation date
-    order: [
-      ["order", "ASC"],
-      [Signup, "createdAt", "ASC"],
-    ],
+    orderBy: { order: "asc" },
+    with: {
+      // Include all signups for the quotas
+      signups: {
+        where: adminSignupFilter(),
+        columns: adminEventGetSignupColumns,
+        orderBy: { createdAt: "asc" },
+        // ... and answers and payments of signups
+        with: {
+          answers: { columns: eventGetAnswerColumns },
+          payments: { columns: { status: true } },
+        },
+      },
+    },
   });
   // Admins get a simple result with many columns
   // Filter out deleted signups that don't have PAID/REFUNDED status
   const res = {
-    ...event.get({ plain: true }),
-    // updatedAt must be manually repeated here, as it's not present in EventManualAttributes (see models/event.ts)
-    updatedAt: event.updatedAt,
-    questions: event.questions!.map((question) => question.get({ plain: true })),
+    ...event,
     quotas: quotas.map((quota) => {
-      const filteredSignups = quota.signups!.filter((signup) => {
+      const filteredSignups = quota.signups.filter((signup) => {
         // Include all non-deleted signups
         if (!signup.deletedAt) return true;
         // Only include deleted signups with PAID/REFUNDED status
-        const status = signup.effectivePaymentStatus;
+        const status = effectivePaymentStatus(signup, signup.payments);
         return status === SignupPaymentStatus.PAID || status === SignupPaymentStatus.REFUNDED;
       });
       return {
-        ...quota.get({ plain: true }),
+        ...quota,
         signups: filteredSignups.map(formatSignupForAdmin),
         signupCount: filteredSignups.filter((s) => !s.deletedAt).length,
       };

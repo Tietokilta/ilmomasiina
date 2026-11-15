@@ -1,15 +1,16 @@
+import { and, eq } from "drizzle-orm";
 import moment from "moment";
-import { DatabaseError as PgDatabaseError } from "pg";
-import { DatabaseError, Transaction } from "sequelize";
-import Stripe from "stripe";
+import { Stripe } from "stripe";
 
 import { AuditEvent, PaymentStatus, SignupID } from "@tietokilta/ilmomasiina-models";
 import type { AuditLogger } from "../../auditlog";
 import config, { completePaymentUrl } from "../../config";
+import { getDb, Tx } from "../../db";
+import { paymentTable } from "../../db/schema";
 import { sendPaymentConfirmationMail } from "../../mail/signups";
-import { getSequelize } from "../../models";
-import { Payment } from "../../models/payment";
-import { Signup } from "../../models/signup";
+import { databaseErrorCode, RAISE_EXCEPTION } from "../../models/errors";
+import { ACTIVE_PAYMENT_STATUSES, Payment } from "../../models/payment";
+import type { Signup } from "../../models/signup";
 import { generateToken } from "../signups/editTokens";
 import { OnlinePaymentsDisabled, PaymentInProgress, PaymentRateLimited, SignupAlreadyPaid } from "./errors";
 
@@ -31,7 +32,7 @@ export function getStripe(): Stripe {
 
 /** Create a Stripe Checkout Session for a Payment. */
 export async function createCheckoutSession(
-  signup: Signup,
+  signup: Pick<Signup, "id" | "language" | "email">,
   payment: Payment,
   frontend: string,
 ): Promise<Stripe.Checkout.Session> {
@@ -93,16 +94,15 @@ export async function checkoutSessionStatusUpdated(
     case "complete": {
       // Payment completed but we haven't processed the webhook yet.
       // Use WHERE to ensure we only perform side effects once.
-      const payment = await getSequelize().transaction(async (transaction) => {
-        const [changed, updatedPayments] = await Payment.update(
-          { status: PaymentStatus.PAID, completedAt: new Date() },
-          {
-            where: { stripeCheckoutSessionId: sessionId, status: PaymentStatus.PENDING },
-            returning: true,
-            transaction,
-          },
-        );
-        if (!changed) return null;
+      const payment = await getDb().transaction(async (transaction) => {
+        const updatedPayments = await transaction
+          .update(paymentTable)
+          .set({ status: PaymentStatus.PAID, completedAt: new Date() })
+          .where(
+            and(eq(paymentTable.stripeCheckoutSessionId, sessionId), eq(paymentTable.status, PaymentStatus.PENDING)),
+          )
+          .returning();
+        if (!updatedPayments.length) return null;
         await auditLogger(AuditEvent.COMPLETE_PAYMENT, {
           signupId: updatedPayments[0].signupId,
           extra: { webhook },
@@ -120,16 +120,15 @@ export async function checkoutSessionStatusUpdated(
     case "expired": {
       // Payment expired but we haven't processed the webhook yet.
       // Use WHERE to ensure we only perform side effects once.
-      await getSequelize().transaction(async (transaction) => {
-        const [changed, updatedPayments] = await Payment.update(
-          { status: PaymentStatus.EXPIRED },
-          {
-            where: { stripeCheckoutSessionId: sessionId, status: PaymentStatus.PENDING },
-            returning: true,
-            transaction,
-          },
-        );
-        if (!changed) return;
+      await getDb().transaction(async (transaction) => {
+        const updatedPayments = await transaction
+          .update(paymentTable)
+          .set({ status: PaymentStatus.EXPIRED })
+          .where(
+            and(eq(paymentTable.stripeCheckoutSessionId, sessionId), eq(paymentTable.status, PaymentStatus.PENDING)),
+          )
+          .returning();
+        if (!updatedPayments.length) return;
         await auditLogger(AuditEvent.EXPIRE_PAYMENT, {
           signupId: updatedPayments[0].signupId,
           extra: { webhook },
@@ -203,21 +202,21 @@ export async function expirePaymentForSignupUpdate(payment: Payment): Promise<vo
       }
       // We managed to expire the session, now mark the payment as EXPIRED.
       // Nothing else should be changing it to PAID, so this should always succeed.
-      await Payment.update({ status: PaymentStatus.EXPIRED }, { where: { id: payment.id } });
+      await getDb().update(paymentTable).set({ status: PaymentStatus.EXPIRED }).where(eq(paymentTable.id, payment.id));
       break;
 
     case PaymentStatus.CREATING:
       // Mark CREATING payments as CREATION_FAILED
       // This will cause the transition to PENDING to fail on the payment creation side.
       try {
-        await Payment.update(
-          { status: PaymentStatus.CREATION_FAILED },
-          // This can fail if the payment creation wins the race.
-          // Intentionally don't filter on current status so we can get a trigger error instead of a silent ignore.
-          { where: { id: payment.id } },
-        );
+        // This can fail if the payment creation wins the race.
+        // Intentionally don't filter on current status so we can get a trigger error instead of a silent ignore.
+        await getDb()
+          .update(paymentTable)
+          .set({ status: PaymentStatus.CREATION_FAILED })
+          .where(eq(paymentTable.id, payment.id));
       } catch (error) {
-        if (error instanceof DatabaseError && (error.parent as PgDatabaseError).code === "P0001") {
+        if (databaseErrorCode(error) === RAISE_EXCEPTION) {
           // Also ignore now and fail later when we check for conflicting payments.
           console.error("Failed to expire CREATING payment for updating signup:", error);
           return;
@@ -251,8 +250,8 @@ export async function expirePaymentForSignupUpdate(payment: Payment): Promise<vo
  */
 export async function expireExistingPaymentsForSignupUpdate(signupId: SignupID): Promise<void> {
   // Find any active payments
-  const activePayments = await Payment.scope("active").findAll({
-    where: { signupId },
+  const activePayments = await getDb().query.payment.findMany({
+    where: { signupId, status: { in: ACTIVE_PAYMENT_STATUSES } },
   });
 
   // There should only ever be one active payment, but handle all just in case.
@@ -267,11 +266,14 @@ export async function expireExistingPaymentsForSignupUpdate(signupId: SignupID):
 
 /** Checks for any active payments on a signup. Expects to be called with a lock held on the signup. */
 export async function checkForConflictingPaymentsForSignupUpdate(
-  signup: Signup,
-  transaction: Transaction,
+  signup: Pick<Signup, "id">,
+  transaction: Tx,
   ignorePaid = false,
 ): Promise<void> {
-  const conflictingPayment = await signup.getActivePayment({ transaction });
+  const conflictingPayment = await transaction.query.payment.findFirst({
+    where: { signupId: signup.id, status: { in: ACTIVE_PAYMENT_STATUSES } },
+    columns: { status: true },
+  });
   // Since we hold the lock on the signup and startPayment() also attempts to do so,
   // we know there are no uncommitted payments about to be created that this couldn't see.
 

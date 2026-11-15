@@ -1,14 +1,14 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { Conflict } from "http-errors";
-import { Transaction } from "sequelize";
 
 import type { UserCreateSchema, UserInviteSchema, UserSchema } from "@tietokilta/ilmomasiina-models";
 import { AuditEvent } from "@tietokilta/ilmomasiina-models";
 import { AuditLogger } from "../../../auditlog";
 import AdminPasswordAuth from "../../../authentication/adminPasswordAuth";
+import { getDb, Tx } from "../../../db";
+import { userTable } from "../../../db/schema";
 import EmailService from "../../../mail";
-import { getSequelize } from "../../../models";
-import { User } from "../../../models/user";
+import type { User } from "../../../models/user";
 import generatePassword from "./generatePassword";
 
 /**
@@ -17,26 +17,19 @@ import generatePassword from "./generatePassword";
  * @param params user parameters
  * @param auditLogger audit logger function from the originating request
  */
-export async function createUser(
-  params: UserCreateSchema,
-  auditLogger: AuditLogger,
-  transaction: Transaction,
-): Promise<User> {
-  const existing = await User.findOne({
-    where: { email: params.email },
-    transaction,
-  });
+export async function createUser(params: UserCreateSchema, auditLogger: AuditLogger, transaction: Tx): Promise<User> {
+  const existing = await transaction.query.user.findFirst({ where: { email: params.email } });
 
   if (existing) throw new Conflict("User with given email already exists");
 
   // Create new user with hashed password
-  const user = await User.create(
-    {
-      ...params,
+  const [user] = await transaction
+    .insert(userTable)
+    .values({
+      email: params.email,
       password: AdminPasswordAuth.createHash(params.password),
-    },
-    { transaction },
-  );
+    })
+    .returning();
 
   await auditLogger(AuditEvent.CREATE_USER, {
     extra: {
@@ -59,7 +52,7 @@ export default async function inviteUser(
   // Generate secure password
   const password = generatePassword();
 
-  const user = await getSequelize().transaction(async (transaction) =>
+  const user = await getDb().transaction(async (transaction) =>
     createUser(
       {
         email: request.body.email,

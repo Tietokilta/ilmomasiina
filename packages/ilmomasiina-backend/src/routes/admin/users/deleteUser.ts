@@ -1,9 +1,10 @@
+import { eq } from "drizzle-orm";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { NotFound } from "http-errors";
 
 import { AuditEvent, ErrorCode, UserPathParams } from "@tietokilta/ilmomasiina-models";
-import { getSequelize } from "../../../models";
-import { User } from "../../../models/user";
+import { getDb } from "../../../db";
+import { userTable } from "../../../db/schema";
 import CustomError from "../../../util/customError";
 
 class CannotDeleteSelf extends CustomError {
@@ -16,11 +17,11 @@ export default async function deleteUser(
   request: FastifyRequest<{ Params: UserPathParams }>,
   reply: FastifyReply,
 ): Promise<void> {
-  await getSequelize().transaction(async (transaction) => {
+  await getDb().transaction(async (transaction) => {
     // Try to fetch existing user
-    const existing = await User.findByPk(request.params.id, {
-      attributes: ["id", "email"],
-      transaction,
+    const existing = await transaction.query.user.findFirst({
+      where: { id: request.params.id },
+      columns: { id: true, email: true },
     });
 
     if (!existing) {
@@ -29,7 +30,7 @@ export default async function deleteUser(
       throw new CannotDeleteSelf("You can't delete your own user");
     } else {
       // Delete user
-      await existing.destroy({ transaction });
+      await transaction.delete(userTable).where(eq(userTable.id, existing.id));
       await request.logEvent(AuditEvent.DELETE_USER, {
         extra: {
           id: existing.id,

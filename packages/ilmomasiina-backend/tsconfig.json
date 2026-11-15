@@ -39,7 +39,8 @@
   "include": [
     "src/**/*",
     "test/**/*",
-    "vitest.config.mts"
+    "vitest.config.mts",
+    "drizzle.config.ts"
   ],
   "references": [
     { "path": "../ilmomasiina-models/tsconfig.cjs.json" }

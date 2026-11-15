@@ -1,10 +1,15 @@
 import { FastifyInstance } from "fastify";
-import { Transaction } from "sequelize";
 
 import type { AuditEvent, SignupID } from "@tietokilta/ilmomasiina-models";
-import { AuditLog } from "../models/auditlog";
+import { DbOrTx, getDb } from "../db";
+import { auditLogTable } from "../db/schema";
 import type { Event } from "../models/event";
 import type { Signup } from "../models/signup";
+
+type LoggedEvent = Pick<Event, "id" | "title">;
+type LoggedSignup = Pick<Signup, "id" | "firstName" | "lastName"> & {
+  quota?: { event?: LoggedEvent | null } | null;
+};
 
 /**
  * Creates an {@link AuditLogger}
@@ -22,27 +27,24 @@ function eventLogger(ipAddress: string, user?: () => string | null) {
       signupId,
       extra,
     }: {
-      event?: Pick<Event, "id" | "title">;
-      signup?: Signup;
+      event?: LoggedEvent;
+      signup?: LoggedSignup;
       /** Pass signupId directly when the full Signup model is not available. */
       signupId?: SignupID;
-      transaction?: Transaction;
+      transaction?: DbOrTx;
       extra?: object;
     },
   ) => {
-    await AuditLog.create(
-      {
-        user: user ? user() : null,
-        action,
-        eventId: event?.id || signup?.quota?.event?.id || null,
-        eventName: event?.title || signup?.quota?.event?.title || null,
-        signupId: signup?.id || signupId || null,
-        signupName: signup?.firstName != null ? `${signup.firstName} ${signup.lastName}` : null,
-        extra: extra ? JSON.stringify(extra) : null,
-        ipAddress,
-      },
-      { transaction },
-    );
+    await (transaction ?? getDb()).insert(auditLogTable).values({
+      user: user ? user() : null,
+      action,
+      eventId: event?.id || signup?.quota?.event?.id || null,
+      eventName: event?.title || signup?.quota?.event?.title || null,
+      signupId: signup?.id || signupId || null,
+      signupName: signup?.firstName != null ? `${signup.firstName} ${signup.lastName}` : null,
+      extra: extra ? JSON.stringify(extra) : null,
+      ipAddress,
+    });
   };
 }
 

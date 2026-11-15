@@ -4,7 +4,7 @@ import { HttpError, Unauthorized } from "http-errors";
 import type { AdminLoginBody, AdminLoginResponse } from "@tietokilta/ilmomasiina-models";
 import AdminAuthSession, { AdminTokenData } from "../../authentication/adminAuthSession";
 import AdminPasswordAuth from "../../authentication/adminPasswordAuth";
-import { User } from "../../models/user";
+import { getDb } from "../../db";
 import CustomError from "../../util/customError";
 
 export async function adminLogin(
@@ -13,9 +13,9 @@ export async function adminLogin(
   reply: FastifyReply,
 ): Promise<AdminLoginResponse> {
   // Verify user
-  const user = await User.findOne({
+  const user = await getDb().query.user.findFirst({
     where: { email: request.body.email },
-    attributes: ["id", "password", "email"],
+    columns: { id: true, password: true, email: true },
   });
 
   // Verify password
@@ -40,7 +40,7 @@ export async function renewAdminToken(
   const sessionData = this.adminSession.verifySession(request);
 
   // Verify that the user exists
-  const user = await User.findByPk(sessionData.user);
+  const user = await getDb().query.user.findFirst({ where: { id: sessionData.user } });
   if (!user) {
     throw new Unauthorized("User no longer exists");
   }

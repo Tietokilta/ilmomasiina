@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 
 import config from "../src/config";
-import setupDatabase from "../src/models";
+import setupDatabase from "../src/db";
 import { testEvent, testSignups } from "./testData";
 
 // Allows filling up the database with test events for performance testing.

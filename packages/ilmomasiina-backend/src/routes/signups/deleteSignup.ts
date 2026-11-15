@@ -1,11 +1,12 @@
+import { and, eq } from "drizzle-orm";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 import type { SignupID, SignupPathParams } from "@tietokilta/ilmomasiina-models";
 import { AuditEvent } from "@tietokilta/ilmomasiina-models";
 import { AuditLogger } from "../../auditlog";
-import { getSequelize } from "../../models";
-import { Event } from "../../models/event";
-import { Signup } from "../../models/signup";
+import { getDb } from "../../db";
+import { signupTable } from "../../db/schema";
+import { activeSignupCondition, Signup } from "../../models/signup";
 import { checkForConflictingPaymentsForSignupUpdate, expireExistingPaymentsForSignupUpdate } from "../payment/stripe";
 import { refreshSignupPositions } from "./computeSignupPosition";
 import { signupEditable } from "./createNewSignup";
@@ -15,12 +16,13 @@ import { NoSuchSignup, SignupsClosed } from "./errors";
 async function deleteSignup(id: SignupID, auditLogger: AuditLogger, admin = false): Promise<void> {
   await expireExistingPaymentsForSignupUpdate(id);
 
-  const event = await getSequelize().transaction(async (transaction) => {
-    const signup = await Signup.scope("active").findByPk(id, {
-      transaction,
-      lock: transaction.LOCK.UPDATE,
-    });
-    if (signup === null) {
+  const event = await getDb().transaction(async (transaction) => {
+    const [signup] = await transaction
+      .select()
+      .from(signupTable)
+      .where(and(eq(signupTable.id, id), activeSignupCondition()))
+      .for("update");
+    if (!(signup as Signup | undefined)) {
       throw new NoSuchSignup("No signup found with id");
     }
 
@@ -29,33 +31,31 @@ async function deleteSignup(id: SignupID, auditLogger: AuditLogger, admin = fals
     // firing ON DELETE RESTRICT constraints.
     await checkForConflictingPaymentsForSignupUpdate(signup, transaction, admin);
 
-    signup.quota =
-      (await signup.getQuota({
-        attributes: ["id"],
-        include: [
-          {
-            model: Event,
-            attributes: ["id", "title", "registrationStartDate", "registrationEndDate", "openQuotaSize"],
-          },
-        ],
-        transaction,
-      })) ?? undefined;
-    if (!signup.quota || !signup.quota.event) {
+    const quota = await transaction.query.quota.findFirst({
+      where: { id: signup.quotaId, deletedAt: { isNull: true } },
+      columns: { id: true },
+      with: {
+        event: {
+          columns: { id: true, title: true, registrationStartDate: true, registrationEndDate: true },
+        },
+      },
+    });
+    if (!quota || !quota.event) {
       // Quota or event soft deleted
       throw new NoSuchSignup("Signup expired or already deleted");
     }
 
-    if (!admin && !signupEditable(signup.quota.event, signup)) {
+    if (!admin && !signupEditable(quota.event, signup)) {
       throw new SignupsClosed("Signups closed for this event.");
     }
 
     // Soft delete the signup by setting deletedAt
-    await signup.update({ deletedAt: new Date() }, { transaction });
+    await transaction.update(signupTable).set({ deletedAt: new Date() }).where(eq(signupTable.id, signup.id));
 
     // Create an audit log event
-    await auditLogger(AuditEvent.DELETE_SIGNUP, { signup, transaction });
+    await auditLogger(AuditEvent.DELETE_SIGNUP, { signup, event: quota.event, transaction });
 
-    return signup.quota.event;
+    return quota.event;
   });
 
   // Advance the queue and send emails to people that were accepted.

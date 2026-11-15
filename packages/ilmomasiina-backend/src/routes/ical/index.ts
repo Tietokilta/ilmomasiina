@@ -1,9 +1,9 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { createEvents, DateArray } from "ics";
-import { Op } from "sequelize";
 
 import config, { eventDetailsUrl } from "../../config";
-import { Event } from "../../models/event";
+import { getDb } from "../../db";
+import { userEventFilter } from "../../models/event";
 
 function dateToArray(date: Date) {
   return [
@@ -21,21 +21,20 @@ function dateToArray(date: Date) {
 const uidDomain = config.icalUidDomain || new URL(config.baseUrl).hostname;
 
 export async function eventsAsICal() {
-  const events = await Event.scope("user").findAll({
-    where: [
-      {
-        listed: true,
-        // only events, not signup-only
-        date: { [Op.ne]: null },
-        // ignore legacy events with no end date
-        endDate: { [Op.ne]: null },
-      },
-    ],
-    order: [
-      ["date", "ASC"],
-      ["registrationEndDate", "ASC"],
-      ["title", "ASC"],
-    ],
+  const events = await getDb().query.event.findMany({
+    where: {
+      AND: [
+        userEventFilter(),
+        {
+          listed: true,
+          // only events, not signup-only
+          date: { isNotNull: true },
+          // ignore legacy events with no end date
+          endDate: { isNotNull: true },
+        },
+      ],
+    },
+    orderBy: { date: "asc", registrationEndDate: "asc", title: "asc" },
   });
 
   const { error, value } = createEvents(

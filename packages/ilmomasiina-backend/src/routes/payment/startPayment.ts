@@ -1,8 +1,7 @@
+import { and, eq } from "drizzle-orm";
 import { FastifyReply, FastifyRequest } from "fastify";
 import moment from "moment";
-import { DatabaseError as PgDatabaseError } from "pg";
-import { DatabaseError, Transaction, UniqueConstraintError } from "sequelize";
-import Stripe from "stripe";
+import { Stripe } from "stripe";
 
 import {
   AuditEvent,
@@ -15,11 +14,12 @@ import {
 } from "@tietokilta/ilmomasiina-models";
 import type { AuditLogger } from "../../auditlog";
 import config from "../../config";
-import { getSequelize } from "../../models";
-import { Event } from "../../models/event";
-import { Payment } from "../../models/payment";
-import { Quota } from "../../models/quota";
-import { Signup } from "../../models/signup";
+import { getDb } from "../../db";
+import { paymentTable, signupTable } from "../../db/schema";
+import { databaseErrorCode, RAISE_EXCEPTION, UNIQUE_VIOLATION } from "../../models/errors";
+import type { Event } from "../../models/event";
+import type { Payment } from "../../models/payment";
+import { activeSignupCondition, activeSignupFilter, hasPrice, Signup } from "../../models/signup";
 import { NoSuchSignup } from "../signups/errors";
 import {
   OnlinePaymentsDisabled,
@@ -31,11 +31,14 @@ import {
 } from "./errors";
 import { createCheckoutSession, getStripe, refreshCheckoutSession } from "./stripe";
 
-function validateSignupStatusForPayment(signup: Signup) {
+/** The fields of an event needed for creating a payment. */
+type PaymentEvent = Pick<Event, "id" | "title" | "preferredFrontend">;
+
+function validateSignupStatusForPayment(signup: Pick<Signup, "confirmedAt" | "price" | "status">) {
   if (!signup.confirmedAt) {
     throw new SignupNotConfirmed("Signup must be confirmed before payment");
   }
-  if (!signup.hasPrice) {
+  if (!hasPrice(signup)) {
     throw new PaymentNotRequired("This signup does not require payment");
   }
   if (signup.status !== SignupStatus.IN_QUOTA && signup.status !== SignupStatus.IN_OPEN_QUOTA) {
@@ -44,7 +47,7 @@ function validateSignupStatusForPayment(signup: Signup) {
 }
 
 /** Create a new Payment and Stripe checkout session from the given signup. */
-async function createPayment(signupId: SignupID, event: Event, auditLogger: AuditLogger): Promise<string> {
+async function createPayment(signupId: SignupID, event: PaymentEvent, auditLogger: AuditLogger): Promise<string> {
   const expiresAt = moment().add(config.stripeCheckoutExpiryMins, "minutes");
   // Stripe requires at least 30 minutes expiry; add some buffer for making the request.
   if (config.stripeCheckoutExpiryMins === 30) expiresAt.add(30, "seconds");
@@ -53,14 +56,15 @@ async function createPayment(signupId: SignupID, event: Event, auditLogger: Audi
   let payment: Payment;
   let signup: Signup;
   try {
-    [payment, signup] = await getSequelize().transaction(async (transaction) => {
+    [payment, signup] = await getDb().transaction(async (transaction) => {
       // Re-fetch signup with FOR UPDATE lock
       // This waits if a signup update is in progress (holding the lock)
-      const freshSignup = await Signup.scope("active").findByPk(signupId, {
-        transaction,
-        lock: Transaction.LOCK.UPDATE,
-      });
-      if (!freshSignup) {
+      const [freshSignup] = await transaction
+        .select()
+        .from(signupTable)
+        .where(and(eq(signupTable.id, signupId), activeSignupCondition()))
+        .for("update");
+      if (!(freshSignup as Signup | undefined)) {
         throw new NoSuchSignup("Signup not found");
       }
 
@@ -68,21 +72,21 @@ async function createPayment(signupId: SignupID, event: Event, auditLogger: Audi
       validateSignupStatusForPayment(freshSignup);
 
       // Create Payment with fresh data
-      const newPayment = await Payment.create(
-        {
+      const [newPayment] = await transaction
+        .insert(paymentTable)
+        .values({
           signupId,
           amount: freshSignup.price!,
           currency: freshSignup.currency!,
           products: freshSignup.products!,
           expiresAt: expiresAt.toDate(),
-        },
-        { transaction },
-      );
-      return [newPayment, freshSignup];
+        })
+        .returning();
+      return [newPayment, freshSignup] as const;
     });
   } catch (error) {
     // Unique constraint violation means another request already created a payment.
-    if (error instanceof UniqueConstraintError) {
+    if (databaseErrorCode(error) === UNIQUE_VIOLATION) {
       throw new PaymentInProgress("Payment creation already in progress");
     }
     throw error;
@@ -94,23 +98,26 @@ async function createPayment(signupId: SignupID, event: Event, auditLogger: Audi
     session = await createCheckoutSession(signup, payment, event.preferredFrontend);
   } catch (error) {
     // Mark as failed - user can retry by starting a new payment
-    await Payment.update({ status: PaymentStatus.CREATION_FAILED }, { where: { id: payment.id } });
+    await getDb()
+      .update(paymentTable)
+      .set({ status: PaymentStatus.CREATION_FAILED })
+      .where(eq(paymentTable.id, payment.id));
     throw error;
   }
 
   // Transition to PENDING and log audit event in same transaction.
   try {
-    await getSequelize().transaction(async (transaction) => {
-      await Payment.update(
-        { status: PaymentStatus.PENDING, stripeCheckoutSessionId: session.id },
-        // This can fail if a concurrent signup update has marked it CREATION_FAILED.
-        // Intentionally don't filter on current status so we can get a trigger error instead of a silent ignore.
-        { where: { id: payment.id }, transaction },
-      );
+    await getDb().transaction(async (transaction) => {
+      // This can fail if a concurrent signup update has marked it CREATION_FAILED.
+      // Intentionally don't filter on current status so we can get a trigger error instead of a silent ignore.
+      await transaction
+        .update(paymentTable)
+        .set({ status: PaymentStatus.PENDING, stripeCheckoutSessionId: session.id })
+        .where(eq(paymentTable.id, payment.id));
       await auditLogger(AuditEvent.START_PAYMENT, { signup, event, transaction });
     });
   } catch (error) {
-    if (error instanceof DatabaseError && (error.parent as PgDatabaseError).code === "P0001") {
+    if (databaseErrorCode(error) === RAISE_EXCEPTION) {
       throw new PaymentInProgress("Payment creation failed due to concurrent update");
     }
     throw error;
@@ -127,7 +134,7 @@ async function createPayment(signupId: SignupID, event: Event, auditLogger: Audi
 async function handlePendingPayment(
   signupId: SignupID,
   payment: Payment,
-  event: Event,
+  event: PaymentEvent,
   auditLogger: AuditLogger,
 ): Promise<string> {
   const session = await refreshCheckoutSession(payment, auditLogger);
@@ -151,23 +158,15 @@ async function handlePendingPayment(
 /** Get or create a payment for the signup. Returns payment URL. */
 async function getOrCreatePayment(signupId: SignupID, auditLogger: AuditLogger): Promise<string> {
   // Load the signup with its active payment and event
-  const signup = await Signup.scope("active").findByPk(signupId, {
-    include: [
-      {
-        model: Payment.scope("active"),
-        as: "activePayment",
-        required: false,
+  const signup = await getDb().query.signup.findFirst({
+    where: { AND: [activeSignupFilter(), { id: signupId }] },
+    with: {
+      activePayment: true,
+      quota: {
+        columns: { id: true },
+        with: { event: { columns: { id: true, title: true, payments: true, preferredFrontend: true } } },
       },
-      {
-        model: Quota,
-        include: [
-          {
-            model: Event,
-            attributes: ["id", "title", "payments", "preferredFrontend"],
-          },
-        ],
-      },
-    ],
+    },
   });
   if (!signup || !signup.quota || !signup.quota.event) {
     throw new NoSuchSignup("Signup not found");

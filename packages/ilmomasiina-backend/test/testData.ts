@@ -1,23 +1,35 @@
 import { faker } from "@faker-js/faker";
 import { range } from "lodash";
 import moment from "moment";
-import { Optional, UniqueConstraintError } from "sequelize";
 
 import { OPTION_QUESTION_TYPES, PaymentMode, QuestionID, QuestionType } from "@tietokilta/ilmomasiina-models";
 import config from "../src/config";
-import { Answer, AnswerCreationAttributes } from "../src/models/answer";
-import { Event, EventAttributes } from "../src/models/event";
-import { Question, QuestionAttributes, QuestionCreationAttributes } from "../src/models/question";
-import { Quota, QuotaAttributes } from "../src/models/quota";
-import { Signup, SignupAttributes, SignupCreationAttributes } from "../src/models/signup";
-import { User } from "../src/models/user";
+import { getDb } from "../src/db";
+import { answerTable, eventTable, questionTable, quotaTable, signupTable, userTable } from "../src/db/schema";
+import type { Answer, AnswerInsert } from "../src/models/answer";
+import { databaseErrorCode, UNIQUE_VIOLATION } from "../src/models/errors";
+import type { Event } from "../src/models/event";
+import { normalizeOptions, Question } from "../src/models/question";
+import type { Quota } from "../src/models/quota";
+import type { Signup, SignupInsert } from "../src/models/signup";
 import { computePrice, getQuotaProducts, validateAnswersAndGetProducts } from "../src/routes/signups/updateSignup";
 
-export function testUser() {
-  return User.create({
-    email: faker.internet.email(),
-    password: faker.internet.password(),
-  });
+/** A signup, with answers if they have been loaded. */
+export type TestSignup = Signup & { answers?: Answer[] };
+/** A quota, with signups if they have been loaded by `fetchSignups()`. */
+export type TestQuota = Quota & { signups?: (Signup & { answers: Answer[] })[] };
+/** An event with its questions and quotas. */
+export type TestEvent = Event & { questions: Question[]; quotas: TestQuota[] };
+
+export async function testUser() {
+  const [user] = await getDb()
+    .insert(userTable)
+    .values({
+      email: faker.internet.email(),
+      password: faker.internet.password(),
+    })
+    .returning();
+  return user;
 }
 
 type TestEventOptions = {
@@ -27,11 +39,11 @@ type TestEventOptions = {
   signupState?: "not-open" | "open" | "closed";
   questionCount?: number;
   quotaCount?: number;
-  quotaOverrides?: Partial<QuotaAttributes>;
-  questionOverrides?: Partial<QuestionAttributes>;
+  quotaOverrides?: Partial<Quota>;
+  questionOverrides?: Partial<Question>;
 };
 
-type TestEventAttribs = Optional<EventAttributes, "id" | "updatedAt">;
+type TestEventAttribs = Omit<Event, "id" | "createdAt" | "updatedAt" | "deletedAt">;
 
 /** Generates randomized attributes for a test event. The event is not saved.
  *
@@ -111,7 +123,8 @@ export function testQuestionPrices(optionCount: number) {
 }
 
 export function testQuestionAttributes() {
-  const attribs: Omit<QuestionCreationAttributes, "eventId" | "order"> = {
+  const attribs: Pick<Question, "question" | "type" | "required" | "public"> &
+    Partial<Pick<Question, "options" | "prices">> = {
     question: faker.lorem.words({ min: 1, max: 5 }),
     type: faker.helpers.arrayElement(Object.values(QuestionType)),
     required: faker.datatype.boolean(),
@@ -139,54 +152,53 @@ export function testQuotaAttributes() {
  * @param overrides Fields to set on the event right before saving.
  * @returns The created event, with `questions` and `quotas` populated.
  */
-export async function testEvent(options: TestEventOptions = {}, overrides: Partial<EventAttributes> = {}) {
+export async function testEvent(options: TestEventOptions = {}, overrides: Partial<Event> = {}): Promise<TestEvent> {
   const { questionCount = faker.number.int({ min: 1, max: 5 }), quotaCount = faker.number.int({ min: 1, max: 4 }) } =
     options;
-  const event = new Event(testEventAttributes(options));
-  event.set(overrides);
+  const db = getDb();
+  const values = { ...testEventAttributes(options), ...overrides };
+  const insert = async (slug: string) => {
+    const [created] = await db
+      .insert(eventTable)
+      .values({ ...values, slug })
+      .returning();
+    return created;
+  };
+  let event: Event;
   try {
-    await event.save();
+    event = await insert(values.slug);
   } catch (err) {
-    if (err instanceof UniqueConstraintError) {
-      // Slug must be unique... this ought to be enough.
-      event.slug += faker.string.alphanumeric(8);
-      await event.save();
-    } else {
-      throw err;
-    }
+    if (databaseErrorCode(err) !== UNIQUE_VIOLATION) throw err;
+    // Slug must be unique... this ought to be enough.
+    event = await insert(values.slug + faker.string.alphanumeric(8));
   }
-  event.questions = await Question.bulkCreate(
-    range(questionCount).map((i) => {
-      const values = {
-        eventId: event.id,
-        order: i,
-        ...testQuestionAttributes(),
-        ...options.questionOverrides,
-      };
-      return { ...values, ...Question.normalizeOptions(values) };
-    }),
-  );
-  event.quotas = await Quota.bulkCreate(
-    range(quotaCount).map((i) => ({
+  const questionValues = range(questionCount).map((i) => {
+    const question = {
       eventId: event.id,
       order: i,
-      ...testQuotaAttributes(),
-      ...options.quotaOverrides,
-    })),
-  );
-  for (const quota of event.quotas) {
-    // Populate backlink to event
-    quota.event = event;
-  }
-  return event;
+      ...testQuestionAttributes(),
+      ...options.questionOverrides,
+    };
+    return { ...question, ...normalizeOptions(question) };
+  });
+  const quotaValues = range(quotaCount).map((i) => ({
+    eventId: event.id,
+    order: i,
+    ...testQuotaAttributes(),
+    ...options.quotaOverrides,
+  }));
+  // Rows are returned in the order they were inserted in.
+  const questions = questionValues.length ? await db.insert(questionTable).values(questionValues).returning() : [];
+  const quotas = quotaValues.length ? await db.insert(quotaTable).values(quotaValues).returning() : [];
+  return { ...event, questions, quotas };
 }
 
 type TestSignupsOptions = {
-  event: Event;
+  event: TestEvent;
   count?: number;
   expired?: boolean;
   confirmed?: boolean;
-  overrides?: Partial<SignupAttributes>;
+  overrides?: Partial<Signup>;
   answers?: Record<QuestionID, string | string[]>;
 };
 
@@ -205,16 +217,14 @@ export async function testSignups({
   confirmed = expired ? false : undefined,
   overrides = {},
   answers = {},
-}: TestSignupsOptions): Promise<Signup[]> {
-  if (!event.quotas || !event.questions) {
-    throw new Error("testSignups() expects event.quotas and event.questions to be populated");
-  }
+}: TestSignupsOptions): Promise<TestSignup[]> {
+  if (!count) return [];
   if (!event.quotas.length) {
     throw new Error("testSignups() needs at least one existing quota");
   }
-  const signupValues = range(count).map((): SignupCreationAttributes => {
-    const signup: SignupCreationAttributes = {
-      quotaId: faker.helpers.arrayElement(event.quotas!).id,
+  const signupValues = range(count).map((): SignupInsert => {
+    const signup: SignupInsert = {
+      quotaId: faker.helpers.arrayElement(event.quotas).id,
     };
     if (expired) {
       // Expired signup (never confirmed)
@@ -254,8 +264,8 @@ export async function testSignups({
   // Generate answers and update signups with prices.
   const answerValues = signupValues.map((signup) => {
     if (!signup.confirmedAt) return [];
-    const answersForSignup = event.questions!.map((question) => {
-      const answer: Omit<AnswerCreationAttributes, "signupId"> = {
+    const answersForSignup = event.questions.map((question) => {
+      const answer: Omit<AnswerInsert, "signupId"> = {
         questionId: question.id,
         answer: "",
       };
@@ -291,42 +301,40 @@ export async function testSignups({
       }
       return answer;
     });
-    const quota = event.quotas!.find((q) => q.id === signup.quotaId)!;
+    const quota = event.quotas.find((q) => q.id === signup.quotaId)!;
     const products = [
-      ...getQuotaProducts(quota),
+      ...getQuotaProducts(quota, event),
       ...validateAnswersAndGetProducts(event, answersForSignup, true).answerProducts,
     ];
     Object.assign(signup, computePrice(products));
     return answersForSignup;
   });
   // Actually create signups.
-  const signups = await Signup.bulkCreate(signupValues);
+  const db = getDb();
+  // Rows are returned in the order they were inserted in.
+  const signups = await db.insert(signupTable).values(signupValues).returning();
   // Add signup IDs to answers and create them.
-  // (Note: This would not work in MySQL, since it doesn't return us the IDs from Signup.bulkCreate.)
-  await Answer.bulkCreate(
-    answerValues.flatMap((answersForSignup, i) =>
-      answersForSignup.map((ans) => ({
-        ...ans,
-        signupId: signups[i].id,
-      })),
-    ),
+  const answersToCreate = answerValues.flatMap((answersForSignup, i) =>
+    answersForSignup.map((ans) => ({
+      ...ans,
+      signupId: signups[i].id,
+    })),
   );
+  if (answersToCreate.length) await db.insert(answerTable).values(answersToCreate);
   return signups;
 }
 
-export async function fetchSignups(event: Event) {
-  if (!event.quotas) {
-    throw new Error("fetchSignups() expects event.quotas and event.questions to be populated");
-  }
+/** Loads all signups and their answers into `signups` of each quota of the event. */
+export async function fetchSignups(event: TestEvent) {
   if (!event.quotas.length) {
     throw new Error("fetchSignups() needs at least one existing quota");
   }
-  await Promise.all(
-    event.quotas.map(async (quota) => {
-      // eslint-disable-next-line no-param-reassign
-      quota.signups = await quota.getSignups({
-        include: [Answer],
-      });
-    }),
+  const signupsPerQuota = await Promise.all(
+    event.quotas.map((quota) =>
+      getDb().query.signup.findMany({ where: { quotaId: quota.id }, with: { answers: true } }),
+    ),
   );
+  for (const [i, quota] of event.quotas.entries()) {
+    quota.signups = signupsPerQuota[i];
+  }
 }

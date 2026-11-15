@@ -1,12 +1,15 @@
 import { FastifyReply, FastifyRequest } from "fastify";
+import { omit } from "lodash";
 
 import { SignupForEditResponse, SignupPathParams } from "@tietokilta/ilmomasiina-models";
-import { Answer } from "../../models/answer";
-import { Event } from "../../models/event";
-import { Payment } from "../../models/payment";
-import { Question } from "../../models/question";
-import { Quota } from "../../models/quota";
-import { Signup } from "../../models/signup";
+import { getDb } from "../../db";
+import {
+  activeSignupFilter,
+  confirmableUntil,
+  editableAtLeastUntil,
+  effectivePaymentStatus,
+  isConfirmed,
+} from "../../models/signup";
 import { StringifyApi } from "../utils";
 import { NoSuchSignup } from "./errors";
 
@@ -15,33 +18,35 @@ export default async function getSignupForEdit(
   request: FastifyRequest<{ Params: SignupPathParams }>,
   reply: FastifyReply,
 ): Promise<SignupForEditResponse> {
-  const signup = await Signup.scope("active").findByPk(request.params.id, {
-    include: [
-      {
-        model: Answer,
-        required: false,
-      },
-      {
-        model: Quota,
-        include: [{ model: Event }],
-      },
-      {
-        model: Payment,
-        attributes: ["status"],
-        required: false,
-      },
-    ],
+  const db = getDb();
+  const found = await db.query.signup.findFirst({
+    where: { AND: [activeSignupFilter(), { id: request.params.id }] },
+    with: {
+      answers: true,
+      quota: { with: { event: true } },
+      payments: { columns: { status: true } },
+    },
   });
-  if (!signup || !signup.quota || !signup.quota.event) {
+  const event = found?.quota?.event;
+  if (!found || !found.quota || !event) {
     // Event not found with id, probably deleted
     throw new NoSuchSignup("Signup expired or already deleted");
   }
 
-  const { event } = signup.quota;
+  const { answers, payments, quota: quotaWithEvent, ...signup } = found;
+  const quota = omit(quotaWithEvent, "event");
 
   // Fetch these separately to avoid O(n^3) returned rows.
-  event.questions = await Question.findAll({ where: { eventId: event.id }, order: [["order", "ASC"]] });
-  event.quotas = await Quota.findAll({ where: { eventId: event.id }, order: [["order", "ASC"]] });
+  const [questions, quotas] = await Promise.all([
+    db.query.question.findMany({
+      where: { eventId: event.id, deletedAt: { isNull: true } },
+      orderBy: { order: "asc" },
+    }),
+    db.query.quota.findMany({
+      where: { eventId: event.id, deletedAt: { isNull: true } },
+      orderBy: { order: "asc" },
+    }),
+  ]);
 
   // Determine how long the signup can be edited for.
   let editableForMillis = 0;
@@ -50,26 +55,22 @@ export default async function getSignupForEdit(
     editableForMillis = Math.max(
       0,
       event.registrationEndDate.getTime() - now,
-      signup.editableAtLeastUntil.getTime() - now,
+      editableAtLeastUntil(signup).getTime() - now,
     );
   }
-  const confirmableForMillis = signup.confirmedAt ? 0 : Math.max(0, signup.confirmableUntil.getTime() - now);
+  const confirmableForMillis = signup.confirmedAt ? 0 : Math.max(0, confirmableUntil(signup).getTime() - now);
 
   const response = {
     signup: {
-      ...signup.get({ plain: true }),
-      confirmed: signup.confirmed,
-      answers: signup.answers!.map((answer) => answer.get({ plain: true })),
-      quota: signup.quota.get({ plain: true }),
-      paymentStatus: signup.effectivePaymentStatus,
+      ...signup,
+      confirmed: isConfirmed(signup),
+      answers,
+      quota,
+      paymentStatus: effectivePaymentStatus(signup, payments),
       confirmableForMillis,
       editableForMillis,
     },
-    event: {
-      ...event.get({ plain: true }),
-      questions: event.questions.map((question) => question.get({ plain: true })),
-      quotas: event.quotas.map((quota) => quota.get({ plain: true })),
-    },
+    event: { ...event, questions, quotas },
   };
 
   reply.status(200);

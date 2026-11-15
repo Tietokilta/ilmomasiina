@@ -1,12 +1,11 @@
 import debug from "debug";
+import { and, eq, inArray, isNotNull, isNull, lt, ne, or } from "drizzle-orm";
+import { chunk } from "lodash";
 import moment from "moment";
-import { Op } from "sequelize";
 
 import config from "../config";
-import { Answer } from "../models/answer";
-import { Event } from "../models/event";
-import { Quota } from "../models/quota";
-import { Signup } from "../models/signup";
+import { getDb, MAX_LIST_PARAMS } from "../db";
+import { answerTable, eventTable, quotaTable, signupTable } from "../db/schema";
 
 const redactedName = "Deleted";
 const redactedEmail = "deleted@gdpr.invalid";
@@ -16,62 +15,31 @@ const debugLog = debug("app:cron:anonymize");
 
 export default async function anonymizeOldSignups() {
   const redactOlderThan = moment().subtract(config.anonymizeAfterDays, "days").toDate();
+  const db = getDb();
 
-  const signups = await Signup.findAll({
-    include: [
-      {
-        model: Quota,
-        attributes: [],
-        include: [
-          {
-            model: Event,
-            attributes: [],
-          },
-        ],
-      },
-    ],
-    where: {
-      [Op.and]: [
-        {
-          // Only anonymize if name and email aren't anonymized already
-          [Op.or]: {
-            firstName: {
-              [Op.ne]: redactedName,
-            },
-            lastName: {
-              [Op.ne]: redactedName,
-            },
-            email: {
-              [Op.ne]: redactedEmail,
-            },
-          },
-        },
-        {
-          [Op.or]: {
-            // Only anonymize if the event was long enough ago
-            "$quota.event.date$": {
-              [Op.lt]: redactOlderThan,
-            },
-            // Or the event has no date and the signup closed long enough ago
-            [Op.and]: {
-              "$quota.event.date$": {
-                [Op.eq]: null,
-              },
-              "$quota.event.registrationEndDate$": {
-                [Op.lt]: redactOlderThan,
-              },
-            },
-          },
-        },
-        {
-          // Don't touch unconfirmed signups
-          confirmedAt: {
-            [Op.not]: null,
-          },
-        },
-      ],
-    },
-  });
+  const signups = await db
+    .select({ id: signupTable.id })
+    .from(signupTable)
+    .innerJoin(quotaTable, and(eq(quotaTable.id, signupTable.quotaId), isNull(quotaTable.deletedAt)))
+    .innerJoin(eventTable, and(eq(eventTable.id, quotaTable.eventId), isNull(eventTable.deletedAt)))
+    .where(
+      and(
+        // Only anonymize if name and email aren't anonymized already
+        or(
+          ne(signupTable.firstName, redactedName),
+          ne(signupTable.lastName, redactedName),
+          ne(signupTable.email, redactedEmail),
+        ),
+        or(
+          // Only anonymize if the event was long enough ago
+          lt(eventTable.date, redactOlderThan),
+          // Or the event has no date and the signup closed long enough ago
+          and(isNull(eventTable.date), lt(eventTable.registrationEndDate, redactOlderThan)),
+        ),
+        // Don't touch unconfirmed signups
+        isNotNull(signupTable.confirmedAt),
+      ),
+    );
   if (signups.length === 0) {
     debugLog("No old signups to redact");
     return;
@@ -81,20 +49,19 @@ export default async function anonymizeOldSignups() {
 
   console.info(`Redacting older signups: ${ids.join(", ")}`);
   try {
-    await Signup.update(
-      {
-        firstName: redactedName,
-        lastName: redactedName,
-        email: redactedEmail,
-      },
-      { where: { id: ids } },
-    );
-    await Answer.update(
-      {
-        answer: redactedAnswer,
-      },
-      { where: { signupId: ids } },
-    );
+    for (const batch of chunk(ids, MAX_LIST_PARAMS)) {
+      // eslint-disable-next-line no-await-in-loop -- batches are run in sequence to limit load
+      await db
+        .update(signupTable)
+        .set({
+          firstName: redactedName,
+          lastName: redactedName,
+          email: redactedEmail,
+        })
+        .where(inArray(signupTable.id, batch));
+      // eslint-disable-next-line no-await-in-loop -- batches are run in sequence to limit load
+      await db.update(answerTable).set({ answer: redactedAnswer }).where(inArray(answerTable.signupId, batch));
+    }
     debugLog("Signups anonymized");
   } catch (error) {
     console.error(error);

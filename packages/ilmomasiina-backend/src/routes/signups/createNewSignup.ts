@@ -1,16 +1,16 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 
 import { AuditEvent, type SignupCreateBody, type SignupCreateResponse } from "@tietokilta/ilmomasiina-models";
-import { getSequelize } from "../../models";
-import { Event } from "../../models/event";
-import { Quota } from "../../models/quota";
-import { Signup } from "../../models/signup";
+import { getDb } from "../../db";
+import { signupTable } from "../../db/schema";
+import { Event, userEventFilter } from "../../models/event";
+import { editableAtLeastUntil, Signup } from "../../models/signup";
 import { refreshSignupPositions } from "./computeSignupPosition";
 import { generateToken } from "./editTokens";
 import { NoSuchQuota, SignupsClosed } from "./errors";
 
 /** Checks whether signups can still be created. */
-export const signupsAllowed = (event: Event) => {
+export const signupsAllowed = (event: Pick<Event, "registrationStartDate" | "registrationEndDate">) => {
   if (event.registrationStartDate === null || event.registrationEndDate === null) {
     return false;
   }
@@ -20,24 +20,25 @@ export const signupsAllowed = (event: Event) => {
 };
 
 /** Checks whether a signup is still editable. */
-export const signupEditable = (event: Event, signup: Signup) =>
-  signupsAllowed(event) || new Date() <= signup.editableAtLeastUntil;
+export const signupEditable = (
+  event: Pick<Event, "registrationStartDate" | "registrationEndDate">,
+  signup: Pick<Signup, "createdAt">,
+) => signupsAllowed(event) || new Date() <= editableAtLeastUntil(signup);
 
 export default async function createSignup(
   request: FastifyRequest<{ Body: SignupCreateBody }>,
   response: FastifyReply,
 ): Promise<SignupCreateResponse> {
-  const { newSignup, event } = await getSequelize().transaction(async (transaction) => {
+  const { newSignup, event } = await getDb().transaction(async (transaction) => {
     // Find the given quota and event.
-    const quota = await Quota.findByPk(request.body.quotaId, {
-      attributes: [],
-      include: [
-        {
-          model: Event.scope("user"),
-          attributes: ["id", "title", "registrationStartDate", "registrationEndDate", "openQuotaSize"],
+    const quota = await transaction.query.quota.findFirst({
+      where: { id: request.body.quotaId, deletedAt: { isNull: true }, event: userEventFilter() },
+      columns: { id: true },
+      with: {
+        event: {
+          columns: { id: true, title: true, registrationStartDate: true, registrationEndDate: true },
         },
-      ],
-      transaction,
+      },
     });
 
     // Do some validation.
@@ -50,7 +51,7 @@ export default async function createSignup(
     }
 
     // Create the signup.
-    const signup = await Signup.create({ quotaId: request.body.quotaId }, { transaction });
+    const [signup] = await transaction.insert(signupTable).values({ quotaId: quota.id }).returning();
 
     // Create an audit log event
     await request.logEvent(AuditEvent.CREATE_SIGNUP, { signup, event: quota.event, transaction });
