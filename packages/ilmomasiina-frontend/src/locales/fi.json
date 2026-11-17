@@ -186,6 +186,7 @@
     "editor.basic.startDate": "Alkuaika",
     "editor.basic.endDate": "Loppuaika",
     "editor.basic.endDate.info": "Tapahtuma näkyy kalenteriviennissä vain, jos sille on asetettu loppuaika.",
+    "editor.basic.wholeDay.check": "Koko päivän tapahtuma",
     "editor.basic.url": "Tapahtuman URL",
     "editor.basic.url.checking": "Tarkistetaan saatavuutta\u2026",
     "editor.basic.url.free": "URL-osoite vapaa!",

@@ -41,6 +41,63 @@ const GenerateSlug = () => {
   return null;
 };
 
+/** Returns a copy of the date set to the first moment of its (local) day. */
+const startOfDay = (date: Date) => {
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  return start;
+};
+
+/** Returns a copy of the date set to the last minute (23:59:00.000) of its (local) day. */
+const endOfDay = (date: Date) => {
+  const end = new Date(date);
+  end.setHours(23, 59, 0, 0);
+  return end;
+};
+
+const isWholeDay = (date: Date | null, endDate: Date | null) =>
+  date instanceof Date &&
+  endDate instanceof Date &&
+  date.getTime() === startOfDay(date).getTime() &&
+  endDate.getTime() === endOfDay(endDate).getTime();
+
+const WholeDayCheckbox = () => {
+  const { t } = useTranslation();
+  const form = useForm();
+
+  const date = useFieldValue<Date | null>("date");
+  const endDate = useFieldValue<Date | null>("endDate");
+
+  const checked = isWholeDay(date, endDate);
+
+  // Keep the end date at minimum at the end of the start date when whole day is checked.
+  useEffect(() => {
+    if (checked && date instanceof Date && endDate instanceof Date && endDate < endOfDay(date)) {
+      form.change("endDate", endOfDay(date));
+    }
+  }, [checked, date, endDate, form]);
+
+  return (
+    <FieldRow name="wholeDayEvent" checkAlign help={t("editor.basic.endDate.info")}>
+      <Form.Check
+        type="checkbox"
+        label={t("editor.basic.wholeDay.check")}
+        checked={checked}
+        disabled={!(date instanceof Date)}
+        onChange={(e) => {
+          if (!(date instanceof Date)) return;
+          if (e.target.checked) {
+            form.change("date", startOfDay(date));
+            form.change("endDate", endOfDay(endDate instanceof Date && endDate >= date ? endDate : date));
+          } else {
+            form.change("endDate", null);
+          }
+        }}
+      />
+    </FieldRow>
+  );
+};
+
 const SlugAvailability = () => {
   const { slugAvailability, event, checkingSlugAvailability, checkSlugAvailability } = useStore(
     (state) => state.editor,
@@ -157,10 +214,10 @@ const BasicDetailsTab = () => {
           as={DateTimePicker}
           selectsEnd
           startDate={date}
-          help={t("editor.basic.endDate.info")}
           formatError={formatError}
         />
       )}
+      {eventType !== EditorEventType.ONLY_SIGNUP && <WholeDayCheckbox />}
       {eventType !== EditorEventType.ONLY_EVENT && (
         <FieldRow
           name="registrationStartDate"

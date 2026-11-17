@@ -1,6 +1,10 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { createEvents, DateArray } from "ics";
+import { createEvents, DateArray, EventAttributes } from "ics";
+import moment from "moment-timezone";
+import { remark } from "remark";
+import remarkGfm from "remark-gfm";
 import { Op } from "sequelize";
+import stripMarkdown from "strip-markdown";
 
 import config, { eventDetailsUrl } from "../../config";
 import { Event } from "../../models/event";
@@ -15,10 +19,69 @@ function dateToArray(date: Date) {
   ] as DateArray;
 }
 
+function isWholeDayEvent(start: Date, end: Date) {
+  const startLocal = moment(start).tz(config.timezone);
+  const endLocal = moment(end).tz(config.timezone);
+  // Check if startLocal is at 00:00 and endLocal is at 23:59
+  return (
+    startLocal.isSame(startLocal.clone().startOf("day"), "minute") &&
+    endLocal.isSame(endLocal.clone().endOf("day"), "minute")
+  );
+}
+
+function localDayToArray(date: moment.Moment): DateArray {
+  return [date.year(), date.month() + 1, date.date()];
+}
+
+function getIcsEventStartAndEndDate(event: ICalExportableEvent, wholeDay: boolean): [DateArray, DateArray] {
+  if (wholeDay) {
+    // Whole day events need to not be in UTC
+    // otherwise the event could show as starting at the wrong date.
+    // They also do not contain hours or minutes so that ics uses the VALUE=DATE format.
+    const startLocal = moment(event.date).tz(config.timezone);
+    const endLocal = moment(event.endDate).tz(config.timezone);
+    return [localDayToArray(startLocal), localDayToArray(endLocal.clone().add(1, "day"))];
+  }
+
+  return [dateToArray(event.date), dateToArray(event.endDate)];
+}
+
 /** Domain name for generating iCalendar UIDs.
  * @see https://datatracker.ietf.org/doc/html/rfc5545#section-3.8.4.7
  */
 const uidDomain = config.icalUidDomain || new URL(config.baseUrl).hostname;
+
+/** An event that has both a start and an end date, and can thus be exported to iCalendar. */
+export type ICalExportableEvent = Event & { date: Date; endDate: Date };
+
+/** Checks whether an event can be exported to iCalendar, i.e. has both start and end dates. */
+export function isICalExportable(event: Event): event is ICalExportableEvent {
+  return event.date != null && event.endDate != null;
+}
+
+export const stripMarkdownProcessor = remark()
+  .use(remarkGfm)
+  .use(stripMarkdown, { keep: ["link"] }) // this keeps the markdown []() syntax for links. They would be stripped otherwise.
+  .freeze();
+
+export function icsAttrsFromEvent(event: ICalExportableEvent): EventAttributes {
+  const wholeDay = isWholeDayEvent(event.date, event.endDate);
+  const [start, end] = getIcsEventStartAndEndDate(event, wholeDay);
+
+  return {
+    calName: config.icalCalendarName,
+    uid: `${event.id}@${uidDomain}`,
+    start,
+    startInputType: wholeDay ? "local" : "utc",
+    end,
+    endInputType: wholeDay ? "local" : "utc",
+    title: event.title,
+    description: stripMarkdownProcessor.processSync(event.description || "").toString(),
+    location: event.location || undefined,
+    categories: event.category ? [event.category] : undefined,
+    url: eventDetailsUrl({ slug: event.slug, lang: config.defaultLanguage, frontend: event.preferredFrontend }),
+  };
+}
 
 export async function eventsAsICal() {
   const events = await Event.scope("user").findAll({
@@ -38,21 +101,7 @@ export async function eventsAsICal() {
     ],
   });
 
-  const { error, value } = createEvents(
-    events.map((event) => ({
-      calName: config.icalCalendarName,
-      uid: `${event.id}@${uidDomain}`,
-      start: dateToArray(event.date!),
-      startInputType: "utc",
-      end: dateToArray(new Date(event.endDate!)),
-      endInputType: "utc",
-      title: event.title,
-      description: event.description || undefined, // TODO convert markdown
-      location: event.location || undefined,
-      categories: event.category ? [event.category] : undefined,
-      url: eventDetailsUrl({ slug: event.slug, lang: config.defaultLanguage, frontend: event.preferredFrontend }),
-    })),
-  );
+  const { error, value } = createEvents(events.filter(isICalExportable).map(icsAttrsFromEvent));
 
   if (error != null) throw new Error(`Failed to generate iCalendar: ${error}`);
   return value;
