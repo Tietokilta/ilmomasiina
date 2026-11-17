@@ -186,6 +186,7 @@
     "editor.basic.startDate": "Starts at",
     "editor.basic.endDate": "Ends at",
     "editor.basic.endDate.info": "The event will only appear in calendar exports if it has an ending time.",
+    "editor.basic.wholeDay.check": "Whole day event",
     "editor.basic.url": "Event URL",
     "editor.basic.url.checking": "Checking availability\u2026",
     "editor.basic.url.free": "URL available!",

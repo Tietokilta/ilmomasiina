@@ -1,5 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { createEvents, DateArray, EventAttributes } from "ics";
+import moment from "moment-timezone";
 import { remark } from "remark";
 import remarkGfm from "remark-gfm";
 import { Op } from "sequelize";
@@ -16,6 +17,33 @@ function dateToArray(date: Date) {
     date.getUTCHours(),
     date.getUTCMinutes(),
   ] as DateArray;
+}
+
+function isWholeDayEvent(start: Date, end: Date) {
+  const startLocal = moment(start).tz(config.timezone);
+  const endLocal = moment(end).tz(config.timezone);
+  // Check if startLocal is at 00:00 and endLocal is at 23:59
+  return (
+    startLocal.isSame(startLocal.clone().startOf("day"), "minute") &&
+    endLocal.isSame(endLocal.clone().endOf("day"), "minute")
+  );
+}
+
+function localDayToArray(date: moment.Moment): DateArray {
+  return [date.year(), date.month() + 1, date.date()];
+}
+
+function getIcsEventStartAndEndDate(event: ICalExportableEvent, wholeDay: boolean): [DateArray, DateArray] {
+  if (wholeDay) {
+    // Whole day events need to not be in UTC
+    // otherwise the event could show as starting at the wrong date.
+    // They also do not contain hours or minutes so that ics uses the VALUE=DATE format.
+    const startLocal = moment(event.date).tz(config.timezone);
+    const endLocal = moment(event.endDate).tz(config.timezone);
+    return [localDayToArray(startLocal), localDayToArray(endLocal.clone().add(1, "day"))];
+  }
+
+  return [dateToArray(event.date), dateToArray(event.endDate)];
 }
 
 /** Domain name for generating iCalendar UIDs.
@@ -37,13 +65,16 @@ export const stripMarkdownProcessor = remark()
   .freeze();
 
 export function icsAttrsFromEvent(event: ICalExportableEvent): EventAttributes {
+  const wholeDay = isWholeDayEvent(event.date, event.endDate);
+  const [start, end] = getIcsEventStartAndEndDate(event, wholeDay);
+
   return {
     calName: config.icalCalendarName,
     uid: `${event.id}@${uidDomain}`,
-    start: dateToArray(event.date),
-    startInputType: "utc",
-    end: dateToArray(new Date(event.endDate)),
-    endInputType: "utc",
+    start,
+    startInputType: wholeDay ? "local" : "utc",
+    end,
+    endInputType: wholeDay ? "local" : "utc",
     title: event.title,
     description: stripMarkdownProcessor.processSync(event.description || "").toString(),
     location: event.location || undefined,
