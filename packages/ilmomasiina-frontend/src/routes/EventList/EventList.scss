@@ -150,7 +150,8 @@ h2.ilmo--section-label {
 .ilmo--event-card-media {
   position: relative;
   display: block;
-  aspect-ratio: 16 / 9;
+  // Wide banner shape, like a Facebook event cover (851 x 315), so such pictures show almost uncropped.
+  aspect-ratio: 27 / 10;
   // The card itself can't clip overflow (that would cut off dropdowns), so round the corners here.
   border-radius: $card-radius $card-radius 0 0;
   // A strip in the category color under the image.
@@ -191,16 +192,24 @@ h2.ilmo--section-label {
 // Signup state on the left, signup count on the right, in a fixed-height row so all cards line up.
 .ilmo--event-card-eyebrow {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
-  // Room for the signup state on two lines.
-  min-height: 2.3rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+  // Room for the category row and the signup state on two lines.
+  min-height: 4.4rem;
   line-height: 1.35;
-  margin-bottom: 0.45rem;
+  margin-bottom: 0.5rem;
   font-size: 0.75rem;
   font-weight: 500;
   color: $secondary-text-color;
+}
+
+.ilmo--event-card-eyebrow-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 1.5rem;
 }
 
 // Category as a tinted pill in the category's color.
@@ -217,14 +226,6 @@ h2.ilmo--section-label {
   text-transform: uppercase;
   color: var(--cat-ink, #{$secondary-text-color});
   background: var(--cat-tint, #{$secondary-background});
-
-  // Laid over the top left corner of the picture.
-  &.on-media {
-    position: absolute;
-    top: 0.75rem;
-    left: 0.75rem;
-    max-width: calc(100% - 1.5rem);
-  }
 }
 
 // Signup state as a quiet status with a dot. Only "open" uses the accent.
