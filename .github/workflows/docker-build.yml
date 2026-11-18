@@ -2,62 +2,30 @@ name: Build & deploy
 
 env:
   # Change this to upload the built image to your own organization.
-  docker_tag: "ghcr.io/tietokilta/ilmomasiina"
+  docker_tag: "ghcr.io/kaplaaki/ilmomasiina"
 
   # Change these to customize your build.
-  branding_header_title_text: "Tietokillan ilmomasiina"
+  branding_header_title_text: "Kaplaakin ilmomasiina"
   branding_header_title_text_short: "Ilmomasiina"
   branding_footer_gdpr_text: "Tietosuoja"
-  branding_footer_gdpr_link: "https://tietokilta.fi/fi/kilta/ilmorekisteri"
-  branding_footer_home_text: "Tietokilta.fi"
-  branding_footer_home_link: "https://tietokilta.fi"
-  branding_login_placeholder_email: "admin@tietokilta.fi"
+  branding_footer_gdpr_link: "https://kaplaaki.fi/tietosuoja"
+  branding_footer_home_text: "Kaplaaki.fi"
+  branding_footer_home_link: "https://kaplaaki.fi"
+  branding_login_placeholder_email: "tiedottaja@kaplaaki.fi"
 
 on:
   push:
-    tags: ["v*"]
-    # If you want to build on a branch instead of tags, use the following instead (with your own branch name):
-    # branches: [dev]
-    # You'll likely also want to disable lint-test.yml running on the branch in that case, as it's redundant.
+    branches: [main]
 
 jobs:
-  lint:
-    name: Lint & type-check
-    uses: ./.github/workflows/lint-test.yml
-
-  packagejson:
-    name: Check package.json versions
-    runs-on: ubuntu-latest
-    if: github.ref_type == 'tag'
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v4
-
-      - name: Check package.json versions against tag
-        run: |
-          errors=0
-          for file in package.json packages/*/package.json
-          do
-            if cat $file | jq '"v" + .version' | grep -Fqvx '"${{ github.ref_name }}"'
-            then
-              echo "::error file=$file::The version here does not match the Git tag you pushed (${{ github.ref_name }}). This would cause no NPM packages to be published."
-              errors=1
-            fi
-          done
-          exit $errors
-
   docker:
     name: Push Docker image to GitHub Packages
     # If you want to build on a branch instead of tags, remove packagejson from below (since there isn't a tag to check against).
-    needs: [lint, packagejson]
     runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: read
-    # Change this to your repo name to build automatically on your fork.
-    if: github.repository == 'Tietokilta/ilmomasiina' && github.ref_type == 'tag'
-    # If you want to build on a branch instead of tags, use the following instead (with your own branch name):
-    # if: github.repository == 'Tietokilta/ilmomasiina' && github.ref == 'refs/heads/dev'
+    if: github.repository == 'Kaplaaki/ilmomasiina' 
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
@@ -106,87 +74,3 @@ jobs:
             VERSION=${{steps.get-version.outputs.version}}
     outputs:
       tag: ${{ steps.meta.outputs.version }}
-
-  # This is disabled on forks, you'll most likely need to modify it anyway for your usage
-  deploy:
-    name: Push update to App Service
-    needs: docker
-    if: github.repository == 'Tietokilta/ilmomasiina' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v3.')
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - name: Login via Azure CLI
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - uses: azure/webapps-deploy@v3
-        with:
-          app-name: tik-ilmo-prod-app
-          images: "${{ env.docker_tag }}:${{ needs.docker.outputs.tag }}"
-
-  # This is disabled on forks since you probably don't need to upload your own packages
-  npm:
-    name: Publish JS packages
-    needs: [lint, packagejson]
-    permissions:
-      packages: write
-      contents: read
-      # NPM OIDC auth
-      id-token: write
-    if: github.repository == 'Tietokilta/ilmomasiina' && github.ref_type == 'tag'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js for NPM
-        uses: actions/setup-node@v4
-        with:
-          registry-url: "https://registry.npmjs.org"
-          node-version-file: ".nvmrc"
-          cache: "pnpm"
-
-      - # Necessary for OIDC auth
-        name: Update npm to latest
-        run: npm install -g npm@^11
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build packages
-        run: |
-          pnpm run --filter @tietokilta/ilmomasiina-models build
-          pnpm run --filter @tietokilta/ilmomasiina-client build
-
-      - name: Determine NPM tag
-        id: npm-tag
-        run: |
-          VERSION="${{ github.ref_name }}"
-          if [[ $VERSION == *-beta* ]] || [[ $VERSION == *-rc* ]]; then
-            echo "tag=next" >> $GITHUB_OUTPUT
-          elif [[ $VERSION == *-* ]]; then
-            echo "tag=dev" >> $GITHUB_OUTPUT
-          else
-            echo "tag=latest" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Publish to NPM
-        run: |
-          pnpm publish --filter @tietokilta/ilmomasiina-models --no-git-checks --access public --tag ${{ steps.npm-tag.outputs.tag }}
-          pnpm publish --filter @tietokilta/ilmomasiina-client --no-git-checks --access public --tag ${{ steps.npm-tag.outputs.tag }}
-
-      - name: Setup Node.js for GitHub Packages
-        uses: actions/setup-node@v4
-        with:
-          registry-url: "https://npm.pkg.github.com"
-
-      - name: Publish to GitHub Packages
-        run: |
-          pnpm publish --filter @tietokilta/ilmomasiina-models --no-git-checks --access public --tag ${{ steps.npm-tag.outputs.tag }}
-          pnpm publish --filter @tietokilta/ilmomasiina-client --no-git-checks --access public --tag ${{ steps.npm-tag.outputs.tag }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
