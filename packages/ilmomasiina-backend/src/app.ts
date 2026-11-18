@@ -15,6 +15,7 @@ import anonymizeOldSignups from "./cron/anonymizeOldSignups";
 import deleteOldAuditLogs from "./cron/deleteOldAuditLogs";
 import deleteUnconfirmedSignups from "./cron/deleteUnconfirmedSignups";
 import removeDeletedData from "./cron/removeDeletedData";
+import removeUnusedImages from "./cron/removeUnusedImages";
 import enforceHTTPS from "./enforceHTTPS";
 import setupDatabase from "./models";
 import setupRoutes from "./routes";
@@ -138,6 +139,9 @@ export default async function initApp(): Promise<FastifyInstance> {
 
     // Daily at 8am, delete old audit logs
     cron.schedule("0 8 * * *", deleteOldAuditLogs);
+
+    // Daily at 8am, delete uploaded images that no event uses
+    cron.schedule("0 8 * * *", removeUnusedImages);
   }
 
   return server;

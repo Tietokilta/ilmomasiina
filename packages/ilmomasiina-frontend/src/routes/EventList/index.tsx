@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 
-import { Spinner, Table } from "react-bootstrap";
+import { Spinner } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
-import { Link, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 import {
   errorDesc,
@@ -11,48 +11,58 @@ import {
   EventListProvider,
   useEventListContext,
 } from "@tietokilta/ilmomasiina-client";
-import { EventRow, eventsToRows, QuotaRow } from "@tietokilta/ilmomasiina-client/dist/utils/eventListUtils";
-import { ErrorCode } from "@tietokilta/ilmomasiina-models";
+import { SignupState, signupState } from "@tietokilta/ilmomasiina-client/dist/utils/signupState";
+import { ErrorCode, UserEventListItem } from "@tietokilta/ilmomasiina-models";
 import { TKey } from "../../i18n";
 import paths from "../../paths";
-import { useEventDateFormatter } from "../../utils/dateFormat";
-import { useSignupStateText } from "../../utils/signupStateText";
-import TableRow from "./components/TableRow";
+import { buildCategoryColors } from "../../utils/categoryColor";
+import EventCard from "./components/EventCard";
+import ViewControls from "./components/ViewControls";
 
 import "./EventList.scss";
 
-const ListEventRow = ({ row: { slug, title, date, signupState, signupCount, quotaSize } }: { row: EventRow }) => {
-  const stateText = useSignupStateText(signupState);
-  const eventDateFormat = useEventDateFormatter();
-  return (
-    <TableRow
-      className={stateText.class}
-      title={<Link to={paths.eventDetails(slug)}>{title}</Link>}
-      date={date ? eventDateFormat.format(date) : ""}
-      signupStatus={stateText}
-      signupCount={signupCount}
-      quotaSize={quotaSize}
-    />
-  );
-};
+type Section = { key: string; title: TKey; events: UserEventListItem[] };
 
-const ListQuotaRow = ({ row: { type, title, signupCount, quotaSize } }: { row: QuotaRow }) => {
-  const { t } = useTranslation();
-  return (
-    <TableRow
-      className="ilmo--quota-row"
-      title={type === "openquota" ? t("events.openQuota") : title}
-      signupCount={signupCount}
-      quotaSize={quotaSize}
-    />
-  );
-};
-
-const EventListView = () => {
+const EventListView = ({ category }: EventListProps) => {
   const { localizedEvents: events, error, pending } = useEventListContext();
   const { t } = useTranslation();
 
-  const tableRows = useMemo(() => eventsToRows(events ?? []).filter((row) => row.type !== "waitlist"), [events]);
+  // Colors are assigned across all events so that different categories look different.
+  const colorFor = useMemo(() => buildCategoryColors((events ?? []).map((event) => event.category)), [events]);
+
+  // Group events by signup state. Events keep the order given by the server within each group.
+  const sections = useMemo<Section[]>(() => {
+    const groups: Record<"open" | "coming" | "closed" | "noSignup", UserEventListItem[]> = {
+      open: [],
+      coming: [],
+      closed: [],
+      noSignup: [],
+    };
+    (events ?? []).forEach((event) => {
+      switch (signupState(event.registrationStartDate, event.registrationEndDate).state) {
+        case SignupState.open:
+          groups.open.push(event);
+          break;
+        case SignupState.not_opened:
+          groups.coming.push(event);
+          break;
+        case SignupState.closed:
+          groups.closed.push(event);
+          break;
+        default:
+          groups.noSignup.push(event);
+      }
+    });
+    const all: Section[] = [
+      { key: "open", title: "events.section.open", events: groups.open },
+      { key: "coming", title: "events.section.coming", events: groups.coming },
+      // Events that have no signup at all don't fit the three signup states, so they get a section of their own.
+      { key: "noSignup", title: "events.section.noSignup", events: groups.noSignup },
+      // Closed signups are the least relevant, so they go last.
+      { key: "closed", title: "events.section.closed", events: groups.closed },
+    ];
+    return all.filter((section) => section.events.length > 0);
+  }, [events]);
 
   // If initial setup is needed and is possible on this frontend, redirect to that page.
   if (error && error.code === ErrorCode.INITIAL_SETUP_NEEDED && paths.hasAdmin) {
@@ -72,29 +82,30 @@ const EventListView = () => {
     return (
       <>
         <h1>{t("events.title")}</h1>
-        <Spinner animation="border" />
+        <Spinner animation="border" size="sm" />
       </>
     );
   }
 
   return (
     <>
-      <h1>{t("events.title")}</h1>
-      <Table className="ilmo--event-list">
-        <thead>
-          <tr>
-            <th>{t("events.column.name")}</th>
-            <th>{t("events.column.date")}</th>
-            <th>{t("events.column.signupStatus")}</th>
-            <th>{t("events.column.signupCount")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tableRows.map((row) =>
-            row.type === "event" ? <ListEventRow key={row.id} row={row} /> : <ListQuotaRow key={row.id} row={row} />,
-          )}
-        </tbody>
-      </Table>
+      <header className="ilmo--page-header">
+        <h1>{t("events.title")}</h1>
+        <ViewControls current="events" category={category} />
+      </header>
+      {sections.map((section) => (
+        <section key={section.key} className="ilmo--event-section">
+          <h2 className="ilmo--section-label">
+            {t(section.title)}
+            <span className="ilmo--section-count">{section.events.length}</span>
+          </h2>
+          <div className="ilmo--event-grid">
+            {section.events.map((event) => (
+              <EventCard key={event.id} event={event} color={colorFor(event.category)} />
+            ))}
+          </div>
+        </section>
+      ))}
     </>
   );
 };
@@ -105,7 +116,7 @@ const EventList = ({ category }: EventListProps) => {
   } = useTranslation();
   return (
     <EventListProvider category={category} language={language}>
-      <EventListView />
+      <EventListView category={category} />
     </EventListProvider>
   );
 };

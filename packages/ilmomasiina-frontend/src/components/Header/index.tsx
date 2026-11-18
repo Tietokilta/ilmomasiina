@@ -4,7 +4,7 @@ import { Button, Container, Navbar } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
-import logo from "../../assets/logo.svg";
+import logo from "../../assets/logo.png";
 import branding from "../../branding";
 import i18n from "../../i18n";
 import paths from "../../paths";

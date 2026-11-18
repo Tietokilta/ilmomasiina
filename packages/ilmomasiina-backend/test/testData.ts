@@ -56,9 +56,9 @@ export function testEventAttributes({
     description: faker.lorem.paragraphs({ min: 1, max: 5 }),
     price: faker.finance.amount({ symbol: "€" }),
     location: faker.location.streetAddress(),
-    facebookUrl: faker.internet.url(),
     webpageUrl: faker.internet.url(),
     category: faker.lorem.words({ min: 1, max: 2 }),
+    imageUrl: faker.image.url(),
     draft: false,
     listed: true,
     nameQuestion: true, // to be tested separately

@@ -10,14 +10,21 @@ import paths from "../../paths";
 import "./Footer.scss";
 
 const Footer = () => {
-  const { t } = useTranslation();
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation();
+  // Use the English privacy link when the site is in English, if one is configured.
+  const english = language.startsWith("en") && !!branding.footerGdprTextEn && !!branding.footerGdprLinkEn;
+  const gdprText = english ? branding.footerGdprTextEn : branding.footerGdprText;
+  const gdprLink = english ? branding.footerGdprLinkEn : branding.footerGdprLink;
   return (
     <footer>
       <Container>
         <Link to={paths.adminEventsList}>{t("footer.admin")}</Link>
-        {branding.footerGdprText && (
-          <a href={branding.footerGdprLink} target="_blank" rel="noreferrer">
-            {branding.footerGdprText}
+        {gdprText && (
+          <a href={gdprLink} target="_blank" rel="noreferrer">
+            {gdprText}
           </a>
         )}
         {branding.footerHomeText && (

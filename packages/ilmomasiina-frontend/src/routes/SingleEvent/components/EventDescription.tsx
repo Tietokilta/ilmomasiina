@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import { useSingleEventContext } from "@tietokilta/ilmomasiina-client";
+import AddToCalendar from "../../../components/AddToCalendar";
 import LinkButton from "../../../components/LinkButton";
 import useStore from "../../../modules/store";
 import paths from "../../../paths";
@@ -27,6 +28,7 @@ const EventDescription = () => {
           </LinkButton>
         )}
       </nav>
+      {event.imageUrl && <img className="ilmo--event-cover" src={event.imageUrl} alt="" />}
       <div className="ilmo--event-heading">
         {event.category && (
           <p>
@@ -49,6 +51,17 @@ const EventDescription = () => {
             <strong>{t("singleEvent.info.location")}</strong> {event.location}
           </p>
         )}
+        {event.date && (
+          <div className="ilmo--add-to-calendar-row">
+            <AddToCalendar
+              slug={event.slug}
+              title={event.title}
+              start={new Date(event.date)}
+              end={event.endDate ? new Date(event.endDate) : null}
+              location={event.location}
+            />
+          </div>
+        )}
         {event.price && (
           <p>
             <strong>{t("singleEvent.info.price")}</strong> {event.price}
@@ -59,14 +72,6 @@ const EventDescription = () => {
             <strong>{t("singleEvent.info.website")}</strong>{" "}
             <a href={event.webpageUrl} title={t("singleEvent.info.website")}>
               {event.webpageUrl}
-            </a>
-          </p>
-        )}
-        {event.facebookUrl && (
-          <p>
-            <strong>{t("singleEvent.info.facebookEvent")}</strong>{" "}
-            <a href={event.facebookUrl} title={t("singleEvent.info.facebookEvent")}>
-              {event.facebookUrl}
             </a>
           </p>
         )}

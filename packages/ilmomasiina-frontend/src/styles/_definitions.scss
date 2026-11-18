@@ -1,29 +1,75 @@
 @use "sass:color";
 
-// Override theme colors for Bootstrap.
-// These are defined before the imports below for use in Ilmomasiina's SCSS.
+// Design tokens. Neutral warm-grey base, one accent (pine) for primary actions.
+// These are defined before the Bootstrap imports below so Bootstrap's derived variables pick them up.
+// For Bootstrap components, the overrides are passed on in ilmomasiina-frontend/src/styles/app.scss.
+// If you override more variables, add them to the @use there as well.
 
-// For Bootstrap components, the overrides are made in ilmomasiina-frontend/src/styles/app.scss.
-// If you want to override more colors, you'll also need to add them to the @use there.
+// Accent: the only saturated color, used for primary actions and "open" states.
+$accent: #2f5d50 !default;
 
-$primary: #001F3F  !default;
-$secondary: #001F3F  !default;
-$red: #d74949 !default; // further assigned to $danger by Bootstrap
-$green: #319236 !default; // further assigned to $success by Bootstrap
-$text-muted: #888 !default; // uses $secondary by default, but Tietokilta has a dark $secondary
+$primary: $accent !default;
+$secondary: #6b7280 !default;
+$red: #a4473d !default; // muted brick, further assigned to $danger by Bootstrap
+$green: #3d7a5f !default; // further assigned to $success by Bootstrap
 
-// Default button hover color logic doesn't work with Tietokilta's black $primary.
-// You can disable this if you use something light.
-$lighter-primary-hover: true !default;
-$lighter-secondary-hover: true !default;
+// Surfaces and text
+$body-bg: #fafaf8 !default;
+$body-color: #374151 !default;
+$headings-color: #1f2937 !default;
+$text-muted: #6b7280 !default;
+$border-color: #e5e7eb !default;
 
-// Additional colors, only used by Ilmomasiina's SCSS.
+$secondary-background: #f3f4f1 !default;
+$secondary-text-color: #6b7280 !default;
 
-$secondary-background: #f1f1f1 !default;
-$secondary-text-color: #7a7a7a !default;
-
-// If you don't want a header logo, set this to false.
+// The header is a neutral dark bar so the white logo reads clearly.
+$header-bg: #15171a !default;
 $header-logo: true !default;
+
+// Shape
+$border-radius: 0.5rem !default;
+$border-radius-sm: 0.375rem !default;
+$border-radius-lg: 1rem !default;
+$card-radius: 1rem !default;
+
+// Typography
+$font-family-sans-serif:
+  "Inter Variable",
+  system-ui,
+  -apple-system,
+  "Segoe UI",
+  sans-serif !default;
+$font-family-serif: "Newsreader Variable", Georgia, "Times New Roman", serif !default;
+$headings-font-family: $font-family-serif !default;
+$headings-font-weight: 500 !default;
+$line-height-base: 1.65 !default;
+$h1-font-size: 2.75rem !default;
+$h2-font-size: 1.6rem !default;
+$h3-font-size: 1.2rem !default;
+
+// Controls
+$btn-padding-y: 0.6rem !default;
+$btn-padding-x: 1.25rem !default;
+$btn-font-weight: 500 !default;
+$input-padding-y: 0.6rem !default;
+$input-padding-x: 0.9rem !default;
+$input-border-color: #d1d5db !default;
+$input-focus-border-color: $accent !default;
+$input-focus-box-shadow: 0 0 0 0.2rem rgba($accent, 0.15) !default;
+
+// Links
+$link-color: $accent !default;
+$link-decoration: none !default;
+$link-hover-color: color.scale($accent, $lightness: -15%) !default;
+
+// Whitespace scale used by Ilmomasiina's SCSS.
+$space-section: 5rem !default;
+$space-block: 2.5rem !default;
+
+// Default button hover color logic is replaced in _shared.scss.
+$lighter-primary-hover: false !default;
+$lighter-secondary-hover: false !default;
 
 // Import Bootstrap core mixins/variables/functions for use in Ilmomasiina's SCSS.
 
@@ -31,9 +77,9 @@ $header-logo: true !default;
 @import "bootstrap/scss/variables";
 @import "bootstrap/scss/mixins";
 
-// Colors for signup states. You can use Bootstrap variables here.
+// Colors for signup states. Open uses the accent; the rest stay neutral.
 
-$signup-state-not-opened: $body-color !default;
-$signup-state-opened: $green !default;
+$signup-state-not-opened: $secondary !default;
+$signup-state-opened: $accent !default;
 $signup-state-closed: $red !default;
-$signup-state-disabled: color.change($body-color, $alpha: 0.45) !default;
+$signup-state-disabled: $secondary-text-color !default;

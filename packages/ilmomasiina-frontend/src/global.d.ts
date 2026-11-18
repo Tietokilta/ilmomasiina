@@ -13,6 +13,8 @@ declare const BRANDING_HEADER_TITLE_TEXT: string;
 declare const BRANDING_HEADER_TITLE_TEXT_SHORT: string;
 declare const BRANDING_FOOTER_GDPR_TEXT: string;
 declare const BRANDING_FOOTER_GDPR_LINK: string;
+declare const BRANDING_FOOTER_GDPR_TEXT_EN: string;
+declare const BRANDING_FOOTER_GDPR_LINK_EN: string;
 declare const BRANDING_FOOTER_HOME_TEXT: string;
 declare const BRANDING_FOOTER_HOME_LINK: string;
 declare const BRANDING_LOGIN_PLACEHOLDER_EMAIL: string;

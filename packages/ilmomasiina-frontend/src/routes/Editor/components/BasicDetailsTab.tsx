@@ -12,6 +12,7 @@ import useStore from "../../../modules/store";
 import DateTimePicker from "./DateTimePicker";
 import useEditorErrors from "./errors";
 import { useFieldTouched, useFieldValue } from "./hooks";
+import ImageField from "./ImageField";
 import LanguageSelect from "./LanguageSelect";
 import LanguageVersions from "./LanguageVersions";
 import LocalizedFieldRow from "./LocalizedFieldRow";
@@ -32,8 +33,11 @@ const GenerateSlug = () => {
     if (isNew && !touched && title !== undefined) {
       const generatedSlug = title
         .normalize("NFD") // converts e.g. ä to a + umlaut
-        .replace(/[^A-Za-z0-9]+/g, "")
-        .toLocaleLowerCase("fi");
+        .replace(/[\u0300-\u036f]/g, "") // drops the umlauts and other accents
+        .toLocaleLowerCase("fi")
+        .replace(/[^a-z0-9]+/g, "-") // words are separated by hyphens
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 255);
       form.change("slug", generatedSlug);
     }
   }, [form, isNew, title, touched]);
@@ -112,6 +116,7 @@ const BasicDetailsTab = () => {
         label={t("editor.basic.url")}
         required
         maxLength={255}
+        help={t("editor.basic.url.info")}
         extraFeedback={<SlugAvailability />}
         as={SlugField}
         formatError={formatError}
@@ -229,17 +234,11 @@ const BasicDetailsTab = () => {
         inputProps={{ maxLength: 255 }}
         formatError={formatError}
       />
+      <ImageField />
       <LocalizedFieldRow
         name="webpageUrl"
         defaultAsPlaceholder
         label={t("editor.basic.homePage")}
-        maxLength={255}
-        formatError={formatError}
-      />
-      <LocalizedFieldRow
-        name="facebookUrl"
-        defaultAsPlaceholder
-        label={t("editor.basic.facebook")}
         maxLength={255}
         formatError={formatError}
       />

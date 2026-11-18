@@ -32,7 +32,6 @@ interface EventPerLanguageAttributes {
   price: string | null;
   location: string | null;
   webpageUrl: string | null;
-  facebookUrl: string | null;
   verificationEmail: string | null;
 }
 
@@ -50,6 +49,7 @@ export interface EventAttributes extends EventPerLanguageAttributes {
   registrationEndDate: Date | null;
   openQuotaSize: number;
   category: string;
+  imageUrl: string | null;
   draft: boolean;
   listed: boolean;
   signupsPublic: boolean;
@@ -74,9 +74,9 @@ export interface EventCreationAttributes extends Optional<
   | "description"
   | "price"
   | "location"
-  | "facebookUrl"
   | "webpageUrl"
   | "category"
+  | "imageUrl"
   | "draft"
   | "listed"
   | "signupsPublic"
@@ -105,9 +105,9 @@ export class Event extends Model<EventManualAttributes, EventCreationAttributes>
   public description!: string | null;
   public price!: string | null;
   public location!: string | null;
-  public facebookUrl!: string | null;
   public webpageUrl!: string | null;
   public category!: string;
+  public imageUrl!: string | null;
   public draft!: boolean;
   public listed!: boolean;
   public signupsPublic!: boolean;
@@ -252,11 +252,11 @@ export default function setupEventModel(sequelize: Sequelize) {
       location: {
         type: DataTypes.STRING,
       },
-      facebookUrl: {
-        type: DataTypes.STRING,
-      },
       webpageUrl: {
         type: DataTypes.STRING,
+      },
+      imageUrl: {
+        type: DataTypes.STRING(1024),
       },
       category: {
         type: DataTypes.STRING,

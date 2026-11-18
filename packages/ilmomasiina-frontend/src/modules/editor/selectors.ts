@@ -12,8 +12,8 @@ export const defaultEvent = (): EditorEvent => ({
   date: null,
   endDate: null,
   webpageUrl: "",
-  facebookUrl: "",
   category: "",
+  imageUrl: "",
   location: "",
   description: "",
   price: "",
@@ -99,6 +99,8 @@ export const serverEventToEditor = (event: AdminEventResponse): EditorEvent => (
 
 export const editorEventToServer = (form: EditorEvent): ConvertedEditorEvent => ({
   ...form,
+  // Blank image URL means no image.
+  imageUrl: form.imageUrl?.trim() || null,
   // Drop dates if the chosen event type doesn't involve them.
   date: form.eventType === EditorEventType.ONLY_SIGNUP ? null : (form.date?.toISOString() ?? null),
   endDate: form.eventType === EditorEventType.ONLY_SIGNUP ? null : (form.endDate?.toISOString() ?? null),

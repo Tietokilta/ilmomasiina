@@ -1,22 +1,47 @@
 @use "definitions" as *;
 
 @use "bootstrap/scss/bootstrap" with (
-  // Override Bootstrap theme colors
+  // Colors
   $primary: $primary,
   $secondary: $secondary,
   // further assigned to $danger by Bootstrap
   $red: $red,
   // further assigned to $success by Bootstrap
   $green: $green,
+  $body-bg: $body-bg,
+  $body-color: $body-color,
+  $headings-color: $headings-color,
   $text-muted: $text-muted,
+  $border-color: $border-color,
+
+  // Shape
+  $border-radius: $border-radius,
+  $border-radius-sm: $border-radius-sm,
+  $border-radius-lg: $border-radius-lg,
 
   // Typography
-  $font-family-sans-serif: ("Open Sans", sans-serif),
-  $line-height-base: 1.618,
+  $font-family-sans-serif: $font-family-sans-serif,
+  $headings-font-family: $headings-font-family,
+  $headings-font-weight: $headings-font-weight,
+  $line-height-base: $line-height-base,
+  $h1-font-size: $h1-font-size,
+  $h2-font-size: $h2-font-size,
+  $h3-font-size: $h3-font-size,
 
-  $h1-font-size: 2rem,
-  $h2-font-size: 1.45rem,
-  $h3-font-size: 1.15rem
+  // Controls
+  $btn-padding-y: $btn-padding-y,
+  $btn-padding-x: $btn-padding-x,
+  $btn-font-weight: $btn-font-weight,
+  $input-padding-y: $input-padding-y,
+  $input-padding-x: $input-padding-x,
+  $input-border-color: $input-border-color,
+  $input-focus-border-color: $input-focus-border-color,
+  $input-focus-box-shadow: $input-focus-box-shadow,
+
+  // Links
+  $link-color: $link-color,
+  $link-decoration: $link-decoration,
+  $link-hover-color: $link-hover-color
 );
 
 @use "widgets";
@@ -30,6 +55,11 @@ html {
   height: 100%;
 }
 
+body {
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+}
+
 .layout-wrapper {
   display: flex;
   flex-direction: column;
@@ -39,6 +69,12 @@ html {
   > .ilmo--loading-container {
     flex: 1 0 auto;
   }
+
+  // Generous space above and below the page content.
+  > .container {
+    padding-top: $space-section * 0.8;
+    padding-bottom: $space-section * 1.5;
+  }
 }
 
 footer {
@@ -46,33 +82,72 @@ footer {
 }
 
 // Typography
+//
+// Headings are set in a serif at a light weight; small uppercase labels (h2) do the structural work.
 
-h1 {
-  font-weight: 800;
-  text-transform: uppercase;
-  margin: 1em 0;
+h1,
+h2,
+h3 {
+  color: $headings-color;
 }
 
+h1 {
+  margin: 0 0 $space-block;
+  font-size: $h1-font-size;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+// Section labels: small, tracked, muted.
 h2 {
+  margin: 0 0 1rem;
+  font-family: $font-family-sans-serif;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: $secondary-text-color;
 }
 
 h3 {
+  font-family: $font-family-sans-serif;
+  font-size: 1rem;
   font-weight: 600;
+  letter-spacing: -0.005em;
 }
 
 strong {
   font-weight: 600;
+  color: $headings-color;
+}
+
+@include media-breakpoint-down(sm) {
+  h1 {
+    font-size: 2.1rem;
+  }
 }
 
 table.table {
+  --bs-table-bg: transparent;
+  --bs-table-border-color: #{$border-color};
+
   thead {
     th {
       border-bottom-width: 1px;
+      font-size: 0.75rem;
       font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: $secondary-text-color;
     }
   }
+  td,
+  th {
+    padding: 0.9rem 0.75rem;
+  }
+}
+
+.alert {
+  border-radius: $border-radius;
 }

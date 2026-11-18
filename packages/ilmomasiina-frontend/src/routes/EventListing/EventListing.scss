@@ -1,0 +1,115 @@
+@use "../../styles/definitions" as *;
+
+// Plain list: no images, one hairline-separated row per event, in date order.
+
+.ilmo--listing-group {
+  margin-bottom: $space-section;
+
+  h2.ilmo--section-label {
+    text-transform: capitalize;
+    letter-spacing: 0.06em;
+  }
+}
+
+.ilmo--listing {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ilmo--listing-row {
+  display: grid;
+  grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr) minmax(0, 12rem) minmax(9rem, 13rem);
+  align-items: baseline;
+  gap: 0.5rem 2rem;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid $border-color;
+  font-size: 0.95rem;
+
+  &:first-child {
+    padding-top: 0;
+  }
+}
+
+.ilmo--listing-when {
+  font-variant-numeric: tabular-nums;
+  color: $secondary-text-color;
+}
+
+.ilmo--listing-what {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.9rem;
+}
+
+a.ilmo--listing-title {
+  font-family: $font-family-serif;
+  font-size: 1.2rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: $headings-color;
+
+  &:hover {
+    color: $accent;
+  }
+}
+
+.ilmo--listing-where {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  overflow: hidden;
+  color: $secondary-text-color;
+
+  svg {
+    flex: none;
+    align-self: center;
+  }
+  span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+
+.ilmo--listing-signup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 0.85rem;
+  text-align: right;
+  color: $secondary-text-color;
+}
+
+.ilmo--listing-count {
+  font-variant-numeric: tabular-nums;
+  color: $headings-color;
+}
+
+// Only open signups use the accent, like on the cards.
+.ilmo--listing-row.ilmo--signup-opened .ilmo--listing-state {
+  color: $accent;
+}
+
+@include media-breakpoint-down(lg) {
+  .ilmo--listing-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "when signup"
+      "what what"
+      "where where";
+  }
+  .ilmo--listing-when {
+    grid-area: when;
+  }
+  .ilmo--listing-what {
+    grid-area: what;
+  }
+  .ilmo--listing-where {
+    grid-area: where;
+  }
+  .ilmo--listing-signup {
+    grid-area: signup;
+  }
+}

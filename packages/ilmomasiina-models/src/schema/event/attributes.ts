@@ -58,6 +58,9 @@ export const publicEventAttributes = Type.Object({
     description: "Category tag for the event. Can be used for filtering.",
     maxLength: 255,
   }),
+  imageUrl: Nullable(Type.String({ maxLength: 1024 }), {
+    description: "URL of a cover image for the event, shown on event cards and the event page.",
+  }),
   signupsPublic: Type.Boolean({
     description: "Whether signups should be shown to all users.",
   }),
@@ -109,9 +112,6 @@ export const publicCommonAttributes = Type.Object({
   }),
   webpageUrl: Nullable(Type.String({ maxLength: 255 }), {
     description: "Link to an external event webpage.",
-  }),
-  facebookUrl: Nullable(Type.String({ maxLength: 255 }), {
-    description: "Link to a Facebook page for the event.",
   }),
 });
 

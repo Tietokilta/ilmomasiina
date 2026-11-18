@@ -19,7 +19,6 @@ export function getLocalizedEventListItem(event: UserEventListItem, language: st
     location: locale.location || event.location,
     price: locale.price || event.price,
     webpageUrl: locale.webpageUrl || event.webpageUrl,
-    facebookUrl: locale.facebookUrl || event.facebookUrl,
     description: locale.description || event.description,
     quotas: event.quotas.map((quota, index) => ({
       ...quota,
@@ -40,7 +39,6 @@ export function getLocalizedEvent<E extends UserEventResponse | EventForEditSign
     location: locale.location || event.location,
     price: locale.price || event.price,
     webpageUrl: locale.webpageUrl || event.webpageUrl,
-    facebookUrl: locale.facebookUrl || event.facebookUrl,
     description: locale.description || event.description,
     questions: event.questions.map((question, index) => ({
       ...question,

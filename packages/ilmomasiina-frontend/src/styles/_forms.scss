@@ -60,3 +60,27 @@
     display: none !important;
   }
 }
+
+// Cover image field in the event editor.
+.ilmo--image-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+
+  .form-control {
+    max-width: 100%;
+  }
+}
+.ilmo--image-field-preview {
+  max-width: 16rem;
+  max-height: 9rem;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  object-fit: cover;
+}
+.ilmo--image-field-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

@@ -356,9 +356,22 @@ describe("startPayment", () => {
       { payments: PaymentMode.ONLINE, nameQuestion: true, emailQuestion: true, openQuotaSize: 0 },
     );
 
-    // Create two signups, first to fill the quota, then to place another in queue
-    await testSignups({ event, count: 1, confirmed: true });
-    const [queuedSignup] = await testSignups({ event, count: 1, confirmed: true });
+    // Create two signups, first to fill the quota, then to place another in queue.
+    // Times are fixed, as random ones could put the "second" signup first.
+    const firstTime = new Date(Date.now() - 2 * 60 * 1000);
+    const secondTime = new Date(Date.now() - 60 * 1000);
+    await testSignups({
+      event,
+      count: 1,
+      confirmed: true,
+      overrides: { createdAt: firstTime, confirmedAt: firstTime },
+    });
+    const [queuedSignup] = await testSignups({
+      event,
+      count: 1,
+      confirmed: true,
+      overrides: { createdAt: secondTime, confirmedAt: secondTime },
+    });
 
     // Refresh positions to assign statuses
     await refreshSignupPositions(event);

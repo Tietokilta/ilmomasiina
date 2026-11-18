@@ -37,15 +37,7 @@ const LanguageVersion = ({ language }: VersionProps) => {
     if (isPresent) {
       const { values } = getState();
       // First, extract all the language version fields from the event, and add the result to languages.
-      const eventKeys = [
-        "description",
-        "title",
-        "price",
-        "location",
-        "webpageUrl",
-        "facebookUrl",
-        "verificationEmail",
-      ] as const;
+      const eventKeys = ["description", "title", "price", "location", "webpageUrl", "verificationEmail"] as const;
       const oldDefaultLanguage: AdminEventLanguage = {
         ...pick(values, eventKeys),
         questions: values.questions.map((question) => pick(question, "question", "options")),
@@ -88,7 +80,6 @@ const LanguageVersion = ({ language }: VersionProps) => {
         price: null,
         location: null,
         webpageUrl: null,
-        facebookUrl: null,
         verificationEmail: null,
         quotas: quotas.map(() => ({ title: "" })),
         questions: questions.map((question) => ({

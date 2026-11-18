@@ -81,14 +81,18 @@ export default defineConfig(({ mode }) => ({
 
     PATH_PREFIX,
     API_URL: process.env.API_URL || "",
-    BRANDING_HEADER_TITLE_TEXT: process.env.BRANDING_HEADER_TITLE_TEXT || "Ilmomasiina",
+    BRANDING_HEADER_TITLE_TEXT: process.env.BRANDING_HEADER_TITLE_TEXT || "Kaplaakin ilmomasiina",
     BRANDING_HEADER_TITLE_TEXT_SHORT:
-      process.env.BRANDING_HEADER_TITLE_TEXT_SHORT || process.env.BRANDING_HEADER_TITLE_TEXT || "Ilmomasiina",
-    BRANDING_FOOTER_GDPR_TEXT: process.env.BRANDING_FOOTER_GDPR_TEXT || "",
-    BRANDING_FOOTER_GDPR_LINK: process.env.BRANDING_FOOTER_GDPR_LINK || "",
-    BRANDING_FOOTER_HOME_TEXT: process.env.BRANDING_FOOTER_HOME_TEXT || "",
-    BRANDING_FOOTER_HOME_LINK: process.env.BRANDING_FOOTER_HOME_LINK || "",
-    BRANDING_LOGIN_PLACEHOLDER_EMAIL: process.env.BRANDING_LOGIN_PLACEHOLDER_EMAIL || "admin@tietokilta.fi",
+      process.env.BRANDING_HEADER_TITLE_TEXT_SHORT || process.env.BRANDING_HEADER_TITLE_TEXT || "Kaplaakin ilmomasiina",
+    BRANDING_FOOTER_GDPR_TEXT: process.env.BRANDING_FOOTER_GDPR_TEXT || "Tietosuoja",
+    BRANDING_FOOTER_GDPR_LINK: process.env.BRANDING_FOOTER_GDPR_LINK || "https://kaplaaki.fi/tietosuoja",
+    // English versions of the privacy link, used when the site is shown in English.
+    BRANDING_FOOTER_GDPR_TEXT_EN: process.env.BRANDING_FOOTER_GDPR_TEXT_EN || "Privacy Policy",
+    BRANDING_FOOTER_GDPR_LINK_EN:
+      process.env.BRANDING_FOOTER_GDPR_LINK_EN || "https://kaplaaki.fi/en/rules-and-guidelines/",
+    BRANDING_FOOTER_HOME_TEXT: process.env.BRANDING_FOOTER_HOME_TEXT || "Kaplaaki.fi",
+    BRANDING_FOOTER_HOME_LINK: process.env.BRANDING_FOOTER_HOME_LINK || "https://kaplaaki.fi",
+    BRANDING_LOGIN_PLACEHOLDER_EMAIL: process.env.BRANDING_LOGIN_PLACEHOLDER_EMAIL || "admin@kaplaaki.fi",
     TIMEZONE,
     DEFAULT_LANGUAGE: process.env.DEFAULT_LANGUAGE || "fi",
     CURRENCY: process.env.CURRENCY || "EUR",
