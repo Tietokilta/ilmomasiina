@@ -50,6 +50,19 @@
     margin-right: 0.6rem;
   }
   .navbar .btn {
+    flex: none;
     white-space: nowrap;
+  }
+  // A long title is cut with an ellipsis instead of pushing the buttons off screen.
+  .navbar-brand {
+    min-width: 0;
+    white-space: nowrap;
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .navbar-logo {
+      flex: none;
+    }
   }
 }

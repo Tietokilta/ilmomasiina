@@ -10,15 +10,20 @@ $cal-nosignup: #d6dae0;
   gap: 0.5rem;
   margin-bottom: 2rem;
 
+  h2 {
+    flex: 1 1 auto;
+  }
   .btn {
+    flex: none;
     padding: 0.4rem 0.8rem;
     font-size: 0.9rem;
   }
 }
 
 h2.ilmo--cal-title {
-  min-width: 11rem;
-  margin: 0 1rem;
+  // Shrinks on phones so the nav fits on one row.
+  min-width: 0;
+  margin: 0 0.5rem;
   font-family: $font-family-serif;
   font-size: 1.6rem;
   font-weight: 500;

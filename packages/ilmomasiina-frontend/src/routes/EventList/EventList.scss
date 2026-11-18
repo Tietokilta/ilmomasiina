@@ -21,7 +21,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem 1.5rem;
-  flex-shrink: 0;
+  max-width: 100%;
 }
 
 // Plain text switch with an underline on the current view.
@@ -114,7 +114,7 @@ h2.ilmo--section-label {
 
 .ilmo--event-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.5rem;
 
   @include media-breakpoint-up(sm) {
