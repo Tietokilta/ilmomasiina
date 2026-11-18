@@ -195,6 +195,8 @@
     "editor.basic.type.eventWithSignup": "Event with signup",
     "editor.basic.type.onlySignup": "Signup only, no event",
     "editor.basic.category": "Category",
+    "editor.basic.category.none": "No category",
+    "editor.basic.category.legacy": "{{category}} (old category)",
     "editor.basic.imageUrl": "Cover image",
     "editor.basic.imageUrl.info": "Upload a PNG, JPG or WebP image (up to 5 MB). A wide image, about 16:9, works best.",
     "editor.basic.imageUrl.upload": "Upload image",

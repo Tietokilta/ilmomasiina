@@ -3,12 +3,12 @@ import React, { useEffect, useRef } from "react";
 import { Form } from "react-bootstrap";
 import { useForm } from "react-final-form";
 import { useTranslation } from "react-i18next";
-import Combobox from "react-widgets/Combobox";
 
 import { PaymentMode } from "@tietokilta/ilmomasiina-models";
 import FieldRow from "../../../components/FieldRow";
 import { EditorEventType } from "../../../modules/editor/types";
 import useStore from "../../../modules/store";
+import EVENT_CATEGORIES from "../../../utils/eventCategories";
 import DateTimePicker from "./DateTimePicker";
 import useEditorErrors from "./errors";
 import { useFieldTouched, useFieldValue } from "./hooks";
@@ -82,7 +82,6 @@ const SlugAvailability = () => {
 };
 
 const BasicDetailsTab = () => {
-  const { allCategories, loadCategories } = useStore((state) => state.editor);
   const { t } = useTranslation();
   const formatError = useEditorErrors();
 
@@ -92,9 +91,15 @@ const BasicDetailsTab = () => {
   const registrationStartDate = useFieldValue<Date | null>("registrationStartDate");
   const registrationEndDate = useFieldValue<Date | null>("registrationEndDate");
 
-  useEffect(() => {
-    loadCategories();
-  }, [loadCategories]);
+  // Only the fixed categories can be picked. An older event's own category stays selectable so editing it doesn't lose it.
+  const category = useFieldValue<string>("category");
+  const categoryOptions: [string, string][] = [
+    ["", t("editor.basic.category.none")],
+    ...EVENT_CATEGORIES.map((name) => [name, name] as [string, string]),
+    ...(category && !(EVENT_CATEGORIES as readonly string[]).includes(category)
+      ? [[category, t("editor.basic.category.legacy", { category })] as [string, string]]
+      : []),
+  ];
 
   return (
     <div>
@@ -228,10 +233,8 @@ const BasicDetailsTab = () => {
       <FieldRow
         name="category"
         label={t("editor.basic.category")}
-        as={Combobox}
-        data={allCategories || []}
-        busy={allCategories === null}
-        inputProps={{ maxLength: 255 }}
+        as={SelectBox}
+        options={categoryOptions}
         formatError={formatError}
       />
       <ImageField />

@@ -21,9 +21,13 @@ const PALETTE: CategoryColor[] = [
   { solid: "#8b6f5a", tint: "#efe8e2", ink: "#5c463a" }, // cocoa
 ];
 
-// Categories with a fixed color. The green is reserved for these, so no other category can end up looking the same.
+// Categories with a fixed color. The green is reserved for ESTIEM, so no other category can end up looking the same.
 const GREEN: CategoryColor = { solid: "#4f8f4a", tint: "#e5f1e3", ink: "#2f5c2b" };
-const FIXED = new Map<string, CategoryColor>([["estiem", GREEN]]);
+const FIXED_PALETTE_INDEXES = { juhlat: 5, "vapaa-aika": 1, yritykset: 6, muut: 7 };
+const FIXED = new Map<string, CategoryColor>([
+  ["estiem", GREEN],
+  ...Object.entries(FIXED_PALETTE_INDEXES).map(([name, index]) => [name, PALETTE[index]] as [string, CategoryColor]),
+]);
 
 const NEUTRAL: CategoryColor = { solid: "#9ca3af", tint: "#f3f4f1", ink: "#6b7280" };
 
@@ -49,7 +53,8 @@ function hash(key: string) {
 export function buildCategoryColors(categories: Iterable<string | null | undefined>) {
   const names = Array.from(new Set(Array.from(categories).map(normalize).filter(Boolean))).sort();
   const colors = new Map<string, CategoryColor>();
-  const taken = new Set<number>();
+  // Other categories (such as old ones) don't reuse the colors of the fixed categories.
+  const taken = new Set<number>(Object.values(FIXED_PALETTE_INDEXES));
   names.forEach((name) => {
     if (FIXED.has(name)) return;
     let index = hash(name) % PALETTE.length;

@@ -195,6 +195,8 @@
     "editor.basic.type.eventWithSignup": "Tapahtuma ja ilmoittautuminen",
     "editor.basic.type.onlySignup": "Ilmoittautuminen ilman tapahtumaa",
     "editor.basic.category": "Kategoria",
+    "editor.basic.category.none": "Ei kategoriaa",
+    "editor.basic.category.legacy": "{{category}} (vanha kategoria)",
     "editor.basic.imageUrl": "Kansikuva",
     "editor.basic.imageUrl.info": "Lataa PNG-, JPG- tai WebP-kuva (enintään 5 Mt). Leveä kuva, noin 16:9, toimii parhaiten.",
     "editor.basic.imageUrl.upload": "Lataa kuva",
