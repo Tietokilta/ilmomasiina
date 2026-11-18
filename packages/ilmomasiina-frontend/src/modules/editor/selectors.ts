@@ -14,6 +14,7 @@ export const defaultEvent = (): EditorEvent => ({
   webpageUrl: "",
   category: "",
   imageUrl: "",
+  signupComing: false,
   location: "",
   description: "",
   price: "",
@@ -101,6 +102,8 @@ export const editorEventToServer = (form: EditorEvent): ConvertedEditorEvent => 
   ...form,
   // Blank image URL means no image.
   imageUrl: form.imageUrl?.trim() || null,
+  // "Signup coming" only applies to events without signup dates.
+  signupComing: form.eventType === EditorEventType.ONLY_EVENT && form.signupComing,
   // Drop dates if the chosen event type doesn't involve them.
   date: form.eventType === EditorEventType.ONLY_SIGNUP ? null : (form.date?.toISOString() ?? null),
   endDate: form.eventType === EditorEventType.ONLY_SIGNUP ? null : (form.endDate?.toISOString() ?? null),

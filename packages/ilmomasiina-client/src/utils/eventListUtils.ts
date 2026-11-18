@@ -39,7 +39,7 @@ export type TableRow = EventRow | QuotaRow;
 /** Converts an event to rows to be shown in the event list. */
 export function eventToRows(event: UserEventListItem, { compact }: EventTableOptions = {}) {
   const { id, slug, title, date, registrationStartDate, registrationEndDate, quotas, openQuotaSize } = event;
-  const state = signupState(registrationStartDate, registrationEndDate);
+  const state = signupState(registrationStartDate, registrationEndDate, event.signupComing);
 
   // Event row
   const rows: TableRow[] = [
@@ -58,7 +58,7 @@ export function eventToRows(event: UserEventListItem, { compact }: EventTableOpt
   ];
 
   // We're done for compact format and events without a signup
-  if (compact || state.state === SignupState.disabled) return rows;
+  if (compact || state.state === SignupState.disabled || state.state === SignupState.coming) return rows;
 
   // Multiple quotas go on their own rows
   if (quotas.length > 1) {

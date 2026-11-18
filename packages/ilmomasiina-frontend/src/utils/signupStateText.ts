@@ -24,6 +24,13 @@ export function useSignupStateText(state: SignupStateInfo): SignupStateText {
           shortLabel: t("signupState.disabled"),
           class: "ilmo--signup-disabled",
         };
+      case SignupState.coming:
+        return {
+          state,
+          shortLabel: t("signupState.coming"),
+          fullLabel: t("signupState.coming"),
+          class: "ilmo--signup-not-opened",
+        };
       case SignupState.not_opened:
         return {
           state,

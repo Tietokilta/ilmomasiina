@@ -50,6 +50,7 @@ export interface EventAttributes extends EventPerLanguageAttributes {
   openQuotaSize: number;
   category: string;
   imageUrl: string | null;
+  signupComing: boolean;
   draft: boolean;
   listed: boolean;
   signupsPublic: boolean;
@@ -77,6 +78,7 @@ export interface EventCreationAttributes extends Optional<
   | "webpageUrl"
   | "category"
   | "imageUrl"
+  | "signupComing"
   | "draft"
   | "listed"
   | "signupsPublic"
@@ -108,6 +110,7 @@ export class Event extends Model<EventManualAttributes, EventCreationAttributes>
   public webpageUrl!: string | null;
   public category!: string;
   public imageUrl!: string | null;
+  public signupComing!: boolean;
   public draft!: boolean;
   public listed!: boolean;
   public signupsPublic!: boolean;
@@ -257,6 +260,11 @@ export default function setupEventModel(sequelize: Sequelize) {
       },
       imageUrl: {
         type: DataTypes.STRING(1024),
+      },
+      signupComing: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
       },
       category: {
         type: DataTypes.STRING,

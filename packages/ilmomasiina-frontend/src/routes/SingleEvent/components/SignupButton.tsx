@@ -26,9 +26,9 @@ type SignupButtonProps = {
 
 const SignupButton = ({ isOpen, isClosed, seconds, total }: SignupButtonProps) => {
   const { localizedEvent: event, preview } = useSingleEventContext();
-  const { registrationStartDate, registrationEndDate, quotas } = event!;
+  const { registrationStartDate, registrationEndDate, signupComing, quotas } = event!;
   const navigate = useNavigate();
-  const eventState = signupState(registrationStartDate, registrationEndDate);
+  const eventState = signupState(registrationStartDate, registrationEndDate, signupComing);
   const [submitting, setSubmitting] = useState(false);
   const isOnly = quotas.length === 1;
   const showPrices = eventHasPaidQuotas(event!);
@@ -73,7 +73,7 @@ const SignupButton = ({ isOpen, isClosed, seconds, total }: SignupButtonProps) =
       </p>
       {
         // eslint-disable-next-line no-nested-ternary
-        eventState.state === SignupState.disabled ? null : preview ? (
+        eventState.state === SignupState.disabled || eventState.state === SignupState.coming ? null : preview ? (
           <Button onClick={() => preview.setPreviewingForm(true)}>{t("singleEvent.signupButton.preview")}</Button>
         ) : (
           quotas.map((quota) => (

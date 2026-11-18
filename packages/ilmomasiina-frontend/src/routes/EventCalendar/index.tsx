@@ -44,10 +44,11 @@ function parseMonth(param: string | null, fallbackKey: string) {
 const monthParam = (year: number, month: number) => utcToKey(Date.UTC(year, month, 1)).slice(0, 7);
 
 const stateClass = (event: UserEventListItem) => {
-  switch (signupState(event.registrationStartDate, event.registrationEndDate).state) {
+  switch (signupState(event.registrationStartDate, event.registrationEndDate, event.signupComing).state) {
     case SignupState.open:
       return "ilmo--cal-open";
     case SignupState.not_opened:
+    case SignupState.coming:
       return "ilmo--cal-coming";
     case SignupState.closed:
       return "ilmo--cal-closed";

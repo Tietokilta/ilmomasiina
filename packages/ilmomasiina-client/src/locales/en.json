@@ -142,6 +142,7 @@
     "events.signupCount": "Signups:",
     "events.title": "Events",
     "signupState.disabled": "You cannot sign up for this event.",
+    "signupState.coming": "Signup coming",
     "signupState.notOpened": "Signup opens on {{date}}.",
     "signupState.notOpened.short": "Opens on {{date}}.",
     "signupState.open": "Signup open until {{date}}.",

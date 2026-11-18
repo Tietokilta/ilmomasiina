@@ -49,8 +49,8 @@ export type QuotaSignups<Ev extends AnyEventSchema = AnyEventSchema> = Omit<
 
 /** Gathers all signups of an event into their assigned quotas, the open quota, and the queue. */
 export function getSignupsByQuota(event: AnyEventSchema): QuotaSignups[] {
-  const signupsDisabled =
-    signupState(event.registrationStartDate, event.registrationEndDate).state === SignupState.disabled;
+  const { state } = signupState(event.registrationStartDate, event.registrationEndDate, event.signupComing);
+  const signupsDisabled = state === SignupState.disabled || state === SignupState.coming;
   const signups = getSignupsAsList(event);
   const quotas = [
     ...event.quotas

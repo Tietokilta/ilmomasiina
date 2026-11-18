@@ -1,5 +1,7 @@
 export enum SignupState {
   disabled = "disabled",
+  /** The event has a signup, but its dates are not known yet. */
+  coming = "coming",
   not_opened = "not_opened",
   open = "open",
   closed = "closed",
@@ -7,13 +9,14 @@ export enum SignupState {
 
 export type SignupStateInfo =
   | { state: SignupState.disabled }
+  | { state: SignupState.coming }
   | { state: SignupState.not_opened; opens: Date }
   | { state: SignupState.open; closes: Date }
   | { state: SignupState.closed; closed: Date };
 
-export function signupState(starts: string | null, closes: string | null): SignupStateInfo {
+export function signupState(starts: string | null, closes: string | null, coming = false): SignupStateInfo {
   if (starts === null || closes === null) {
-    return { state: SignupState.disabled };
+    return { state: coming ? SignupState.coming : SignupState.disabled };
   }
 
   const signupOpens = new Date(starts);

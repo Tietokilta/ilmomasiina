@@ -39,11 +39,12 @@ const EventListView = ({ category }: EventListProps) => {
       noSignup: [],
     };
     (events ?? []).forEach((event) => {
-      switch (signupState(event.registrationStartDate, event.registrationEndDate).state) {
+      switch (signupState(event.registrationStartDate, event.registrationEndDate, event.signupComing).state) {
         case SignupState.open:
           groups.open.push(event);
           break;
         case SignupState.not_opened:
+        case SignupState.coming:
           groups.coming.push(event);
           break;
         case SignupState.closed:

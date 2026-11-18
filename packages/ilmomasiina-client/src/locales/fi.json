@@ -142,6 +142,7 @@
     "events.signupCount": "Ilmoittautuneita:",
     "events.title": "Tapahtumat",
     "signupState.disabled": "Tapahtumaan ei voi ilmoittautua.",
+    "signupState.coming": "Ilmoittautuminen tulossa",
     "signupState.notOpened": "Ilmoittautuminen alkaa {{date}}.",
     "signupState.notOpened.short": "Alkaa {{date}}.",
     "signupState.open": "Ilmoittautuminen auki {{date}} asti.",

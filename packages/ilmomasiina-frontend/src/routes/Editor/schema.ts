@@ -50,6 +50,7 @@ const editorSchema: ZodType<EditorEvent> = z
     location: z.nullable(z.string().max(255)),
     webpageUrl: z.nullable(z.string().max(255)),
     signupsPublic: z.boolean(),
+    signupComing: z.boolean(),
     nameQuestion: z.boolean(),
     emailQuestion: z.boolean(),
     draft: z.boolean(),

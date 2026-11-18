@@ -147,6 +147,18 @@ const BasicDetailsTab = () => {
         ]}
         formatError={formatError}
       />
+      {eventType === EditorEventType.ONLY_EVENT && (
+        <FieldRow
+          name="signupComing"
+          label={t("editor.basic.signupComing")}
+          as={Form.Check}
+          type="checkbox"
+          checkAlign
+          checkLabel={t("editor.basic.signupComing.check")}
+          help={t("editor.basic.signupComing.info")}
+          formatError={formatError}
+        />
+      )}
       {eventType !== EditorEventType.ONLY_SIGNUP && (
         <FieldRow
           name="date"
