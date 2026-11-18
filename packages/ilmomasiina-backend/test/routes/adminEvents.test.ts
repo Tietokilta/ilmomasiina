@@ -50,9 +50,9 @@ describe("GET /api/admin/events/:id", () => {
       description: event.description,
       price: event.price,
       location: event.location,
-      facebookUrl: event.facebookUrl,
       webpageUrl: event.webpageUrl,
       category: event.category,
+      imageUrl: event.imageUrl,
       signupsPublic: event.signupsPublic,
       nameQuestion: event.nameQuestion,
       emailQuestion: event.emailQuestion,
@@ -143,7 +143,14 @@ describe("GET /api/admin/events/:id", () => {
   });
 
   test("always returns signups with full data", async () => {
-    const event = await testEvent({ quotaCount: 3 }, { signupsPublic: false });
+    const event = await testEvent(
+      { quotaCount: 3 },
+      {
+        signupsPublic: false,
+        // The expected payment status below only applies when payments are enabled.
+        payments: PaymentMode.ONLINE,
+      },
+    );
     await Question.update({ public: false, required: true }, { where: { eventId: event.id } });
     await testSignups({ event, count: 10, overrides: { namePublic: false } });
     await fetchSignups(event);
@@ -208,9 +215,9 @@ describe("GET /api/admin/events", () => {
       description: event.description,
       price: event.price,
       location: event.location,
-      facebookUrl: event.facebookUrl,
       webpageUrl: event.webpageUrl,
       category: event.category,
+      imageUrl: event.imageUrl,
       signupsPublic: event.signupsPublic,
       nameQuestion: event.nameQuestion,
       emailQuestion: event.emailQuestion,
@@ -359,7 +366,6 @@ describe("POST /api/admin/events", () => {
     expect(event!.description).toBe(postBody.description);
     expect(event!.price).toBe(postBody.price);
     expect(event!.location).toBe(postBody.location);
-    expect(event!.facebookUrl).toBe(postBody.facebookUrl);
     expect(event!.webpageUrl).toBe(postBody.webpageUrl);
     expect(event!.category).toBe(postBody.category);
     expect(event!.signupsPublic).toBe(postBody.signupsPublic);
@@ -560,7 +566,6 @@ describe("POST /api/admin/events", () => {
           price: "",
           location: "",
           webpageUrl: "",
-          facebookUrl: "",
           quotas: [],
           questions: [
             {
@@ -817,7 +822,6 @@ describe("PATCH /api/admin/events/:id", () => {
           price: "",
           location: "",
           webpageUrl: "",
-          facebookUrl: "",
           quotas: [{ title: "" }],
           questions: [
             { question: "", options: localizedOptions },
@@ -896,7 +900,6 @@ describe("PATCH /api/admin/events/:id", () => {
           price: "",
           location: "",
           webpageUrl: "",
-          facebookUrl: "",
           quotas: [{ title: "" }],
           questions: [
             { question: "", options: localizedOptions },

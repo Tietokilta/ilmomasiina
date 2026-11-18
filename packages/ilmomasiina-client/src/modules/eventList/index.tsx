@@ -10,6 +10,8 @@ import useShallowMemo from "../../utils/useShallowMemo";
 export type EventListProps = {
   category?: string;
   language?: string;
+  /** If set, includes events at most this many days old. Defaults to the server's default. */
+  maxAge?: number;
 };
 
 type State = {
@@ -22,19 +24,22 @@ type State = {
 const { Provider, useStateContext } = createStateContext<State>();
 export { useStateContext as useEventListContext };
 
-export function useEventListState({ category, language }: EventListProps = {}) {
+export function useEventListState({ category, language, maxAge }: EventListProps = {}) {
   const {
     result: events,
     error,
     pending,
   } = useAbortablePromise(
     (signal) => {
-      const query = category === undefined ? "" : `?${new URLSearchParams({ category })}`;
+      const params = new URLSearchParams();
+      if (category !== undefined) params.set("category", category);
+      if (maxAge !== undefined) params.set("maxAge", String(maxAge));
+      const query = params.size > 0 ? `?${params}` : "";
       return apiFetch<UserEventListResponse>(`events${query}`, {
         signal,
       });
     },
-    [category],
+    [category, maxAge],
   );
 
   const localizedEvents = useMemo(
@@ -50,7 +55,7 @@ export function useEventListState({ category, language }: EventListProps = {}) {
   });
 }
 
-export function EventListProvider({ category, language, children }: PropsWithChildren<EventListProps>) {
-  const state = useEventListState({ category, language });
+export function EventListProvider({ category, language, maxAge, children }: PropsWithChildren<EventListProps>) {
+  const state = useEventListState({ category, language, maxAge });
   return <Provider value={state}>{children}</Provider>;
 }

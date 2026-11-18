@@ -1,97 +1,334 @@
+@use "sass:color";
 @use "../../styles/definitions" as *;
 
-table.ilmo--event-list {
-  // Bootstrap 5 uses border-bottom, but that's impossible to use for our preferred styling.
-  thead tr th {
-    border-block-width: 1px;
-  }
-  tbody tr td {
-    border-bottom-width: 0;
-    border-top-width: 1px;
-  }
+// Page header: heading on the left, view controls on the right.
 
-  tr.ilmo--quota-row {
-    td.ilmo--title {
-      padding-left: 30px;
-    }
-    td {
-      padding-top: 0;
-      border-top-width: 0;
-    }
-  }
-  tr.ilmo--signup-not-opened td.ilmo--signup-state {
-    color: $signup-state-not-opened;
-  }
-  tr.ilmo--signup-opened td.ilmo--signup-state {
-    color: $signup-state-opened;
-  }
-  tr.ilmo--signup-closed td.ilmo--signup-state {
-    color: $signup-state-closed;
-  }
-  tr.ilmo--signup-disabled td.ilmo--signup-state {
-    color: $signup-state-disabled;
+.ilmo--page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem 2rem;
+  margin-bottom: $space-section;
+
+  h1 {
+    margin: 0;
   }
 }
 
-@include media-breakpoint-up(md) {
-  table.ilmo--event-list td.ilmo--title {
-    min-width: 300px;
+.ilmo--view-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+  flex-shrink: 0;
+}
+
+// Plain text switch with an underline on the current view.
+.ilmo--view-toggle {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.9rem;
+
+  a {
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid transparent;
+    color: $secondary-text-color;
+
+    &:hover {
+      color: $headings-color;
+    }
+    &[aria-current="page"] {
+      border-bottom-color: $headings-color;
+      color: $headings-color;
+    }
+  }
+}
+
+.ilmo--calendar-subscribe {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.9rem;
+  }
+  .dropdown-menu {
+    width: 21rem;
+    max-width: calc(100vw - 2rem);
+    padding: 1.25rem;
+  }
+  .dropdown-header {
+    padding: 0 0 0.5rem;
+    font-family: $font-family-serif;
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: $headings-color;
+  }
+  .dropdown-item {
+    padding-inline: 0.75rem;
+    margin-inline: -0.75rem;
+  }
+}
+
+.ilmo--calendar-subscribe-steps {
+  margin: 0 0 0.75rem;
+  padding-left: 1.1rem;
+  font-size: 0.875rem;
+  color: $secondary-text-color;
+
+  li {
+    margin-bottom: 0.2rem;
+  }
+}
+
+.ilmo--calendar-subscribe-hint {
+  margin: 1rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid $border-color;
+  font-size: 0.8rem;
+  color: $secondary-text-color;
+}
+
+// Sections
+
+.ilmo--event-section {
+  margin-bottom: $space-section * 1.2;
+}
+
+h2.ilmo--section-label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid $border-color;
+}
+
+.ilmo--section-count {
+  font-weight: 400;
+  letter-spacing: 0;
+  color: rgba($secondary-text-color, 0.7);
+}
+
+// Grid: one, two or three equal columns. All cards share one size.
+
+.ilmo--event-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.75rem;
+  }
+}
+
+.ilmo--event-card {
+  display: flex;
+  flex-direction: column;
+  background: $white;
+  border: 1px solid $border-color;
+  border-radius: $card-radius;
+  transition:
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+
+  &:hover,
+  &:focus-within {
+    border-color: darken($border-color, 4%);
+    box-shadow: 0 30px 60px -30px rgba(17, 24, 39, 0.22);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.ilmo--event-card-media {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  // The card itself can't clip overflow (that would cut off dropdowns), so round the corners here.
+  border-radius: $card-radius $card-radius 0 0;
+  // A strip in the category color under the image.
+  border-bottom: 3px solid var(--cat, #{$border-color});
+  overflow: hidden;
+  background: $secondary-background;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.ilmo--event-card-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 1.5rem;
+  text-align: center;
+  font-family: $font-family-serif;
+  font-size: 1.5rem;
+  font-style: italic;
+  color: var(--cat-ink, #{$secondary-text-color});
+  background: var(--cat-tint, #{$secondary-background});
+}
+
+.ilmo--event-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 0.9rem 1.1rem 1.1rem;
+}
+
+// Signup state on the left, signup count on the right, in a fixed-height row so all cards line up.
+.ilmo--event-card-eyebrow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  // Room for the signup state on two lines.
+  min-height: 2.3rem;
+  line-height: 1.35;
+  margin-bottom: 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: $secondary-text-color;
+}
+
+// Category as a tinted pill in the category's color.
+.ilmo--event-card-category {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding: 0.15rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cat-ink, #{$secondary-text-color});
+  background: var(--cat-tint, #{$secondary-background});
+
+  // Laid over the top left corner of the picture.
+  &.on-media {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    max-width: calc(100% - 1.5rem);
+  }
+}
+
+// Signup state as a quiet status with a dot. Only "open" uses the accent.
+.ilmo--event-card-state {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  letter-spacing: 0;
+  text-transform: none;
+
+  &::before {
+    content: "";
+    flex: none;
+    margin-top: 0.45em;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.55;
+  }
+}
+.ilmo--event-card.ilmo--signup-opened .ilmo--event-card-state {
+  color: $accent;
+
+  &::before {
+    opacity: 1;
+  }
+}
+
+h3.ilmo--event-card-title {
+  // Two lines reserved, longer titles are cut off with an ellipsis (the full title is on the event page).
+  display: -webkit-box;
+  min-height: 2.4em;
+  margin: 0 0 0.5rem;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  font-family: $font-family-serif;
+  font-size: 1.4rem;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+
+  a {
+    color: $headings-color;
+
+    &:hover {
+      color: $accent;
+    }
+  }
+}
+
+.ilmo--event-card-meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.3rem 0.75rem;
+  // Room for a date on two lines plus a one-line location.
+  min-height: 3.4rem;
+  margin: 0 0 0.75rem;
+  align-content: start;
+  align-items: center;
+  font-size: 0.8rem;
+
+  dt,
+  dd {
+    margin: 0;
+    font-weight: 400;
+    line-height: 1.35;
+  }
+  dt {
+    display: flex;
+    color: $secondary-text-color;
+  }
+  // Long locations are cut to one line so rows stay aligned.
+  dd:last-child:not(:first-of-type) {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+
+.ilmo--event-card-count {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  color: $headings-color;
+}
+
+.ilmo--event-card-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: auto;
+
+  > .btn {
+    display: inline-flex;
+    flex: 1;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
   }
 }
 
 @include media-breakpoint-down(sm) {
-  table.ilmo--event-list {
-    max-width: 100%;
-    overflow: hidden;
-
-    thead {
-      display: none;
-    }
-
-    tbody {
-      tr {
-        // render events vertically
-        display: flex;
-        flex-direction: column;
-
-        &:not(:first-child):not(.ilmo--quota-row) {
-          padding: $spacer * 0.75 0 0;
-          margin-top: $spacer * 0.75;
-          border-top-width: 1px;
-        }
-
-        td {
-          padding: 0;
-          border-top: 0;
-        }
-
-        td.ilmo--title a {
-          font-weight: 600;
-        }
-      }
-
-      // prevent similarity with link color
-      @if $signup-state-opened == $link-color {
-        tr.ilmo--signup-opened td.ilmo--signup-state {
-          color: $signup-state-not-opened;
-        }
-      }
-
-      // smaller font in signup counts
-      tr.ilmo--quota-row td.ilmo--title,
-      td.ilmo--signup-count {
-        font-size: 0.85em;
-      }
-
-      tr.ilmo--quota-row {
-        padding-left: 15px;
-        margin-top: 5px;
-
-        td.ilmo--title {
-          padding: 0;
-          font-weight: 600;
-        }
-      }
-    }
+  .ilmo--event-card-body {
+    padding: 1.25rem;
   }
 }

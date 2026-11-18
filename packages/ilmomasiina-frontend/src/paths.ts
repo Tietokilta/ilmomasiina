@@ -6,6 +6,8 @@ const paths = {
   hasAdmin: true,
 
   eventsList: `${urlPrefix}/`,
+  eventsListing: `${urlPrefix}/list`,
+  eventsCalendar: `${urlPrefix}/calendar`,
   eventDetails: (slug: EventSlug) => `${urlPrefix}/events/${slug}`,
   editSignup: (id: SignupID, editToken: SignupEditToken) => `${urlPrefix}/signup/${id}/${editToken}`,
   completePayment: (id: SignupID, editToken: SignupEditToken) => `${urlPrefix}/payment/${id}/${editToken}`,

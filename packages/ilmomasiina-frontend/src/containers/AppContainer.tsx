@@ -19,6 +19,8 @@ const AuditLog = lazy(() => import("../routes/AuditLog"));
 const Editor = lazy(() => import("../routes/Editor"));
 const EditSignup = lazy(() => import("../routes/EditSignup"));
 const EventList = lazy(() => import("../routes/EventList"));
+const EventListing = lazy(() => import("../routes/EventListing"));
+const EventCalendar = lazy(() => import("../routes/EventCalendar"));
 const InitialSetup = lazy(() => import("../routes/InitialSetup"));
 const Login = lazy(() => import("../routes/Login"));
 const SingleEvent = lazy(() => import("../routes/SingleEvent"));
@@ -43,6 +45,8 @@ const AppContainer = () => (
         <Container>
           <Routes>
             <Route path={paths.eventsList} element={<EventList />} />
+            <Route path={paths.eventsListing} element={<EventListing />} />
+            <Route path={paths.eventsCalendar} element={<EventCalendar />} />
             <Route path={paths.eventDetails(":slug")} element={<SingleEvent />} />
             <Route path={paths.editSignup(":id", ":editToken")} element={<EditSignup />} />
             <Route path={paths.completePayment(":id", ":editToken")} element={<EditSignup paid />} />

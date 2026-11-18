@@ -20,7 +20,8 @@ import resetPassword from "./admin/users/resetPassword";
 import { adminLogin, renewAdminToken, requireAdmin } from "./authentication/adminLogin";
 import { getEventDetailsForAdmin, getEventDetailsForUser } from "./events/getEventDetails";
 import { getEventsListForAdmin, getEventsListForUser } from "./events/getEventsList";
-import { sendICalFeed } from "./ical";
+import { sendEventICal, sendICalFeed } from "./ical";
+import { getImage, registerImageUploads, uploadImage } from "./images";
 import completePayment from "./payment/completePayment";
 import startPayment from "./payment/startPayment";
 import stripeWebhook from "./payment/webhook";
@@ -42,7 +43,13 @@ async function setupAdminRoutes(fastifyInstance: FastifyInstance) {
   // For invalid sessions, the hook automatically responds with a proper error response.
   requireAdmin(fastifyInstance.adminSession, fastifyInstance);
 
+  // Image uploads (multipart) are only parsed within the admin routes.
+  await registerImageUploads(fastifyInstance);
+
   const server = fastifyInstance.withTypeProvider<TypeBoxTypeProvider>();
+
+  /** Route for uploading event images */
+  server.post("/images", {}, uploadImage);
 
   /** Routes for categories */
   server.get<{
@@ -462,8 +469,13 @@ async function setupPublicRoutes(fastifyInstance: FastifyInstance) {
     createSignup,
   );
 
+  // Public route for uploaded images
+  server.get<{ Params: { id: string } }>("/images/:id", {}, getImage);
+
   // Public route for iCal feed
-  server.get("/ical", {}, sendICalFeed);
+  server.get<{ Querystring: { category?: string } }>("/ical", {}, sendICalFeed);
+  // Public route for downloading a single event as an .ics file
+  server.get<{ Params: { slug: string } }>("/ical/:slug", {}, sendEventICal);
 
   // Public route for initial admin user creation
   server.post<{ Body: schema.UserCreateSchema }>(

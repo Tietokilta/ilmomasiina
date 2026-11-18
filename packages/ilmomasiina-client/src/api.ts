@@ -43,13 +43,17 @@ export async function apiFetch<T = unknown>(uri: string, { method = "GET", body,
   const allHeaders = {
     ...(headers || {}),
   };
-  if (body !== undefined) {
+  // File uploads are sent as-is; the browser sets the multipart Content-Type (with its boundary) itself.
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
+  if (body !== undefined && !isFormData) {
     allHeaders["Content-Type"] = "application/json; charset=utf-8";
   }
+  let requestBody: BodyInit | undefined;
+  if (body !== undefined) requestBody = isFormData ? body : JSON.stringify(body);
 
   const response = await fetch(`${apiUrl}/${uri}`, {
     method,
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body: requestBody,
     headers: allHeaders,
     signal,
   }).catch((err) => {

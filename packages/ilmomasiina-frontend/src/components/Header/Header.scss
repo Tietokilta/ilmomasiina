@@ -1,23 +1,55 @@
 @use "../../styles/definitions" as *;
 
 .navbar {
-  background: $primary;
-  margin-bottom: 1.5rem;
+  padding-block: 1.1rem;
+  background: $header-bg;
   --bs-navbar-brand-margin-end: auto !important;
 }
 
 .navbar-brand {
   display: flex !important;
   align-items: center;
-  color: color-contrast($primary) !important;
-  text-transform: uppercase;
-  font-weight: 600;
-  letter-spacing: 1px;
+  font-family: $font-family-serif;
+  font-size: 1.2rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: $white !important;
 }
 
 .navbar-logo {
-  width: 36px;
-  height: 36px;
-  margin-right: 1rem;
+  width: 34px;
+  height: 34px;
+  margin-right: 0.85rem;
   display: if($header-logo, block, none);
+}
+
+// Quiet text buttons on the dark bar.
+.navbar .btn {
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-bg: rgba(255, 255, 255, 0.08);
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-bg: rgba(255, 255, 255, 0.12);
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-color: rgba(255, 255, 255, 0.72);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-active-color: #fff;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.875rem;
+  background: transparent;
+}
+
+// Keep a long title and the language button on one row on phones.
+@include media-breakpoint-down(sm) {
+  .navbar-brand {
+    font-size: 1rem;
+  }
+  .navbar-logo {
+    width: 28px;
+    height: 28px;
+    margin-right: 0.6rem;
+  }
+  .navbar .btn {
+    white-space: nowrap;
+  }
 }

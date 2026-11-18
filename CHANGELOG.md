@@ -26,6 +26,28 @@
 - Proper support for multiple frontends
   - Events can now specify a preferred frontend, and emails will use the correct URLs
 - **ilmomasiina-client:** Added payment support to EditSignup, including new state flags in context
+- Events can now have a cover image (`imageUrl`), either uploaded in the event editor or linked from elsewhere
+  - Uploads accept PNG, JPEG and WebP up to 5 MB (checked by file contents; PDF and SVG are rejected) and are stored in
+    the database, in a new `image` table (migration `0012-add-images`). Unused uploads are removed daily.
+  - New endpoints: `POST /api/admin/images` (admin, multipart) and `GET /api/images/:id` (public)
+  - The Facebook event link (`facebookUrl`) was removed from the API and UI; the database column is left in place
+  - The event URL (slug) is now generated from the event name with hyphens, e.g. `kesajuhla-2027`
+  - Adds a database column via migration `0011-add-imageUrl`; `imageUrl` is a new required (nullable) field in the
+    event create/update API bodies and in event responses
+- The event list is now a grid of cards with cover images, signup progress and "Add to calendar" actions
+  - New locale strings under `events.card.*`, `events.calendar.*` and `events.section.*`
+- The event list is grouped into "Signup open", "Signup coming" and "Signup closed" (events without a signup get their
+  own section), and there is a month calendar view at `/calendar` with a list/calendar switch
+  - **ilmomasiina-client:** `EventListProvider` and `useEventListState` accept a `maxAge` option
+- Visual refresh: neutral off-white palette with a single pine accent, Inter and Newsreader fonts (self-hosted via
+  `@fontsource-variable`, replacing the Google Fonts link), hairline borders and roomier spacing
+  - Design tokens live in `packages/ilmomasiina-frontend/src/styles/_definitions.scss`
+- The default header title is now "Kaplaakin ilmomasiina" (override with `BRANDING_HEADER_TITLE_TEXT`)
+- Calendar support:
+  - `GET /api/ical` is the subscription feed (webcal) and now accepts an optional `?category=` filter
+  - `GET /api/ical/:slug` downloads a single event as an `.ics` file
+  - The event list has a "Subscribe to calendar" menu (Google Calendar, Apple Calendar/Outlook, copy link), and event
+    cards and pages have an "Add to calendar" menu
 
 **Bug fixes and improvements:**
 

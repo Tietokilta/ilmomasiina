@@ -6,6 +6,7 @@ import setupAnswerModel, { Answer } from "./answer";
 import setupAuditLogModel from "./auditlog";
 import sequelizeConfig from "./config";
 import setupEventModel, { Event } from "./event";
+import setupImageModel from "./image";
 import migrations from "./migrations";
 import setupPaymentModel, { Payment } from "./payment";
 import setupQuestionModel, { Question } from "./question";
@@ -67,6 +68,7 @@ export default async function setupDatabase() {
   setupAnswerModel(sequelize);
   setupUserModel(sequelize);
   setupAuditLogModel(sequelize);
+  setupImageModel(sequelize);
 
   Event.hasMany(Question, {
     foreignKey: {

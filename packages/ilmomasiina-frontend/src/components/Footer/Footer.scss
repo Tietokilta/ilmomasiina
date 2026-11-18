@@ -1,17 +1,25 @@
 @use "../../styles/definitions" as *;
 
 footer {
-  padding: 1em 0;
-  background: $secondary-background;
+  padding: 2.5rem 0 3rem;
+  border-top: 1px solid $border-color;
+  font-size: 0.875rem;
   color: $secondary-text-color;
 
   .container {
     display: flex;
-    justify-content: center;
-    gap: 20px;
+    justify-content: flex-start;
+    gap: 2rem;
   }
 
   a {
     color: inherit;
+    text-decoration: underline;
+    text-decoration-color: rgba($secondary-text-color, 0.4);
+    text-underline-offset: 3px;
+
+    &:hover {
+      color: $headings-color;
+    }
   }
 }

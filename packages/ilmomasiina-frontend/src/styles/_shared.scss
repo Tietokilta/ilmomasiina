@@ -1,3 +1,4 @@
+@use "sass:color";
 @use "definitions" as *;
 
 @include media-breakpoint-up(sm) {
@@ -16,7 +17,7 @@
   align-items: center;
   column-gap: $spacer * 0.5;
   row-gap: $spacer;
-  margin-block: 1em;
+  margin-block: 0 $space-block;
 
   > :first-child {
     flex: 1 1 auto;
@@ -58,27 +59,66 @@
   padding: 50px;
 }
 
-@if $lighter-primary-hover {
-  .btn-primary {
-    @include button-variant(
-      $primary,
-      $primary,
-      $hover-background: lighten($primary, 15%),
-      $hover-border: lighten($primary, 20%),
-      $active-background: lighten($primary, 20%),
-      $active-border: lighten($primary, 25%)
-    );
+// Buttons: flat, no heavy outlines. Primary is the accent; outlines are hairlines.
+
+.btn {
+  letter-spacing: -0.005em;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.btn-primary,
+.btn-secondary {
+  --bs-btn-bg: #{$accent};
+  --bs-btn-border-color: #{$accent};
+  --bs-btn-hover-bg: #{color.scale($accent, $lightness: -12%)};
+  --bs-btn-hover-border-color: #{color.scale($accent, $lightness: -12%)};
+  --bs-btn-active-bg: #{color.scale($accent, $lightness: -18%)};
+  --bs-btn-active-border-color: #{color.scale($accent, $lightness: -18%)};
+  --bs-btn-disabled-bg: #{$accent};
+  --bs-btn-disabled-border-color: #{$accent};
+}
+
+.btn-outline-primary,
+.btn-outline-secondary {
+  --bs-btn-color: #{$headings-color};
+  --bs-btn-border-color: #{$border-color};
+  --bs-btn-hover-color: #{$headings-color};
+  --bs-btn-hover-bg: #{$secondary-background};
+  --bs-btn-hover-border-color: #{darken($border-color, 8%)};
+  --bs-btn-active-color: #{$headings-color};
+  --bs-btn-active-bg: #{$secondary-background};
+  --bs-btn-active-border-color: #{darken($border-color, 12%)};
+  --bs-btn-disabled-color: #{$secondary-text-color};
+  --bs-btn-disabled-border-color: #{$border-color};
+  background: $white;
+}
+
+// Shared by the event list and the event page.
+.ilmo--add-to-calendar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.ilmo--add-to-calendar-compact {
+  padding-inline: 0.75rem;
+
+  // Hide Bootstrap's dropdown caret; the icon is enough.
+  &::after {
+    display: none;
   }
 }
-@if $lighter-secondary-hover {
-  .btn-secondary {
-    @include button-variant(
-      $primary,
-      $primary,
-      $hover-background: lighten($primary, 15%),
-      $hover-border: lighten($primary, 20%),
-      $active-background: lighten($primary, 20%),
-      $active-border: lighten($primary, 25%)
-    );
-  }
+
+.dropdown-menu {
+  padding: 0.5rem;
+  border-color: $border-color;
+  border-radius: $border-radius-lg;
+  box-shadow: 0 24px 48px -16px rgba(17, 24, 39, 0.18);
+}
+
+.dropdown-item {
+  border-radius: $border-radius;
+  padding: 0.5rem 0.75rem;
 }

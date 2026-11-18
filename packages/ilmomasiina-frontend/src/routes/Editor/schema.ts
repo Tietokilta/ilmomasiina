@@ -44,11 +44,11 @@ const editorSchema: ZodType<EditorEvent> = z
     useOpenQuota: z.boolean(),
     openQuotaSize: z.nullable(z.number().min(0)),
     category: z.string().max(255),
+    imageUrl: z.nullable(z.string().max(1024)),
     description: z.nullable(z.string()),
     price: z.nullable(z.string().max(255)),
     location: z.nullable(z.string().max(255)),
     webpageUrl: z.nullable(z.string().max(255)),
-    facebookUrl: z.nullable(z.string().max(255)),
     signupsPublic: z.boolean(),
     nameQuestion: z.boolean(),
     emailQuestion: z.boolean(),
@@ -65,7 +65,6 @@ const editorSchema: ZodType<EditorEvent> = z
         price: z.nullable(z.string().max(255)),
         location: z.nullable(z.string().max(255)),
         webpageUrl: z.nullable(z.string().max(255)),
-        facebookUrl: z.nullable(z.string().max(255)),
         verificationEmail: z.nullable(z.string()),
         quotas: z.array(
           z.object({

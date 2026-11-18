@@ -1,0 +1,183 @@
+@use "../../styles/definitions" as *;
+
+// Calendar: hairline grid on white; event chips are colored by category.
+
+$cal-nosignup: #d6dae0;
+
+.ilmo--cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+
+  .btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+  }
+}
+
+h2.ilmo--cal-title {
+  min-width: 11rem;
+  margin: 0 1rem;
+  font-family: $font-family-serif;
+  font-size: 1.6rem;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  text-transform: capitalize;
+  color: $headings-color;
+}
+
+.ilmo--cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  overflow: hidden;
+  background: $white;
+  border: 1px solid $border-color;
+  border-radius: $card-radius;
+}
+
+.ilmo--cal-weekday {
+  padding: 1rem 0.75rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $secondary-text-color;
+  border-bottom: 1px solid $border-color;
+}
+
+.ilmo--cal-day {
+  min-height: 8rem;
+  padding: 0.6rem 0.6rem 0.75rem;
+  overflow: hidden;
+  border-right: 1px solid $border-color;
+  border-bottom: 1px solid $border-color;
+
+  // No right border on the last column, no bottom border on the last row.
+  &:nth-child(7n + 14) {
+    border-right: 0;
+  }
+  &:nth-last-child(-n + 7) {
+    border-bottom: 0;
+  }
+
+  &.ilmo--cal-outside {
+    background: rgba($secondary-background, 0.55);
+
+    .ilmo--cal-daynum {
+      color: rgba($secondary-text-color, 0.55);
+    }
+  }
+
+  &.ilmo--cal-today .ilmo--cal-daynum {
+    display: inline-block;
+    min-width: 1.6rem;
+    padding: 0 0.35rem;
+    border-radius: 999px;
+    text-align: center;
+    color: $white;
+    background: $accent;
+  }
+}
+
+.ilmo--cal-daynum {
+  margin-bottom: 0.4rem;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: $secondary-text-color;
+}
+
+// Only shown in the stacked mobile layout.
+.ilmo--cal-daylabel {
+  display: none;
+  text-transform: capitalize;
+}
+
+// Chips take the color of their event's category; closed signups are dimmed.
+.ilmo--cal-event {
+  display: block;
+  margin-bottom: 3px;
+  padding: 2px 8px;
+  overflow: hidden;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--cat-ink, #{$headings-color});
+  background: var(--cat-tint, #{$secondary-background});
+  border-left: 3px solid var(--cat, #{$cal-nosignup});
+  border-radius: 4px;
+
+  &:hover {
+    color: var(--cat-ink, #{$accent});
+    text-decoration: underline;
+  }
+
+  &.ilmo--cal-closed {
+    opacity: 0.6;
+  }
+}
+
+.ilmo--cal-time {
+  margin-right: 0.4em;
+  font-variant-numeric: tabular-nums;
+  color: $secondary-text-color;
+}
+
+.ilmo--cal-empty {
+  margin-top: 2rem;
+}
+
+.ilmo--cal-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 2rem;
+  margin: 2.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8rem;
+  color: $secondary-text-color;
+
+  li::before {
+    content: "";
+    display: inline-block;
+    width: 0.6rem;
+    height: 0.6rem;
+    margin-right: 0.6rem;
+    border-radius: 50%;
+    background: var(--cat, #{$cal-nosignup});
+  }
+}
+
+// On narrow screens a 7-column grid is unreadable, so show a plain agenda of the days that have events.
+@include media-breakpoint-down(md) {
+  .ilmo--cal-grid {
+    display: block;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+  }
+  .ilmo--cal-weekday,
+  .ilmo--cal-outside,
+  .ilmo--cal-day:not(.ilmo--cal-has-events) {
+    display: none;
+  }
+  .ilmo--cal-day {
+    min-height: 0;
+    padding: 1.25rem 0;
+    border: 0;
+    border-bottom: 1px solid $border-color !important;
+  }
+  .ilmo--cal-daynum {
+    margin-bottom: 0.6rem;
+    font-weight: 600;
+    color: $headings-color;
+  }
+  .ilmo--cal-daylabel {
+    display: inline;
+  }
+  .ilmo--cal-event {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+}
