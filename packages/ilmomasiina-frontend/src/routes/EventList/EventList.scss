@@ -200,20 +200,26 @@ h2.ilmo--section-label {
   min-height: 1.5rem;
 }
 
-// Category as a tinted pill in the category's color.
+// Category as plain small caps with a square marker in the category's color.
 .ilmo--event-card-category {
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  padding: 0.15rem 0.7rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--cat-ink, #{$secondary-text-color});
-  background: var(--cat-tint, #{$secondary-background});
+
+  &::before {
+    content: "";
+    display: inline-block;
+    width: 0.6rem;
+    height: 0.6rem;
+    margin-right: 0.55rem;
+    background: var(--cat, #{$border-color});
+  }
 }
 
 // Signup state as a quiet status with a dot. Only "open" uses the accent.
