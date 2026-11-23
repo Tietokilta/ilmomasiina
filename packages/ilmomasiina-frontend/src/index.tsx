@@ -3,9 +3,9 @@ import React from "react";
 import * as Sentry from "@sentry/browser";
 import ReactDOM from "react-dom/client";
 
-// Self-hosted fonts: Inter for body text, Newsreader for headings.
-import "@fontsource-variable/inter";
-import "@fontsource-variable/newsreader";
+// Self-hosted fonts from the Kaplaaki brand book: Roboto for body text, Roboto Slab for headings.
+import "@fontsource-variable/roboto";
+import "@fontsource-variable/roboto-slab";
 import "./i18n";
 
 // Import via full path to reduce entry chunk size.

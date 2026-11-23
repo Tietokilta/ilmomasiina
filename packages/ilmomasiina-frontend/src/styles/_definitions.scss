@@ -1,30 +1,32 @@
 @use "sass:color";
 
-// Design tokens. Neutral warm-grey base, one accent (pine) for primary actions.
+// Design tokens, following the Kaplaaki Brand Book 2024: dark blue main color with lighter blue shades, white,
+// and the Roboto font family (Roboto Slab for headings).
 // These are defined before the Bootstrap imports below so Bootstrap's derived variables pick them up.
 // For Bootstrap components, the overrides are passed on in ilmomasiina-frontend/src/styles/app.scss.
 // If you override more variables, add them to the @use there as well.
 
-// Accent: the only saturated color, used for primary actions and "open" states.
-$accent: #2f5d50 !default;
+// Kaplaaki blue (the web shade from the brand book). Used for primary actions, "open" states, and the header.
+$accent: #001f3f !default;
 
 $primary: $accent !default;
-$secondary: #6b7280 !default;
+$secondary: #364a6f !default;
 $red: #a4473d !default; // muted brick, further assigned to $danger by Bootstrap
 $green: #3d7a5f !default; // further assigned to $success by Bootstrap
 
 // Surfaces and text
-$body-bg: #fafaf8 !default;
-$body-color: #374151 !default;
-$headings-color: #1f2937 !default;
-$text-muted: #6b7280 !default;
-$border-color: #e5e7eb !default;
+// Lighter shades of the brand blues (#9DAFDA and up) are used for backgrounds and borders.
+$body-bg: #f5f7fb !default;
+$body-color: #001f3f !default;
+$headings-color: #001f3f !default;
+$text-muted: #4f6289 !default;
+$border-color: #dbe1ee !default;
 
-$secondary-background: #f3f4f1 !default;
-$secondary-text-color: #6b7280 !default;
+$secondary-background: #e9edf6 !default;
+$secondary-text-color: #4f6289 !default;
 
-// The header is a neutral dark bar so the white logo reads clearly.
-$header-bg: #15171a !default;
+// The header is a bar in the brand blue so the white logo reads clearly.
+$header-bg: $accent !default;
 $header-logo: true !default;
 
 // Shape
@@ -35,14 +37,16 @@ $card-radius: 1rem !default;
 
 // Typography
 $font-family-sans-serif:
-  "Inter Variable",
+  "Roboto Variable",
+  Roboto,
   system-ui,
   -apple-system,
   "Segoe UI",
   sans-serif !default;
-$font-family-serif: "Newsreader Variable", Georgia, "Times New Roman", serif !default;
+// Roboto Slab is the brand's main font, so it is used for headings. (The name is a leftover from Bootstrap's naming.)
+$font-family-serif: "Roboto Slab Variable", "Roboto Slab", Georgia, "Times New Roman", serif !default;
 $headings-font-family: $font-family-serif !default;
-$headings-font-weight: 500 !default;
+$headings-font-weight: 700 !default;
 $line-height-base: 1.65 !default;
 $h1-font-size: 2.75rem !default;
 $h2-font-size: 1.6rem !default;
@@ -54,14 +58,14 @@ $btn-padding-x: 1.25rem !default;
 $btn-font-weight: 500 !default;
 $input-padding-y: 0.6rem !default;
 $input-padding-x: 0.9rem !default;
-$input-border-color: #d1d5db !default;
+$input-border-color: #c3cde3 !default;
 $input-focus-border-color: $accent !default;
 $input-focus-box-shadow: 0 0 0 0.2rem rgba($accent, 0.15) !default;
 
 // Links
 $link-color: $accent !default;
 $link-decoration: none !default;
-$link-hover-color: color.scale($accent, $lightness: -15%) !default;
+$link-hover-color: #364a6f !default;
 
 // Whitespace scale used by Ilmomasiina's SCSS.
 $space-section: 5rem !default;

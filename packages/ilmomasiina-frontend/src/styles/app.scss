@@ -56,7 +56,6 @@ html {
 }
 
 body {
-  font-feature-settings: "cv11", "ss01";
   -webkit-font-smoothing: antialiased;
 }
 
@@ -94,7 +93,7 @@ h3 {
 h1 {
   margin: 0 0 $space-block;
   font-size: $h1-font-size;
-  font-weight: 500;
+  font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.1;
 }

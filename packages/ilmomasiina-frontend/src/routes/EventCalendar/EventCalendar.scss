@@ -2,7 +2,7 @@
 
 // Calendar: hairline grid on white; event chips are colored by category.
 
-$cal-nosignup: #d6dae0;
+$cal-nosignup: #c3cde3;
 
 .ilmo--cal-nav {
   display: flex;
@@ -26,7 +26,7 @@ h2.ilmo--cal-title {
   margin: 0 0.5rem;
   font-family: $font-family-serif;
   font-size: 1.6rem;
-  font-weight: 500;
+  font-weight: 700;
   letter-spacing: -0.015em;
   text-transform: capitalize;
   color: $headings-color;
