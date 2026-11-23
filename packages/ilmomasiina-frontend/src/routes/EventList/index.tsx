@@ -16,6 +16,7 @@ import { ErrorCode, UserEventListItem } from "@tietokilta/ilmomasiina-models";
 import { TKey } from "../../i18n";
 import paths from "../../paths";
 import { buildCategoryColors } from "../../utils/categoryColor";
+import eventEnded from "../../utils/eventEnded";
 import EventCard from "./components/EventCard";
 import ViewControls from "./components/ViewControls";
 
@@ -32,13 +33,20 @@ const EventListView = ({ category }: EventListProps) => {
 
   // Group events by signup state. Events keep the order given by the server within each group.
   const sections = useMemo<Section[]>(() => {
-    const groups: Record<"open" | "coming" | "closed" | "noSignup", UserEventListItem[]> = {
+    const groups: Record<"open" | "coming" | "closed" | "noSignup" | "past", UserEventListItem[]> = {
       open: [],
       coming: [],
       closed: [],
       noSignup: [],
+      past: [],
     };
+    const now = new Date();
     (events ?? []).forEach((event) => {
+      // Events that have ended move to their own section, whatever their signup state.
+      if (eventEnded(event, now)) {
+        groups.past.push(event);
+        return;
+      }
       switch (signupState(event.registrationStartDate, event.registrationEndDate, event.signupComing).state) {
         case SignupState.open:
           groups.open.push(event);
@@ -61,6 +69,8 @@ const EventListView = ({ category }: EventListProps) => {
       { key: "noSignup", title: "events.section.noSignup", events: groups.noSignup },
       // Closed signups are the least relevant, so they go last.
       { key: "closed", title: "events.section.closed", events: groups.closed },
+      // Past events come last, the most recent first.
+      { key: "past", title: "events.section.past", events: groups.past.reverse() },
     ];
     return all.filter((section) => section.events.length > 0);
   }, [events]);

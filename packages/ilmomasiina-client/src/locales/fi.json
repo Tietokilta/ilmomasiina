@@ -123,6 +123,7 @@
     "events.section.open": "Ilmoittautuminen auki",
     "events.section.coming": "Ilmoittautuminen alkamassa",
     "events.section.closed": "Ilmoittautuminen päättynyt",
+    "events.section.past": "Menneet",
     "events.section.noSignup": "Tapahtumat ilman ilmoittautumista ja muut tapahtumat",
     "events.view.events": "Tapahtumat",
     "events.list.signupOnly": "Vain ilmoittautuminen",
