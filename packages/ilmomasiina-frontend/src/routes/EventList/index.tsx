@@ -93,7 +93,7 @@ const EventListView = ({ category }: EventListProps) => {
   }
 
   return (
-    <>
+    <div className="ilmo--wide">
       <header className="ilmo--page-header">
         <h1>{t("events.title")}</h1>
         <ViewControls current="events" category={category} />
@@ -111,7 +111,7 @@ const EventListView = ({ category }: EventListProps) => {
           </div>
         </section>
       ))}
-    </>
+    </div>
   );
 };
 

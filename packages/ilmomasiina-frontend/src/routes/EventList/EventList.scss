@@ -110,18 +110,26 @@ h2.ilmo--section-label {
   color: rgba($secondary-text-color, 0.7);
 }
 
-// Grid: one, two or three equal columns. All cards share one size.
+// On very wide screens (or when zoomed out) the page grows beyond Bootstrap's 1320px container, so more cards fit in
+// a row. The page content breaks out of the container, up to 1900px wide.
+.ilmo--wide {
+  @media (min-width: 1400px) {
+    width: calc(100vw - 4rem);
+    max-width: 1900px;
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+// Grid: as many equal columns as fit (one on phones, three in the normal container, up to five when zoomed out).
+// All cards share one size.
 
 .ilmo--event-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(min(19rem, 100%), 1fr));
   gap: 1.5rem;
 
-  @include media-breakpoint-up(sm) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
   @include media-breakpoint-up(lg) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.75rem;
   }
 }
