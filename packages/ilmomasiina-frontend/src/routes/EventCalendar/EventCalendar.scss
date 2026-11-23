@@ -110,7 +110,9 @@ h2.ilmo--cal-title {
   text-overflow: ellipsis;
   color: var(--cat-ink, #{$headings-color});
   background: var(--cat-tint, #{$secondary-background});
-  border-left: 3px solid var(--cat, #{$cal-nosignup});
+  // The pale tint barely shows on white, so browsers that support it get a stronger mix of the category color.
+  background: color-mix(in srgb, var(--cat, #{$cal-nosignup}) 24%, #fff);
+  border-left: 4px solid var(--cat, #{$cal-nosignup});
   border-radius: 4px;
 
   &:hover {
