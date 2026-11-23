@@ -59,6 +59,7 @@ export function testEventAttributes({
     webpageUrl: faker.internet.url(),
     category: faker.lorem.words({ min: 1, max: 2 }),
     imageUrl: faker.image.url(),
+    signupLink: null,
     signupComing: false,
     draft: false,
     listed: true,

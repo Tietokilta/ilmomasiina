@@ -12,6 +12,7 @@ import type { QuotaID } from "@tietokilta/ilmomasiina-models";
 import type { TKey } from "../../../i18n";
 import paths from "../../../paths";
 import { usePriceFormatter } from "../../../utils/priceFormat";
+import signupLinkHref from "../../../utils/signupLink";
 import { useSignupStateText } from "../../../utils/signupStateText";
 
 // Show the countdown one minute before opening the signup.
@@ -61,6 +62,26 @@ const SignupButton = ({ isOpen, isClosed, seconds, total }: SignupButtonProps) =
   );
 
   const statusText = useSignupStateText(eventState);
+
+  // Events whose signup is handled elsewhere link there instead of showing a signup state.
+  const externalHref = eventState.state === SignupState.disabled ? signupLinkHref(event!.signupLink) : null;
+  if (externalHref) {
+    return (
+      <div className="ilmo--side-widget">
+        <h3>{t("singleEvent.signupButtons.title")}</h3>
+        <p>{t("singleEvent.signupLink.info")}</p>
+        <Button
+          as="a"
+          variant="primary"
+          className="ilmo--signup-button"
+          href={externalHref}
+          {...(externalHref.startsWith("mailto:") ? {} : { target: "_blank", rel: "noopener noreferrer" })}
+        >
+          {externalHref.startsWith("mailto:") ? t("singleEvent.signupLink.email") : t("singleEvent.signupLink.web")}
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="ilmo--side-widget">

@@ -61,6 +61,9 @@ export const publicEventAttributes = Type.Object({
   imageUrl: Nullable(Type.String({ maxLength: 1024 }), {
     description: "URL of a cover image for the event, shown on event cards and the event page.",
   }),
+  signupLink: Nullable(Type.String({ maxLength: 1024 }), {
+    description: "For events whose signup is handled elsewhere: a web address or an email address to sign up with.",
+  }),
   signupComing: Type.Boolean({
     description:
       "For events without signup dates: shows the event as having a signup that opens later, with the dates not yet known.",

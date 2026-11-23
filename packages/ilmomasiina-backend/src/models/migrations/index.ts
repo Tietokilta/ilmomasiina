@@ -15,6 +15,7 @@ import _0010_add_preferredFrontend from "./0010-add-preferredFrontend";
 import _0011_add_imageUrl from "./0011-add-imageUrl";
 import _0012_add_images from "./0012-add-images";
 import _0013_add_signupComing from "./0013-add-signupComing";
+import _0014_add_signupLink from "./0014-add-signupLink";
 
 const migrations: RunnableMigration<Sequelize>[] = [
   _0000_initial,
@@ -31,6 +32,7 @@ const migrations: RunnableMigration<Sequelize>[] = [
   _0011_add_imageUrl,
   _0012_add_images,
   _0013_add_signupComing,
+  _0014_add_signupLink,
 ];
 
 export default migrations;

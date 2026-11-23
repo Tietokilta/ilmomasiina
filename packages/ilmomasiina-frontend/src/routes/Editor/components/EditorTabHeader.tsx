@@ -44,6 +44,7 @@ const tabForField: Record<keyof EditorEvent, EditorTab | null> = {
   location: EditorTab.BASIC_DETAILS,
   webpageUrl: EditorTab.BASIC_DETAILS,
   signupsPublic: EditorTab.BASIC_DETAILS,
+  signupLink: EditorTab.BASIC_DETAILS,
   signupComing: EditorTab.BASIC_DETAILS,
   nameQuestion: EditorTab.QUESTIONS,
   emailQuestion: EditorTab.QUESTIONS,

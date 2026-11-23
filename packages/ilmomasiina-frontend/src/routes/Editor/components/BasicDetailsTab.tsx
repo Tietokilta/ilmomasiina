@@ -159,6 +159,16 @@ const BasicDetailsTab = () => {
           formatError={formatError}
         />
       )}
+      {eventType === EditorEventType.ONLY_EVENT && (
+        <FieldRow
+          name="signupLink"
+          label={t("editor.basic.signupLink")}
+          maxLength={1024}
+          placeholder={t("editor.basic.signupLink.placeholder")}
+          help={t("editor.basic.signupLink.info")}
+          formatError={formatError}
+        />
+      )}
       {eventType !== EditorEventType.ONLY_SIGNUP && (
         <FieldRow
           name="date"

@@ -2,6 +2,7 @@ import { z, ZodType } from "zod";
 
 import { MAX_OPTIONS_PER_QUESTION, PaymentMode, QuestionType } from "@tietokilta/ilmomasiina-models";
 import { EditorEvent, EditorEventType } from "../../modules/editor/types";
+import signupLinkHref from "../../utils/signupLink";
 
 // The form validation should catch almost all error cases.
 // As the form state differs from our JSON schema somewhat, it's probably less work to just write
@@ -45,6 +46,7 @@ const editorSchema: ZodType<EditorEvent> = z
     openQuotaSize: z.nullable(z.number().min(0)),
     category: z.string().max(255),
     imageUrl: z.nullable(z.string().max(1024)),
+    signupLink: z.nullable(z.string().max(1024)),
     description: z.nullable(z.string()),
     price: z.nullable(z.string().max(255)),
     location: z.nullable(z.string().max(255)),
@@ -134,6 +136,17 @@ const editorSchema: ZodType<EditorEvent> = z
           received: "null",
         });
       }
+    }
+    if (
+      event.eventType === EditorEventType.ONLY_EVENT &&
+      event.signupLink?.trim() &&
+      !signupLinkHref(event.signupLink)
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        message: "editor.errors.invalidSignupLink",
+        path: ["signupLink"],
+      });
     }
     if (event.date && event.endDate && event.endDate < event.date) {
       ctx.addIssue({

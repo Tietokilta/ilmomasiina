@@ -11,6 +11,7 @@ import Icon from "../../../components/Icon";
 import paths from "../../../paths";
 import { CategoryColor, categoryStyle } from "../../../utils/categoryColor";
 import { useEventRangeFormatter } from "../../../utils/dateFormat";
+import signupLinkHref from "../../../utils/signupLink";
 import { useSignupStateText } from "../../../utils/signupStateText";
 
 type Props = {
@@ -29,6 +30,8 @@ const EventCard = ({ event, color }: Props) => {
   const stateText = useSignupStateText(row.signupState);
   const signupEnabled = row.signupState.state !== SignupState.disabled;
   const signupOpen = row.signupState.state === SignupState.open;
+  // Signup handled on another site or by email.
+  const externalSignup = !signupEnabled && !!signupLinkHref(event.signupLink);
   // Without dates there are no quotas yet, so there is nothing to count.
   const showCount = signupEnabled && row.signupState.state !== SignupState.coming;
 
@@ -68,6 +71,7 @@ const EventCard = ({ event, color }: Props) => {
               {(stateText.fullLabel ?? stateText.shortLabel).replace(/\.$/, "")}
             </span>
           )}
+          {externalSignup && <span className="ilmo--event-card-state">{t("events.card.signupElsewhere")}</span>}
         </div>
 
         <h3 className="ilmo--event-card-title">
