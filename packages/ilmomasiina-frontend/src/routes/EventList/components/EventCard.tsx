@@ -46,7 +46,7 @@ const EventCard = ({ event, color }: Props) => {
         {showImage ? (
           <img src={event.imageUrl!} alt="" loading="lazy" onError={() => setImageFailed(true)} />
         ) : (
-          <div className="ilmo--event-card-placeholder">{event.category || event.title.charAt(0)}</div>
+          <div className="ilmo--event-card-placeholder" />
         )}
       </Link>
 
@@ -56,9 +56,10 @@ const EventCard = ({ event, color }: Props) => {
           <div className="ilmo--event-card-eyebrow-row">
             {event.category ? <span className="ilmo--event-card-category">{event.category}</span> : <span />}
             {showCount && (
-              <span className="ilmo--event-card-count" title={t("events.card.signups")}>
+              <span className="ilmo--event-card-count">
                 {totalSignupCount}
-                {totalQuotaSize ? ` / ${totalQuotaSize}` : ""}
+                {totalQuotaSize ? ` / ${totalQuotaSize}` : ""}{" "}
+                <span className="ilmo--event-card-count-label">{t("events.card.signedUp")}</span>
               </span>
             )}
           </div>

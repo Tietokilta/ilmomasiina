@@ -60,7 +60,7 @@ const ListingRow = ({ event, categoryColor }: { event: UserEventListItem; catego
             {showCount && (
               <span className="ilmo--listing-count">
                 {row.totalSignupCount}
-                {row.totalQuotaSize ? ` / ${row.totalQuotaSize}` : ""}
+                {row.totalQuotaSize ? ` / ${row.totalQuotaSize}` : ""} {t("events.card.signedUp")}
               </span>
             )}
           </>

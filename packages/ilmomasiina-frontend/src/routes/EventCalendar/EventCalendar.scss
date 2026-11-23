@@ -152,6 +152,11 @@ h2.ilmo--cal-title {
     border-radius: 50%;
     background: var(--cat, #{$cal-nosignup});
   }
+
+  // Explains why some chips are faded. It has no color dot of its own.
+  .ilmo--cal-legend-faded::before {
+    display: none;
+  }
 }
 
 // On narrow screens a 7-column grid is unreadable, so show a plain agenda of the days that have events.

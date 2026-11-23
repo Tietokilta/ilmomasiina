@@ -154,8 +154,6 @@ h2.ilmo--section-label {
   aspect-ratio: 27 / 10;
   // The card itself can't clip overflow (that would cut off dropdowns), so round the corners here.
   border-radius: $card-radius $card-radius 0 0;
-  // A strip in the category color under the image.
-  border-bottom: 3px solid var(--cat, #{$border-color});
   overflow: hidden;
   background: $secondary-background;
 
@@ -167,18 +165,10 @@ h2.ilmo--section-label {
   }
 }
 
+// Cards without a picture show the category color as a plain block. The category itself is named by the pill.
 .ilmo--event-card-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 100%;
   height: 100%;
-  padding: 1.5rem;
-  text-align: center;
-  font-family: $font-family-serif;
-  font-size: 1.5rem;
-  font-style: italic;
-  color: var(--cat-ink, #{$secondary-text-color});
   background: var(--cat-tint, #{$secondary-background});
 }
 
@@ -195,8 +185,6 @@ h2.ilmo--section-label {
   flex-direction: column;
   align-items: stretch;
   gap: 0.4rem;
-  // Room for the category row and the signup state on two lines.
-  min-height: 4.4rem;
   line-height: 1.35;
   margin-bottom: 0.5rem;
   font-size: 0.75rem;
@@ -256,9 +244,8 @@ h2.ilmo--section-label {
 }
 
 h3.ilmo--event-card-title {
-  // Two lines reserved, longer titles are cut off with an ellipsis (the full title is on the event page).
+  // Longer titles are cut off after two lines with an ellipsis (the full title is on the event page).
   display: -webkit-box;
-  min-height: 2.4em;
   margin: 0 0 0.5rem;
   overflow: hidden;
   -webkit-line-clamp: 2;
@@ -282,8 +269,6 @@ h3.ilmo--event-card-title {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 0.3rem 0.75rem;
-  // Room for a date on two lines plus a one-line location.
-  min-height: 3.4rem;
   margin: 0 0 0.75rem;
   align-content: start;
   align-items: center;
@@ -305,6 +290,11 @@ h3.ilmo--event-card-title {
     white-space: nowrap;
     text-overflow: ellipsis;
   }
+}
+
+.ilmo--event-card-count-label {
+  font-weight: 400;
+  color: $secondary-text-color;
 }
 
 .ilmo--event-card-count {
@@ -331,5 +321,19 @@ h3.ilmo--event-card-title {
 @include media-breakpoint-down(sm) {
   .ilmo--event-card-body {
     padding: 1.25rem;
+  }
+}
+
+// Cards in the same grid row share one height, so reserve room for two title lines, a two-line signup state and a
+// two-line date. On a single column (phones) there is nothing to line up with, so the cards keep their natural size.
+@include media-breakpoint-up(sm) {
+  .ilmo--event-card-eyebrow {
+    min-height: 4.4rem;
+  }
+  h3.ilmo--event-card-title {
+    min-height: 2.4em;
+  }
+  .ilmo--event-card-meta {
+    min-height: 3.4rem;
   }
 }

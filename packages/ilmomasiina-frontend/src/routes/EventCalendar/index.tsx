@@ -115,16 +115,22 @@ const CalendarView = () => {
 
   const monthHasEvents = cells.some((cell) => cell.inMonth && eventsByDay.has(cell.key));
 
-  // Categories that appear in the visible month, for the legend.
-  const monthCategories = useMemo(() => {
+  // Categories that appear in the visible month, for the legend. Also whether any shown signup has closed, as those
+  // chips are faded.
+  const { monthCategories, monthHasClosed } = useMemo(() => {
     const names = new Set<string>();
+    let hasClosed = false;
     cells.forEach((cell) => {
       if (!cell.inMonth) return;
       eventsByDay.get(cell.key)?.forEach(({ event }) => {
         if (event.category) names.add(event.category);
+        if (stateClass(event) === "ilmo--cal-closed") hasClosed = true;
       });
     });
-    return Array.from(names).sort((a, b) => a.localeCompare(b, locale));
+    return {
+      monthCategories: Array.from(names).sort((a, b) => a.localeCompare(b, locale)),
+      monthHasClosed: hasClosed,
+    };
   }, [cells, eventsByDay, locale]);
 
   const prev = monthParam(year, month - 1);
@@ -214,6 +220,7 @@ const CalendarView = () => {
                   {name}
                 </li>
               ))}
+              {monthHasClosed && <li className="ilmo--cal-legend-faded">{t("events.calendar.legendClosed")}</li>}
             </ul>
           )}
         </>
