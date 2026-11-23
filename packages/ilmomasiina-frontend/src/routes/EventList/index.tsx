@@ -17,6 +17,7 @@ import { TKey } from "../../i18n";
 import paths from "../../paths";
 import { buildCategoryColors } from "../../utils/categoryColor";
 import eventEnded from "../../utils/eventEnded";
+import signupLinkHref from "../../utils/signupLink";
 import EventCard from "./components/EventCard";
 import ViewControls from "./components/ViewControls";
 
@@ -55,7 +56,12 @@ const EventListView = ({ category }: EventListProps) => {
           groups.closed.push(event);
           break;
         default:
-          groups.noSignup.push(event);
+          // Signup handled elsewhere counts as open. ("Signup coming" events never get here.)
+          if (signupLinkHref(event.signupLink)) {
+            groups.open.push(event);
+          } else {
+            groups.noSignup.push(event);
+          }
       }
     });
     const all: Section[] = [
