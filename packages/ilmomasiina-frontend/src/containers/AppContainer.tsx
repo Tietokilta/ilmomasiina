@@ -1,7 +1,7 @@
 import React, { lazy, Suspense } from "react";
 
 import { Container, Spinner } from "react-bootstrap";
-import { BrowserRouter, Route, Routes } from "react-router";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 import { Flip, ToastContainer } from "react-toastify";
 
 import Footer from "../components/Footer";
@@ -34,12 +34,19 @@ const loadingFallback = (
   </div>
 );
 
+// The events page can use more width on large or zoomed-out screens, so more cards fit in a row. The header and footer
+// widen with it, so everything on the page lines up.
+const LayoutWrapper = ({ children }: { children: React.ReactNode }) => {
+  const { pathname } = useLocation();
+  return <div className={`layout-wrapper${pathname === paths.eventsList ? " ilmo--layout-wide" : ""}`}>{children}</div>;
+};
+
 const AppContainer = () => (
   <BrowserRouter>
     <Suspense>
       <RenewLogin />
     </Suspense>
-    <div className="layout-wrapper">
+    <LayoutWrapper>
       <Header />
       <Suspense fallback={loadingFallback}>
         <Container>
@@ -74,7 +81,7 @@ const AppContainer = () => (
         pauseOnHover
         transition={Flip}
       />
-    </div>
+    </LayoutWrapper>
   </BrowserRouter>
 );
 

@@ -76,6 +76,14 @@ body {
   }
 }
 
+// The events page grows past Bootstrap's 1320px container on very wide (or zoomed-out) screens, so more cards fit in a
+// row. Header, content and footer share the width so their edges line up.
+@media (min-width: 1400px) {
+  .layout-wrapper.ilmo--layout-wide .container {
+    max-width: 1900px;
+  }
+}
+
 footer {
   flex-shrink: 0;
 }

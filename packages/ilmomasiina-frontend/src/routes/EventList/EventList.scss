@@ -110,17 +110,6 @@ h2.ilmo--section-label {
   color: rgba($secondary-text-color, 0.7);
 }
 
-// On very wide screens (or when zoomed out) the page grows beyond Bootstrap's 1320px container, so more cards fit in
-// a row. The page content breaks out of the container, up to 1900px wide.
-.ilmo--wide {
-  @media (min-width: 1400px) {
-    width: calc(100vw - 4rem);
-    max-width: 1900px;
-    margin-left: 50%;
-    transform: translateX(-50%);
-  }
-}
-
 // Grid: as many equal columns as fit (one on phones, three in the normal container, up to five when zoomed out).
 // All cards share one size.
 
